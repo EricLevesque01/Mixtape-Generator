@@ -1,0 +1,48 @@
+# duration behavior
+duration_target_s: 4620       # Target ≈ 77 minutes (CD-length mixtape)
+duration_cap_s: 7200          # Absolute max ≈ 120 minutes
+
+max_tracks_per_artist: 2
+
+# Interview
+max_questions: 10
+conf_thresh: 0.7
+
+# Repair loop
+accept_threshold: 0.70
+max_repair_iters: 8
+eps: 0.01
+stall_iters: 2
+
+# Guardrails
+off_topic_max: 3
+
+# A/B retry
+max_ab_rounds: 3
+
+# Scoring weights (v2.1.1)
+w_fit: 0.35
+w_flow: 0.25
+w_variety: 0.15
+w_access: 0.15
+w_quality: 0.10
+
+# Base-and-Branch behavior
+branch_swap_min: 2
+branch_swap_max: 5
+branch_variety_boost: 0.2
+
+# RNG (deterministic in testing)
+rng_seed: 12345
+
+# Spotify export
+spotify_add_chunk_size: 100
+spotify_playlist_public_default: false
+
+# Evaluation harness
+log_sim_user_transcripts: true
+
+# LLM Settings
+default_llm_model: "gpt-4o"
+llm_temperature_default: 0.2
+eval_models: ["gpt-4o", "claude-3-5-sonnet-20240620"]

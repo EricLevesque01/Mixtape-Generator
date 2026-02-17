@@ -1,0 +1,74 @@
+[
+  {
+    "id": "t1",
+    "title": "Midnight City",
+    "artist": "M83",
+    "duration_s": 243,
+    "rym_data": {
+      "primary_genres": ["Synthpop", "Dream Pop"],
+      "subgenres": ["Indietronica"],
+      "descriptors": ["uplifting", "atmospheric", "nocturnal"]
+    },
+    "energy": 0.8,
+    "valence": 0.6,
+    "intensity": 0.7,
+    "accessibility": 0.9,
+    "familiarity": 0.9,
+    "rating": 4.5,
+    "recommendability": 0.95
+  },
+  {
+    "id": "t2",
+    "title": "Genesis",
+    "artist": "Grimes",
+    "duration_s": 255,
+    "rym_data": {
+      "primary_genres": ["Art Pop", "Synthpop"],
+      "subgenres": ["Hypnagogic Pop"],
+      "descriptors": ["ethereal", "quirky", "female vocals"]
+    },
+    "energy": 0.6,
+    "valence": 0.7,
+    "intensity": 0.5,
+    "accessibility": 0.7,
+    "familiarity": 0.8,
+    "rating": 4.2,
+    "recommendability": 0.85
+  },
+  {
+    "id": "t3",
+    "title": "Vroom Vroom",
+    "artist": "Charli XCX",
+    "duration_s": 193,
+    "rym_data": {
+      "primary_genres": ["Bubblegum Bass", "Electropop"],
+      "subgenres": ["Industrial"],
+      "descriptors": ["abrasive", "energetic", "mechanical"]
+    },
+    "energy": 0.9,
+    "valence": 0.5,
+    "intensity": 0.9,
+    "accessibility": 0.6,
+    "familiarity": 0.85,
+    "rating": 4.0,
+    "recommendability": 0.8
+  },
+  {
+    "id": "t4",
+    "title": "Space Song",
+    "artist": "Beach House",
+    "duration_s": 320,
+    "rym_data": {
+      "primary_genres": ["Dream Pop", "Indie Pop"],
+      "subgenres": [],
+      "descriptors": ["melancholic", "sentimental", "atmospheric"]
+    },
+    "energy": 0.4,
+    "valence": 0.3,
+    "intensity": 0.3,
+    "accessibility": 0.8,
+    "familiarity": 0.7,
+    "rating": 4.8,
+    "recommendability": 1.0
+  }
+]
