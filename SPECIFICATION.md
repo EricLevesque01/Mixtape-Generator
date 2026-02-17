@@ -1,233 +1,398 @@
-# Product Specification
-## Project: ReAct Mixtape Curator
-**Version:** v1.0 (Class Project Scope)
+# ReAct Mixtape Curator — AI Implementation Specification
 
-## 1. Product Overview
-ReAct Mixtape Curator is a conversational AI application that interviews a user and generates a curated 120-minute mixtape from the user’s personal music library.
+**Version:** v2.1.1 (Semantic & Cohesion Upgrade — Implementation Freeze)
 
-The system behaves like a thoughtful mixtape maker: it asks context questions, reasons about mood and audience, constructs a playlist, evaluates its quality, and iteratively improves it until it meets defined viability standards.
+This specification is intended for direct consumption by an AI coding agent.
 
-The application demonstrates an implementation of the ReAct (Reason + Act) framework using structured tool calls and external scoring functions.
+All required system behaviors, schemas, constraints, and execution rules are explicitly defined. This version incorporates semantic genre modeling, uniformity-aware scoring, and deterministic ReAct repair behavior. All ambiguity from prior versions has been resolved.
 
-## 2. Goals
-**Primary Goal**
-Create an AI agent that can:
-* Interview a user about mixtape intent
-* Generate a playlist from a personal library
-* Optimize sequencing and flow
-* Ensure playlist viability using constraints and scoring
-* Output a final curated mixtape
+---
 
-**Academic Goal**
-Demonstrate:
-* Agentic reasoning
-* Tool use via ReAct framework
-* Constraint-based generation
-* Iterative improvement loops
-* Structured evaluation metrics
+## 0. System Summary
 
-## 3. Non-Goals
-Out of scope for v1:
-* Real-time streaming platform integration
-* Social playlist sharing
-* Multi-user recommendation modeling
-* Audio playback
-* Music discovery outside the personal library
-* Production-scale scalability
+ReAct Mixtape Curator is a conversational AI application that generates curated playlists (“mixtapes”) from a user’s personal music library.
 
-## 4. Target Users
-**Primary User**
-The library owner creating tapes for:
-* personal listening
-* friends
-* romantic interests
-* parties
-* travel
-* study or work
+The system is intentionally modeled after physical mixtape media:
 
-**Secondary User (Academic)**
-Instructor evaluating:
-* agent design
-* reasoning process
-* system architecture
-* reproducibility
+-   Standard CD-length mixtapes ≈ 74–80 minutes.
+-   Extended cassette formats allow up to ≈120 minutes.
 
-## 5. Core Features
-### 5.1 Conversational Tape Interview
-Agent asks targeted questions such as:
-* Who is the tape for?
-* When will it be played?
-* Desired mood?
-* Familiar vs discovery?
-* Artists to include/exclude?
-* Energy arc preference?
+### Execution Flow
 
-Agent gathers constraints before building.
+1.  Dynamically interview the user to gather intent, constraints, genres, and desired cohesion.
+2.  Convert responses into a structured JSON preference profile.
+3.  Filter candidate tracks from a local, RYM-enriched metadata store (`data/library.json`).
+4.  Construct a draft playlist satisfying all hard constraints.
+5.  Optimize sequencing and flow.
+6.  Validate and repair playlist via an LLM-driven ReAct loop.
+7.  Produce two viable candidates (A/B) via Base-and-Branch strategy.
+8.  Present choices (A, B, or Neither) and execute capped retry loop.
+9.  Store feedback for future tuning.
+10. Output finalized playlist via local exports or optional Spotify sync.
+11. Support batch evaluation of multiple LLM models using simulated users.
 
-### 5.2 Personal Library Search
-System searches ~5,000 songs using metadata:
-* genres
-* moods
-* energy
-* valence
-* agreeableness
-* pretentiousness
-* personal ratings
-* play history
+**Goal:** Playlists should feel intentionally curated with deep semantic and sonic awareness.
 
-### 5.3 Tape Construction Engine
-System selects tracks to:
-* satisfy constraints
-* maintain duration ≤120 min
-* limit artist repetition
-* match requested vibe
-* produce coherent sequencing
+---
 
-### 5.4 Flow Optimization
-Songs are ordered to minimize harsh transitions using:
-* energy continuity
-* emotional continuity
-* genre proximity
-* intensity continuity
+## 1. Required Configuration Keys
 
-### 5.5 Tape Viability Validator
-Playlist must pass viability checks:
+Loaded from `config.yaml`.
 
-**Hard constraints:**
-* Duration ≤120 min
-* Respect user exclusions
-* Artist repetition limits
+```yaml
+duration_target_s: 4620
+duration_cap_s: 7200
+max_tracks_per_artist: 2
 
-**Soft constraints:**
-* Mood/genre fit
-* Flow smoothness
-* Arc consistency
-* Accessibility match
-* Variety balance
+max_questions: 10
+conf_thresh: 0.7
+accept_threshold: 0.70
+max_repair_iters: 8
+eps: 0.01
+stall_iters: 2
+off_topic_max: 3
+max_ab_rounds: 3
 
-Only viable tapes are finalized.
+w_fit: 0.35
+w_flow: 0.25
+w_variety: 0.15
+w_access: 0.15
+w_quality: 0.10
 
-### 5.6 ReAct Agent Loop
-Agent repeatedly:
-* Reasons about next step
-* Calls a tool
-* Observes results
-* Updates plan
-* Repairs playlist if needed
+branch_swap_min: 2
+branch_swap_max: 5
+branch_variety_boost: 0.2
 
-Cycle repeats until viable.
+rng_seed: 12345
+spotify_add_chunk_size: 100
+spotify_playlist_public_default: false
+log_sim_user_transcripts: true
+```
 
-### 5.7 Final Output
-System outputs:
-* Ordered tracklist
-* Duration per track
-* Total runtime
-* Optional liner notes
-* Score summary
+Testing uses deterministic seeds; production mode switches to random seeds.
 
-## 6. Metadata Requirements
-Tracks contain:
+---
 
-**Required**
-* Title
-* Artist
-* Album
-* Duration
-* Track position
-* Year
+## 2. Hard Constraints
 
-**Personal signals**
-* Personal rating
-* Play count
-* Recommendation likelihood
+Playlist duration must satisfy:
 
-**Musical features**
-* Genres
-* Moods
-* Energy
-* Valence
-* Intensity
-* Social accessibility
-* Agreeableness
-* Pretentiousness
-* Familiarity
+    total_duration_s <= duration_cap_s
 
-## 7. Architecture Overview
-**Components**
+Default generation aims near `duration_target_s` but must not degrade quality to hit target.
 
-1. **Library Data Store**
-   Local metadata JSON.
+Additional constraints:
 
-2. **Tool Layer**
-   Functions callable by agent:
-   * ask user
-   * filter library
-   * build draft
-   * order tape
-   * validate tape
-   * repair tape
+-   Maximum two tracks per artist.
+-   Excluded artists/genres/descriptors must not appear.
+-   Must-include artists/tracks must appear if feasible.
 
-3. **Agent Engine**
-   LLM chooses next action.
+Constraint conflicts must trigger `consult_user()`.
 
-4. **Validator**
-   Computes scores and constraints.
+---
 
-5. **UI Layer**
-   CLI or lightweight web chat.
+## 3. Soft Objectives & Scoring Math
 
-## 8. System Flow
-User → Agent Interview → Library Search → Draft Tape → Validate → Repair → Finalize → Output
+Scores are normalized to `[0,1]`.
 
-## 9. User Experience Flow
-1. User opens app.
-2. Agent asks purpose questions.
-3. Agent builds draft.
-4. Agent repairs playlist if needed.
-5. Final tape presented.
-6. User optionally reruns or tweaks constraints.
+### 3.1 Fit Score
 
-## 10. Success Metrics
-Project success measured by:
+Track fit combines sonic similarity and semantic genre alignment.
 
-**Functional:**
-* Agent produces ≤120-minute tapes
-* System respects constraints
-* Agent repairs invalid drafts
+#### Sonic Fit (Frozen v1)
 
-**Qualitative:**
-* Tape flow feels coherent
-* Playlist matches requested vibe
+Dimensions: energy, valence, intensity.
 
-**Academic:**
-* Demonstrates ReAct loop
-* Tool use visible
-* Iterative improvement shown
+    d^2 = (Δenergy)^2 + (Δvalence)^2 + (Δintensity)^2
+    tolerance = 0.25
+    sonic_fit = exp(-d^2 / (2 * tolerance^2))
 
-## 11. Risks and Mitigation
-| Risk | Mitigation |
-| :--- | :--- |
-| Poor metadata quality | Hybrid tagging + manual correction |
-| Agent loops excessively | Max iteration cap |
-| Flow scoring too strict | Adjustable thresholds |
-| Slow tagging process | Tag popular tracks first |
+#### Genre Fit
 
-## 12. Future Extensions (Post-Class)
-Potential improvements:
-* Automatic audio feature extraction
-* Tape cover art generation
-* Playlist export integrations
-* Personalized recommendation learning
-* Multi-user tapes
-* Genre embedding models
-* Long-term taste evolution modeling
+Uses RateYourMusic taxonomy fields:
 
-## 13. MVP Definition
-Minimum viable product:
-* Library loaded
-* Agent asks questions
-* Playlist constructed
-* Validator enforces duration + repetition
-* Ordered tape output
+-   primary_genres
+-   subgenres
+-   descriptors
 
-Everything else is enhancement.
+Full-credit genre match occurs if **either** primary or subgenre matches target genres.
+
+Descriptors contribute lower-weight additive alignment.
+
+Genre fit blends with sonic fit via `genre_strictness`:
+
+    track_fit =
+        sonic_fit * (1 - genre_strictness)
+      + genre_fit * genre_strictness
+
+### 3.2 Flow Score
+
+Minimizes energy, valence, and intensity deltas while maximizing genre continuity between adjacent tracks.
+
+### 3.3 Variety Score (Uniformity Alignment)
+
+Variety aligns to user cohesion target.
+
+Token construction per track:
+
+-   primary genres weight = 1.0
+-   subgenres weight = 0.7
+-   descriptors weight = 0.3 (top 5 descriptors only)
+
+Per-track tokens are normalized to sum to 1.0 ensuring equal contribution.
+
+Playlist distribution is the average of per-track distributions.
+
+Entropy computation:
+
+    H = -Σ p_i log(p_i)
+    K = count(tokens with p_i > 0)
+    measured_diversity = 0 if K <= 1 else H / log(K)
+
+Uniformity mapping:
+
+    ideal_diversity = 1 - targets.uniformity
+    variety_score = 1 - abs(measured_diversity - ideal_diversity)
+
+Uniformity = 1 aims for maximal genre homogeneity.
+
+---
+
+## 4. Conversational Interview Framework
+
+### Interview Stages
+
+1.  Intake (recipient, must-includes, exclusions, context).
+2.  Genre & descriptor calibration.
+3.  Cohesion calibration (uniform vs eclectic).
+4.  Energy & mood calibration.
+5.  Confirmation.
+
+### Confidence Aggregation
+
+Per-axis confidences in `[0,1]`.
+
+Required axes:
+
+1.  Constraints
+2.  Semantic intent
+3.  Cohesion target
+4.  Energy/mood targets
+
+Interview stops when all required axes and global mean confidence exceed threshold or question limit reached.
+
+---
+
+## 5. Guardrails & Profile Integrity
+
+Only relevant responses modify structured profile fields.
+
+Repeated irrelevance triggers restart or default progression.
+
+---
+
+## 6. Library Preprocessing & Search
+
+Metadata source: `data/library.json`
+
+Offline enrichment requirements:
+
+-   Spotify URIs cached offline.
+-   RYM taxonomy enrichment required offline.
+-   Runtime must not query external APIs.
+
+---
+
+## 7. Flow Optimization
+
+Sequencing uses Greedy Multi-Start:
+
+1.  Choose seed track.
+2.  Iteratively append best transition.
+3.  Repeat across seeds.
+4.  Keep best scoring ordering.
+
+---
+
+## 8. Agentic ReAct Repair Loop
+
+Process:
+
+Draft → sequence → score → validate.
+
+Repair continues until playlist valid, threshold met, or improvement stalls.
+
+If stalled and invalid, agent must consult user.
+
+---
+
+## 9. Base-and-Branch A/B Generation
+
+Playlist B derives from A.
+
+    swap_count = clamp(
+        round(0.2 * playlist_length),
+        branch_swap_min,
+        branch_swap_max
+    )
+
+Swaps occur preferentially in weakest scoring dimension.
+
+Must-includes never replaced.
+
+Resequence and minimally repair.
+
+---
+
+## 10. "Neither" Retry Loop
+
+Collect feedback, update profile, regenerate A/B playlists until retry cap reached.
+
+---
+
+## 11. Exports
+
+Local: console, TXT, CSV, M3U8.
+
+Spotify: OAuth → create playlist → add tracks → report failures.
+
+---
+
+## 12. Tool Definitions
+
+Agent may call only:
+
+-   search_library(filters)
+-   swap_track(state, old_id, new_id)
+-   consult_user(reason, prompt)
+-   finalize()
+
+---
+
+## 13. Core Data Schemas
+
+### Track Object
+
+```json
+{
+  "id": "uuid",
+  "title": "string",
+  "artist": "string",
+  "duration_s": 0,
+  "rym_data": {
+    "primary_genres": [],
+    "subgenres": [],
+    "descriptors": []
+  },
+  "energy": 0.0,
+  "valence": 0.0,
+  "intensity": 0.0,
+  "accessibility": 0.0,
+  "familiarity": 0.0,
+  "rating": 0.0,
+  "recommendability": 0.0,
+  "file_path": "string|null",
+  "spotify_uri": "string|null"
+}
+```
+
+### Profile State
+
+```json
+{
+  "must_include_track_ids": [],
+  "must_include_artists": [],
+  "exclude_track_ids": [],
+  "exclude_artists": [],
+  "exclude_genres": [],
+  "exclude_descriptors": [],
+  "target_genres": [],
+  "target_descriptors": [],
+  "genre_strictness": 0.0,
+  "targets": {
+    "uniformity": 0.0,
+    "energy": 0.0,
+    "valence": 0.0,
+    "intensity": 0.0,
+    "accessibility": 0.0,
+    "familiarity": 0.0
+  },
+  "context_notes": null
+}
+```
+
+### Playlist State
+
+```json
+{
+  "track_ids": [],
+  "total_duration_s": 0,
+  "scores": {},
+  "violations": []
+}
+```
+
+---
+
+## 14. Multi-LLM Evaluation
+
+Supports simulated user evaluation. Logged metrics include:
+
+-   question_count
+-   repair_iterations
+-   constraint_pass
+-   final_score
+-   ab_difference
+
+---
+
+## 15. Repository Structure
+
+```
+mixtape_curator/
+  config.yaml
+  data/
+    library.json
+    feedback.jsonl
+    eval_cases.jsonl
+    eval_results.jsonl
+  scripts/
+    enrich_spotify_uris.py
+    enrich_rym_taxonomy.py
+  src/
+    mixtape_curator/
+      models.py
+      library.py
+      interview.py
+      scoring.py
+      generator.py
+      ab_test.py
+      export.py
+      spotify_export.py
+      ui_cli.py
+      llm/
+        interface.py
+        providers/
+          openai.py
+          anthropic.py
+          local.py
+  tests/
+```
+
+---
+
+## 16. Acceptance Criteria
+
+System must:
+
+-   Complete interview with cohesion/genre guardrails.
+-   Generate valid A/B playlists utilizing semantic genre matching.
+-   Score variety via uniformity alignment.
+-   Export playlists locally and optionally sync with Spotify.
+-   Produce reproducible results in testing mode.
+
+---
+
+## Implementation Freeze
+
+Specification is stable for implementation. Future changes require version increment beyond v2.1.1.

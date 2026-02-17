@@ -1,41 +1,57 @@
-# Technology Stack
+# Technology Stack — ReAct Mixtape Curator v2.1.1
 
-Based on the requirements in `SPECIFICATION.md`, the following technology stack is selected to prioritize rapid development, agentic capabilities, and academic demonstration of the ReAct framework.
+Based on the [Specification v2.1.1](SPECIFICATION.md), the following technology stack is selected to prioritize **deterministic control**, **semantic depth**, and **comparative evaluation**.
 
 ## 1. Core Runtime
-*   **Language:** **Python 3.10+**
-    *   *Justification:* The de facto standard for AI/LLM development. Excellent support for data manipulation (Pandas) and agent frameworks.
+*   **Language:** **Python 3.10+** (Required for modern type hinting and library support).
+*   **Dependency Management:** `poetry` (Recommended) or `venv` + `pip`.
+*   **Linting/Formatting:** `ruff` (Fast, comprehensive compliance).
 
 ## 2. Agent Framework & Logic
-*   **Orchestration:** **LangGraph**
-    *   *Justification:* The specification (Section 5.6) explicitly describes a cyclic "Reason -> Act -> Observe -> Repair" loop. LangGraph is specifically designed for stateful, cyclic agent workflows, making it a better fit than linear chains.
-*   **LLM Interface:** **LangChain**
-    *   *Justification:* Provides standard abstractions for prompt templates and tool binding.
-*   **Model Provider:** **OpenAI API (GPT-4o)** or **Anthropic API (Claude 3.5 Sonnet)**
-    *   *Justification:* High reasoning capability is required for the "Tape Viability Validator" and flow optimization logic.
+*   **Orchestration:** **LangGraph** (or Custom State Machine)
+    *   *Justification:* The "ReAct Repair Loop" (Spec §8) and "Base-and-Branch" (Spec §9) strategies require a stateful, cyclic execution graph. LangGraph provides the ideal primitive for this `Draft -> Validate -> Repair -> Repeat` cycle.
+*   **LLM Interface:** **Custom Abstraction Layer** (`src/mixtape_curator/llm/`)
+    *   *Justification:* Spec §14 requires benchmarking multiple models. We cannot rely on a single vendor SDK. We will implement a lightweight adapter pattern supporting:
+        *   **OpenAI** (GPT-4o)
+        *   **Anthropic** (Claude 3.5 Sonnet)
+        *   **Local/Open-Weights** (via Llama.cpp/Ollama standard endpoints)
 
-## 3. Data & Storage
+## 3. Data Engineering & Scoring
 *   **Data Processing:** **Pandas**
-    *   *Justification:* The library contains ~5,000 songs. Pandas is highly efficient for filtering, sorting, and scoring this volume of data in-memory based on metadata (energy, valence, etc.).
-*   **Data Store:** **Local JSON / CSV**
-    *   *Justification:* As per Spec Section 7 (Component 1), a local file store is sufficient and simplifies architecture without needing a dedicated SQL/NoSQL database.
+    *   *Justification:* High-performance filtering and vector operations for the 5k+ track library. Essential for computing the **Entropy-based Variety Score** (Spec §3.3) and **Gaussian Decay Fit Score** (Spec §3.1) efficiently across thousands of candidates.
+*   **Validation:** **Pydantic**
+    *   *Justification:* Strict schema enforcement for `Track`, `Profile`, and `Playlist` objects (Spec §13). Ensures data integrity before it reaches the LLM or export layer.
+*   **Taxonomy:** **RateYourMusic (RYM)**
+    *   *Justification:* Spec §2 requires deep semantic genre modeling (Primary/Subgenres/Descriptors). This data is ingested into `library.json` offline.
 
 ## 4. User Interface
-*   **Framework:** **Chainlit**
-    *   *Justification:* Specifies a "lightweight web chat" (Section 7, Component 5). Chainlit provides a production-ready chat interface out-of-the-box with built-in support for displaying "Thought/Action" steps, which is crucial for demonstrating the ReAct loop to the academic instructor (Section 4).
+*   **Framework:** **CLI (Standard Library `cmd` or `argparse`)**
+    *   *Justification:* Spec §18 explicit mandates a CLI. This is critical for the **Evaluation Harness**, which acts as a "Simulated User" piping text inputs into the interface programmatically.
+*   **Output Formatting:** **Rich**
+    *   *Justification:* Provides beautiful terminal output (tables, progress bars, colored diffs) to make the text-based interface feel polished and "curated".
 
-## 5. Development Tools
-*   **Environment Management:** `venv` or `poetry`
-*   **Linting/Formatting:** `ruff` (fast Python linter/formatter)
-*   **Version Control:** Git + GitHub
+## 5. Integrations (Offline-First)
+*   **Spotify:** **Spotipy**
+    *   *Justification:* Used **ONLY** for the final export step (Spec §11).
+    *   *Constraint:* No runtime API reliance. URIs are resolved via an offline lookup table during library enrichment.
 
 ## 6. Architecture Map
+
 ```mermaid
 graph TD
-    User[User via Chainlit UI] <--> Agent[LangGraph Agent]
-    Agent --> LLM[LLM (GPT-4/Claude)]
+    User[User / Sim User] <--> CLI[CLI Interface (Rich)]
+    CLI --> Agent[LangGraph ReAct Loop]
+    Agent --> Abstraction[LLM Abstraction Layer]
+    Abstraction --> Models[OpenAI / Anthropic / Local]
+    
     Agent --> Tools[Tool Layer]
-    Tools --> Pandas[Pandas DataFrame]
-    Pandas --> Data[library.json]
-    Tools --> Validator[Scoring Engines]
+    Tools --> Logic[Generator & Scoring]
+    Logic --> Pandas[Pandas DataFrame]
+    Pandas --> Data[(library.json)]
+    
+    Logic --> Validator[Constraint Validator]
+    
+    Agent --> Export[Export Module]
+    Export --> Files[TXT/M3U8]
+    Export --> Spotify[Spotipy API]
 ```
