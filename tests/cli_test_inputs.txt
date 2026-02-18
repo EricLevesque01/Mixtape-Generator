@@ -1,9 +1,11 @@
 start
-Test User
-Pop, Synthpop
+Magdalena Bay
+Studying
+None
+Synthpop
+Bright
 Uniform
-High
-yes
+Low
 yes
 yes
 quit

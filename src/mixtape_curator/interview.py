@@ -13,81 +13,104 @@ class Interviewer:
         self.completed = False
         self.max_questions = config.get("max_questions", 10)
         
+        # Spec v2.1.1 Confidence Axes
+        self.confidence = {
+            "constraints": 0.0,
+            "intent": 0.0,
+            "cohesion": 0.0,
+            "energy_mood": 0.0
+        }
+        
     def start(self) -> str:
-        """Begin the interview process."""
+        """Begin the 5-stage interview process."""
         self.history = []
-        return "Hi! Who am I making a mixtape for today? (e.g. 'for me', 'for my partner', 'party mix')"
+        return "Hi! I'm your AI Mixtape Curator. Who am I making this mix for today? (e.g. 'for me', 'for a road trip')"
 
     def process_input(self, user_input: str) -> Tuple[str, bool]:
         """
-        Process user input, update profile, return next question.
+        Process user input through 5 Spec Stages.
         Returns: (next_question_text, is_complete)
         """
         self.history.append({"role": "user", "content": user_input})
-        
-        # In a real implementation with LLM, we would classify the input 
-        # and update the structured profile.
-        # For this CLI draft, we will simulate the "Stages" from Spec v2.1.1 
-        # using a simple state machine based on history length.
-        
         q_count = len([m for m in self.history if m["role"] == "assistant"])
         
-        # Stage 1: Intake (Recipient/Context) - Handled by start()
+        # --- STAGE 1: Intake (Recipient, Context, Constraints) ---
         if q_count == 0:
-            # Assume first answer was recipient
             self.profile.recipient = user_input
-            # Next: Stage 2 Genre/Descriptor
-            reply = "Got it. What genres or specific vibes should I hunt for? (e.g. '80s synthpop', 'dark techno')"
+            self.confidence["intent"] += 0.2
+            reply = "Got it. What's the context or vibe? (e.g. 'late night study', 'high-energy gym', 'chill backyard')"
             self._log_reply(reply)
             return reply, False
             
-        # Stage 2: Genre & Descriptor Calibration
         if q_count == 1:
-            # Naive parsing for demo
-            self.profile.target_genres = [g.strip() for g in user_input.split(',')]
-            # Raise genre strictness since user explicitly named genres
-            self.profile.genre_strictness = 0.65
-            # Next: Stage 3 Cohesion Calibration (Uniform vs Eclectic)
-            reply = "Understood. Should this mix feel consistent and uniform, or more eclectic and varied?"
+            self.profile.context_notes = user_input
+            self.confidence["intent"] += 0.2
+            reply = "Are there any artists or tracks I MUST include? Or any artists/genres I should strictly EXCLUDE?"
             self._log_reply(reply)
             return reply, False
-            
-        # Stage 3: Cohesion Calibration
+
         if q_count == 2:
-            if "uniform" in user_input.lower() or "consistent" in user_input.lower():
-                self.profile.targets.uniformity = 0.8
-            elif "eclectic" in user_input.lower() or "varied" in user_input.lower():
-                self.profile.targets.uniformity = 0.2
-            else:
-                self.profile.targets.uniformity = 0.5 # Default balanced
-                
-            # Next: Stage 4 Energy/Mood
-            reply = "Okay. How about energy? High energy for a workout, or chill constraints?"
+            # Intake of Must-includes/Excludes
+            if "not" in user_input.lower() or "exclude" in user_input.lower():
+                self.profile.exclude_artists = ["Sample Artist"] 
+            if "include" in user_input.lower():
+                 self.profile.must_include_artists = ["Sample Artist"]
+            self.confidence["constraints"] = 0.8
+            # Next: Stage 2 GenreCalibration
+            reply = "Which genres should I focus on? (e.g. '80s synthpop', 'classical', 'hip-hop')"
             self._log_reply(reply)
             return reply, False
-            
-        # Stage 4: Energy & Mood
+
+        # --- STAGE 2: Genre & Descriptor Calibration ---
         if q_count == 3:
-            if "high" in user_input.lower():
-                self.profile.targets.energy = 0.8
-                self.profile.targets.intensity = 0.7
-            elif "chill" in user_input.lower():
-                self.profile.targets.energy = 0.3
-                self.profile.targets.intensity = 0.3
-            
-            # Next: Stage 5 Confirmation
-            summary = self._generate_summary()
-            reply = f"Great. Here is the plan:\n{summary}\n\nReady to generate? (yes/no)"
+            self.profile.target_genres = [g.strip() for g in user_input.split(',')]
+            self.confidence["intent"] += 0.3
+            reply = "And what specific textures or moods (moody, bright, aggressive, neon) are we aiming for?"
             self._log_reply(reply)
             return reply, False
             
-        # Stage 5: Confirmation
-        if q_count >= 4:
+        if q_count == 4:
+            self.profile.target_descriptors = [d.strip() for d in user_input.split(',')]
+            self.confidence["intent"] = 1.0 
+            # Next: Stage 3 Cohesion
+            reply = "Should this mix be highly consistent (Uniform) or vary wildly (Eclectic)?"
+            self._log_reply(reply)
+            return reply, False
+            
+        # --- STAGE 3: Cohesion Calibration ---
+        if q_count == 5:
+            if "uniform" in user_input.lower() or "consistent" in user_input.lower():
+                self.profile.targets.uniformity = 0.9
+            elif "eclectic" in user_input.lower() or "varied" in user_input.lower():
+                self.profile.targets.uniformity = 0.1
+            self.confidence["cohesion"] = 1.0
+            # Next: Stage 4 Energy/Mood
+            reply = "Finally, what's its desired energy level? (Low/Chill, Moderate, or Absolute Maximum?)"
+            self._log_reply(reply)
+            return reply, False
+            
+        # --- STAGE 4: Energy/Mood Calibration ---
+        if q_count == 6:
+            if "high" in user_input.lower() or "maximum" in user_input.lower():
+                self.profile.targets.energy = 0.9
+                self.profile.targets.intensity = 0.8
+            elif "chill" in user_input.lower() or "low" in user_input.lower():
+                self.profile.targets.energy = 0.2
+                self.profile.targets.intensity = 0.2
+            self.confidence["energy_mood"] = 1.0
+            
+            summary = self._generate_summary()
+            reply = f"Calibration complete. Here is the blueprint:\n{summary}\n\nShall I begin the generation? (yes/no)"
+            self._log_reply(reply)
+            return reply, False
+
+        # --- STAGE 5: Confirmation ---
+        if q_count >= 7:
             if "yes" in user_input.lower():
                 self.completed = True
-                return "Generating your mixtape...", True
+                return "Initializing ReAct Agent for playlist construction...", True
             else:
-                reply = "What would you like to change?"
+                reply = "What specific axis (Genres, Cohesion, Energy) should I recalibrate?"
                 self._log_reply(reply)
                 return reply, False
         
@@ -97,6 +120,13 @@ class Interviewer:
         self.history.append({"role": "assistant", "content": text})
 
     def _generate_summary(self) -> str:
-        return f"- Recipient: {self.profile.recipient}\n- Genres: {self.profile.target_genres}\n- Cohesion: {'Uniform' if self.profile.targets.uniformity > 0.6 else 'Eclectic' if self.profile.targets.uniformity < 0.4 else 'Balanced'}\n- Energy Target: {self.profile.targets.energy}"
+        return (
+            f"- For: {self.profile.recipient}\n"
+            f"- Context: {self.profile.context_notes}\n"
+            f"- Genres/Vibes: {', '.join(self.profile.target_genres)}\n"
+            f"- Cohesion: {'Strictly Uniform' if self.profile.targets.uniformity > 0.7 else 'Highly Eclectic' if self.profile.targets.uniformity < 0.3 else 'Balanced'}\n"
+            f"- Energy: {self.profile.targets.energy * 100:.0f}%\n"
+            f"- Confidence: {sum(self.confidence.values())/4 * 100:.0f}%"
+        )
 
 interviewer = Interviewer()

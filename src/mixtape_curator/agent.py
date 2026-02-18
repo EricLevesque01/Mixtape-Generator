@@ -6,6 +6,7 @@ from .library import library
 from .scoring import scorer
 from .generator import generator
 from .llm.interface import LLMProvider
+from .llm.providers.local import MockLLM
 from .config import config
 
 logger = logging.getLogger("mixtape_curator")
@@ -238,114 +239,4 @@ class ReActAgent:
             results.append(f"{row['id']}: {row['title']} ({row['artist']})")
             
         return "\n".join(results)
-
-# Need a mock LLM for now since providers aren't implemented
-class MockLLM(LLMProvider):
-    def json(self, messages, model, **kwargs):
-        # deterministically fix simple violations for Checkpoint 5
-        prompt = messages[0]["content"]
-        
-        # Parse State from prompt
-        import json
-        state_str = prompt.split("State: ")[1].split("\n")[0]
-        state = json.loads(state_str)
-        violations = state.get("violations", [])
-        artist_map = state.get("artist_map", {})
-        
-        if "Duration" in prompt and "exceeds" in prompt:
-             return {"action": "remove_track", "params": {"track_id": "t0"}, "reasoning": "Removing t0 to fix duration."}
-        
-        # Handle Artist Violations
-        for v in violations:
-            if "Artist" in v and "limit" in v:
-                # v format: Artist {artist} has {count} tracks (limit {limit})
-                # Extract artist name
-                import re
-                match = re.search(r"Artist (.+) has (\d+) tracks", v)
-                if match:
-                    artist = match.group(1)
-                    # Find a track to remove
-                    tracks = artist_map.get(artist, [])
-                    if len(tracks) > 2: # Keep 2, remove rest.
-                        # Remove ALL excess tracks at once to save iterations
-                        to_remove = tracks[2:] 
-                        return {
-                            "action": "remove_track", 
-                            "params": {"track_ids": list(to_remove)},  # Ensure list type
-                            "reasoning": f"Removing {len(to_remove)} excess tracks from {artist}."
-                        }
-
-        # Handle Short Playlist (Simulate user interaction flow)
-        track_count = state.get("track_count", 0)
-        
-        # History check to sequence the mock conversation
-        # The prompt contains "History: [...]". We need to see what's in there.
-        try:
-            # Split by "History: " and take the part before "Available Tools:"
-            history_part = prompt.split("History: ")[1].split("Available Tools:")[0]
-        except IndexError:
-            history_part = ""
-            
-        if track_count < 10 and not violations:
-             # If we haven't asked user yet
-             if "consult_user" not in history_part:
-                 return {
-                     "action": "consult_user", 
-                     "params": {"question": f"Playlist has only {track_count} tracks. Search for related genres?"}, 
-                     "reasoning": "Playlist too short after constraints."
-                 }
-             elif "search_library" not in history_part:
-                 # Assume user said yes (in our head), so search
-                 return {
-                     "action": "search_library",
-                     "params": {"query": "Pop", "limit": 10}, 
-                     "reasoning": "User approved search. Looking for Pop."
-                 }
-             elif "add_track" not in history_part:
-                 # Extract real IDs from Search Results in history
-                 import re
-                 # Find the last occurrence of Search Results
-                 # History chunk: "... Search Results: id1: Title... id2: Title..."
-                 # We simply look for strings matching the ID format from library search output
-                 # Output format: "{id}: {title} ({artist})"
-                 
-                 valid_ids = []
-                 if "Search Results:" in history_part:
-                     last_search = history_part.rsplit("Search Results:", 1)[1]
-                     # Extract IDs (look for string before the first colon of a line/segment)
-                     # Regex: (whitespace or start)(identifier): (anything)
-                     # IDs can be UUIDs or simple strings.
-                     # Let's try to match the pattern from _tool_search_library
-                     matches = re.findall(r"(?<=[\n\s'\"\\])([a-zA-Z0-9\-_]+): ", last_search)
-                     # Filter out common reserved words just in case
-                     matches = [m for m in matches if m not in ["Iter", "Thought", "Action", "Search", "User", "Violations", "State"]]
-                     valid_ids = matches
-
-                 reasoning = "Adding tracks found in search."
-                 
-                 # Fallback: if parsing failed, grab from library directly (Mock cheating to ensure valid IDs)
-                 if not valid_ids:
-                     from .library import library
-                     if not library.df.empty:
-                         # Try to find Pop tracks to match our fake query
-                         mask = library.df['rym_data_primary_genres'].apply(lambda x: any('Pop' in g for g in x))
-                         pop_tracks = library.df[mask]
-                         if pop_tracks.empty:
-                             pop_tracks = library.df
-                         
-                         valid_ids = pop_tracks.head(5)['id'].tolist()
-                         reasoning = "Adding tracks from library (fallback)."
-                 
-                 # Ensure we have a list
-                 to_add = valid_ids[:5] if valid_ids else []
-                 
-                 return {
-                     "action": "add_track",
-                     "params": {"track_ids": to_add},
-                     "reasoning": reasoning
-                 }
-        
-        return {"action": "finalize", "params": {}, "reasoning": "Looks good."}
-
-        return {"action": "finalize", "params": {}, "reasoning": "Looks good."}
 
