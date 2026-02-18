@@ -1,0 +1,4 @@
+{"id": "case_01", "description": "80s Pop Workout", "recipient": "Gym Buddy", "genres": ["Pop", "New Wave"], "targets": {"energy": 0.8, "valence": 0.7, "uniformity": 0.7}}
+{"id": "case_02", "description": "Chill Sunday", "recipient": "Partner", "genres": ["Ambient", "Jazz"], "targets": {"energy": 0.2, "valence": 0.4, "uniformity": 0.3}}
+{"id": "case_03", "description": "Party Mix", "recipient": "Party Crowd", "genres": ["Dance-Pop", "House"], "targets": {"energy": 0.9, "valence": 0.9, "uniformity": 0.5}}
+{"id": "case_04", "description": "Study Focus", "recipient": "Self", "genres": ["Classical", "Lofi"], "targets": {"energy": 0.3, "valence": 0.5, "intensity": 0.2, "uniformity": 0.8}}
