@@ -167,43 +167,71 @@ class Library:
 
     def _row_to_track(self, row: pd.Series) -> Track:
         """Helper to convert DF row to Pydantic model."""
-        # reconstruct rym_data
+        import math
+        
+        def _sf(val, default=0.0):
+            """Safe float: coerce NaN/None to default."""
+            if val is None:
+                return default
+            try:
+                f = float(val)
+                return default if math.isnan(f) else f
+            except (ValueError, TypeError):
+                return default
+        
+        def _si(val, default=None):
+            """Safe int: coerce NaN/None to default."""
+            if val is None:
+                return default
+            try:
+                f = float(val)
+                return default if math.isnan(f) else int(f)
+            except (ValueError, TypeError):
+                return default
+        
+        # Reconstruct rym_data, ensuring lists not NaN
+        def _sl(val):
+            """Safe list: ensure we get a list, not NaN."""
+            if isinstance(val, list):
+                return val
+            return []
+        
         rym = RYMData(
-            primary_genres=row.get('rym_data_primary_genres', []),
-            subgenres=row.get('rym_data_subgenres', []),
-            descriptors=row.get('rym_data_descriptors', [])
+            primary_genres=_sl(row.get('rym_data_primary_genres', [])),
+            subgenres=_sl(row.get('rym_data_subgenres', [])),
+            descriptors=_sl(row.get('rym_data_descriptors', []))
         )
         
         return Track(
             id=row['id'],
-            title=row['title'],
-            artist=row['artist'],
-            duration_s=row['duration_s'],
-            energy=row.get('energy', 0.0),
-            valence=row.get('valence', 0.0),
-            intensity=row.get('intensity', 0.0),
-            tempo=row.get('tempo', 120.0),
-            danceability=row.get('danceability', 0.5),
-            key=row.get('key', 0),
-            mode=row.get('mode', 1),
-            key_full=row.get('key_full', "Unknown"),
-            acousticness=row.get('acousticness', 0.0),
-            instrumentalness=row.get('instrumentalness', 0.0),
-            speechiness=row.get('speechiness', 0.0),
-            liveness=row.get('liveness', 0.0),
-            brightness=row.get('brightness', 0.0),
-            flatness=row.get('flatness', 0.0),
-            entropy=row.get('entropy', 0.0),
-            dynamic_range=row.get('dynamic_range', 0.0),
-            accessibility=row.get('accessibility', 0.6),
-            familiarity=row.get('familiarity', 0.5),
-            rating=row.get('rating', 0.0),
-            recommendability=row.get('recommendability', 0.5),
+            title=row.get('title', 'Unknown Title') or 'Unknown Title',
+            artist=row.get('artist', 'Unknown Artist') or 'Unknown Artist',
+            duration_s=_si(row.get('duration_s', 0), 0),
+            energy=_sf(row.get('energy'), 0.5),
+            valence=_sf(row.get('valence'), 0.5),
+            intensity=_sf(row.get('intensity'), 0.5),
+            tempo=_sf(row.get('tempo'), 120.0),
+            danceability=_sf(row.get('danceability'), 0.5),
+            key=_si(row.get('key'), 0),
+            mode=_si(row.get('mode'), 1),
+            key_full=row.get('key_full', "Unknown") or "Unknown",
+            acousticness=_sf(row.get('acousticness'), 0.0),
+            instrumentalness=_sf(row.get('instrumentalness'), 0.0),
+            speechiness=_sf(row.get('speechiness'), 0.0),
+            liveness=_sf(row.get('liveness'), 0.0),
+            brightness=_sf(row.get('brightness'), 0.0),
+            flatness=_sf(row.get('flatness'), 0.0),
+            entropy=_sf(row.get('entropy'), 0.0),
+            dynamic_range=_sf(row.get('dynamic_range'), 0.0),
+            accessibility=_sf(row.get('accessibility'), 0.6),
+            familiarity=_sf(row.get('familiarity'), 0.5),
+            rating=_sf(row.get('rating'), 0.0),
+            recommendability=_sf(row.get('recommendability'), 0.5),
             rym_data=rym,
             file_path=row.get('file_path'),
             spotify_uri=row.get('spotify_uri'),
             enrichment_source=row.get('enrichment_source'),
-            release_year=row.get('release_year')
+            release_year=_si(row.get('release_year'))
         )
 
     def filter_candidates(self, profile: UserProfile) -> List[Track]:
