@@ -1,6 +1,8 @@
 # duration behavior
 duration_target_s: 4620       # Target ≈ 77 minutes (CD-length mixtape)
 duration_cap_s: 7200          # Absolute max ≈ 120 minutes
+track_min_duration_s: 60      # Skip tracks shorter than 1 minute
+track_max_duration_s: 600     # Skip tracks longer than 10 minutes
 
 
 music_library_path: "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music"

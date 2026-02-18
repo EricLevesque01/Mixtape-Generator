@@ -20,12 +20,18 @@ class Generator:
         # 1. candidate selection
         candidates = library.filter_candidates(profile)
         
+        # 1b. Per-track duration filter — skip intros/skits and epic-length tracks
+        min_dur = config.get("track_min_duration_s", 60)
+        max_dur = config.get("track_max_duration_s", 600)
+        candidates = [t for t in candidates if min_dur <= t.duration_s <= max_dur]
+        
         # 2. must-include handling
         draft_tracks: List[Track] = []
         must_have_ids = set(profile.must_include_track_ids)
         
-        # Add specific track IDs first
-        for t in candidates:
+        # Add specific track IDs first (must-includes bypass duration filter)
+        all_candidates_unfiltered = library.filter_candidates(profile)
+        for t in all_candidates_unfiltered:
             if t.id in must_have_ids:
                 draft_tracks.append(t)
                 
