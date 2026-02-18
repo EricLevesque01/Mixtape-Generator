@@ -7450,7 +7450,7 @@
   {
     "id": "t197",
     "title": "Human Behaviour",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 248,
     "rym_data": {
       "primary_genres": [
@@ -7466,7 +7466,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\01 Human Behaviour.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\01 Human Behaviour.m4a",
     "spotify_uri": null,
     "tempo": 57.4,
     "enrichment_source": "librosa",
@@ -7488,7 +7488,7 @@
   {
     "id": "t198",
     "title": "One Day",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 369,
     "rym_data": {
       "primary_genres": [
@@ -7504,7 +7504,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\02 One Day.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\02 One Day.m4a",
     "spotify_uri": null,
     "tempo": 107.7,
     "enrichment_source": "librosa",
@@ -7526,7 +7526,7 @@
   {
     "id": "t199",
     "title": "Venus As A Boy",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 152,
     "rym_data": {
       "primary_genres": [
@@ -7542,7 +7542,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\03 Venus As A Boy.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\03 Venus As A Boy.m4a",
     "spotify_uri": null,
     "tempo": 123.0,
     "enrichment_source": "librosa",
@@ -7564,7 +7564,7 @@
   {
     "id": "t200",
     "title": "Come To Me",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 224,
     "rym_data": {
       "primary_genres": [
@@ -7580,7 +7580,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\04 Come To Me.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\04 Come To Me.m4a",
     "spotify_uri": null,
     "tempo": 63.0,
     "enrichment_source": "librosa",
@@ -7602,7 +7602,7 @@
   {
     "id": "t201",
     "title": "Big Time Sensuality",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 307,
     "rym_data": {
       "primary_genres": [
@@ -7618,7 +7618,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\05 Big Time Sensuality.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\05 Big Time Sensuality.m4a",
     "spotify_uri": null,
     "tempo": 73.8,
     "enrichment_source": "librosa",
@@ -7640,7 +7640,7 @@
   {
     "id": "t202",
     "title": "Aeroplane",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 243,
     "rym_data": {
       "primary_genres": [
@@ -7656,7 +7656,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\06 Aeroplane.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\06 Aeroplane.m4a",
     "spotify_uri": null,
     "tempo": 103.4,
     "enrichment_source": "librosa",
@@ -7678,7 +7678,7 @@
   {
     "id": "t203",
     "title": "Like Someone In Love",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 241,
     "rym_data": {
       "primary_genres": [
@@ -7694,7 +7694,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\07 Like Someone In Love.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\07 Like Someone In Love.m4a",
     "spotify_uri": null,
     "tempo": 41.0,
     "enrichment_source": "librosa",
@@ -7716,7 +7716,7 @@
   {
     "id": "t204",
     "title": "Crying",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 250,
     "rym_data": {
       "primary_genres": [
@@ -7732,7 +7732,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\08 Crying.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\08 Crying.m4a",
     "spotify_uri": null,
     "tempo": 66.3,
     "enrichment_source": "librosa",
@@ -7754,7 +7754,7 @@
   {
     "id": "t205",
     "title": "The Anchor Song",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 205,
     "rym_data": {
       "primary_genres": [
@@ -7770,7 +7770,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\09 The Anchor Song.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\09 The Anchor Song.m4a",
     "spotify_uri": null,
     "tempo": 117.5,
     "enrichment_source": "librosa",
@@ -7792,7 +7792,7 @@
   {
     "id": "t206",
     "title": "Violently Happy",
-    "artist": "Björk",
+    "artist": "Bj\u00f6rk",
     "duration_s": 344,
     "rym_data": {
       "primary_genres": [
@@ -7808,7 +7808,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Björk\\Debut Live\\10 Violently Happy.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Bj\u00f6rk\\Debut Live\\10 Violently Happy.m4a",
     "spotify_uri": null,
     "tempo": 136.0,
     "enrichment_source": "librosa",
@@ -17214,7 +17214,7 @@
   {
     "id": "t455",
     "title": "Don't Hurt Yourself",
-    "artist": "Beyoncé Feat. Jack White",
+    "artist": "Beyonc\u00e9 Feat. Jack White",
     "duration_s": 234,
     "rym_data": {
       "primary_genres": [],
@@ -20136,7 +20136,7 @@
   {
     "id": "t533",
     "title": "It's Beginning To Look A Lot Like Christmas",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 207,
     "rym_data": {
       "primary_genres": [
@@ -20174,7 +20174,7 @@
   {
     "id": "t534",
     "title": "Santa Claus Is Coming To Town",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 171,
     "rym_data": {
       "primary_genres": [
@@ -20212,7 +20212,7 @@
   {
     "id": "t535",
     "title": "Jingle Bells",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 160,
     "rym_data": {
       "primary_genres": [
@@ -20250,7 +20250,7 @@
   {
     "id": "t536",
     "title": "White Christmas",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 217,
     "rym_data": {
       "primary_genres": [
@@ -20288,7 +20288,7 @@
   {
     "id": "t537",
     "title": "All I Want For Christmas Is You",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 172,
     "rym_data": {
       "primary_genres": [
@@ -20326,7 +20326,7 @@
   {
     "id": "t538",
     "title": "Holly Jolly Christmas",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 120,
     "rym_data": {
       "primary_genres": [
@@ -20364,7 +20364,7 @@
   {
     "id": "t539",
     "title": "Santa Baby",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 232,
     "rym_data": {
       "primary_genres": [
@@ -20402,7 +20402,7 @@
   {
     "id": "t540",
     "title": "Have Yourself A Merry Little Christmas",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 231,
     "rym_data": {
       "primary_genres": [
@@ -20440,7 +20440,7 @@
   {
     "id": "t541",
     "title": "Christmas (Baby Please Come Home)",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 188,
     "rym_data": {
       "primary_genres": [
@@ -20478,7 +20478,7 @@
   {
     "id": "t542",
     "title": "Silent Night",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 228,
     "rym_data": {
       "primary_genres": [
@@ -20516,7 +20516,7 @@
   {
     "id": "t543",
     "title": "Blue Christmas",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 223,
     "rym_data": {
       "primary_genres": [
@@ -20554,7 +20554,7 @@
   {
     "id": "t544",
     "title": "Cold December Night",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 199,
     "rym_data": {
       "primary_genres": [
@@ -20592,7 +20592,7 @@
   {
     "id": "t545",
     "title": "I'll Be Home For Christmas",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 266,
     "rym_data": {
       "primary_genres": [
@@ -20630,7 +20630,7 @@
   {
     "id": "t546",
     "title": "Ave Maria",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 241,
     "rym_data": {
       "primary_genres": [
@@ -20668,7 +20668,7 @@
   {
     "id": "t547",
     "title": "Mis Deseos / Feliz Navidad",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 264,
     "rym_data": {
       "primary_genres": [
@@ -20706,7 +20706,7 @@
   {
     "id": "t548",
     "title": "Michael's Christmas Greeting",
-    "artist": "Michael Bublé",
+    "artist": "Michael Bubl\u00e9",
     "duration_s": 4,
     "rym_data": {
       "primary_genres": [
@@ -22188,7 +22188,7 @@
   {
     "id": "t587",
     "title": "Because You Loved Me",
-    "artist": "Céline Dion",
+    "artist": "C\u00e9line Dion",
     "duration_s": 272,
     "rym_data": {
       "primary_genres": [
@@ -22720,7 +22720,7 @@
   {
     "id": "t601",
     "title": "Ave Maria",
-    "artist": "Michael Bolton/Plácido Domingo",
+    "artist": "Michael Bolton/Pl\u00e1cido Domingo",
     "duration_s": 281,
     "rym_data": {
       "primary_genres": [
@@ -22948,7 +22948,7 @@
   {
     "id": "t607",
     "title": "Make Me A Channel Of Your Peace",
-    "artist": "Sinéad O'Connor",
+    "artist": "Sin\u00e9ad O'Connor",
     "duration_s": 156,
     "rym_data": {
       "primary_genres": [
@@ -28324,7 +28324,7 @@
   {
     "id": "t749",
     "title": "Ode To Billy Joe",
-    "artist": "Sinéad O'Connor",
+    "artist": "Sin\u00e9ad O'Connor",
     "duration_s": 299,
     "rym_data": {
       "primary_genres": [],
@@ -29861,7 +29861,7 @@
   },
   {
     "id": "t790",
-    "title": "Señorita",
+    "title": "Se\u00f1orita",
     "artist": "Justin Timberlake",
     "duration_s": 294,
     "rym_data": {
@@ -29878,7 +29878,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Justified\\01 Señorita.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Justified\\01 Se\u00f1orita.m4a",
     "spotify_uri": null,
     "tempo": 64.6,
     "enrichment_source": "librosa",
@@ -31040,7 +31040,7 @@
   {
     "id": "t821",
     "title": "Voulez-Vous",
-    "artist": "Cast of Mamma Mia! the Movie, Philip Michael, Christine Baranski, Julie Walters & Stellan Skarsgård",
+    "artist": "Cast of Mamma Mia! the Movie, Philip Michael, Christine Baranski, Julie Walters & Stellan Skarsg\u00e5rd",
     "duration_s": 275,
     "rym_data": {
       "primary_genres": [
@@ -31724,7 +31724,7 @@
   {
     "id": "t839",
     "title": "Back To Black",
-    "artist": "Beyoncé & André 3000",
+    "artist": "Beyonc\u00e9 & Andr\u00e9 3000",
     "duration_s": 201,
     "rym_data": {
       "primary_genres": [
@@ -31990,7 +31990,7 @@
   {
     "id": "t846",
     "title": "Crazy In Love",
-    "artist": "Emeli Sandé & The Bryan Ferry Orchestra",
+    "artist": "Emeli Sand\u00e9 & The Bryan Ferry Orchestra",
     "duration_s": 174,
     "rym_data": {
       "primary_genres": [
@@ -35447,7 +35447,7 @@
   },
   {
     "id": "t937",
-    "title": "Tchaikovsky: Souvenir D'Un Lieu Cher, Op. 42 - Mélodie",
+    "title": "Tchaikovsky: Souvenir D'Un Lieu Cher, Op. 42 - M\u00e9lodie",
     "artist": "Yu-Chien Tseng",
     "duration_s": 222,
     "rym_data": {
@@ -39210,7 +39210,7 @@
   {
     "id": "t1036",
     "title": "Improvisation On Dona Nobis Pacem (Give Us Peace)",
-    "artist": "Yo-Yo Ma, Sérgio Assad, Odair Assad",
+    "artist": "Yo-Yo Ma, S\u00e9rgio Assad, Odair Assad",
     "duration_s": 58,
     "rym_data": {
       "primary_genres": [
@@ -39323,7 +39323,7 @@
   },
   {
     "id": "t1039",
-    "title": "Invitación Al Danzón",
+    "title": "Invitaci\u00f3n Al Danz\u00f3n",
     "artist": "Yo-Yo Ma, Paquito D'Rivera, Alon Yaunai",
     "duration_s": 293,
     "rym_data": {
@@ -39340,7 +39340,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Songs Of Joy & Peace\\13 Invitación Al Danzón.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Songs Of Joy & Peace\\13 Invitaci\u00f3n Al Danz\u00f3n.m4a",
     "spotify_uri": null,
     "tempo": 43.1,
     "danceability": 0.235,
@@ -39514,7 +39514,7 @@
   {
     "id": "t1044",
     "title": "Touch The Hand Of Love",
-    "artist": "Yo-Yo Ma, Renée Fleming, Edgar Meyer, Etc.",
+    "artist": "Yo-Yo Ma, Ren\u00e9e Fleming, Edgar Meyer, Etc.",
     "duration_s": 275,
     "rym_data": {
       "primary_genres": [
@@ -39704,7 +39704,7 @@
   {
     "id": "t1049",
     "title": "Piazzolla: Libertango Tango Suite",
-    "artist": "Yo-Yo Ma, Hector Console, Leonardo Marconi, Néstor Marconi",
+    "artist": "Yo-Yo Ma, Hector Console, Leonardo Marconi, N\u00e9stor Marconi",
     "duration_s": 190,
     "rym_data": {
       "primary_genres": [
@@ -39742,7 +39742,7 @@
   {
     "id": "t1050",
     "title": "Piazzolla: Tango Suite - Andante",
-    "artist": "Yo-Yo Ma, Sérgio Assad, Odair Assad",
+    "artist": "Yo-Yo Ma, S\u00e9rgio Assad, Odair Assad",
     "duration_s": 225,
     "rym_data": {
       "primary_genres": [
@@ -39780,7 +39780,7 @@
   {
     "id": "t1051",
     "title": "Piazzolla: Tango Suite - Allegro",
-    "artist": "Yo-Yo Ma, Sérgio Assad, Odair Assad",
+    "artist": "Yo-Yo Ma, S\u00e9rgio Assad, Odair Assad",
     "duration_s": 367,
     "rym_data": {
       "primary_genres": [
@@ -39818,7 +39818,7 @@
   {
     "id": "t1052",
     "title": "Piazzolla: Sur, Regreso Al Amor",
-    "artist": "Yo-Yo Ma, Hector Console, Leonardo Marconi, Néstor Marconi",
+    "artist": "Yo-Yo Ma, Hector Console, Leonardo Marconi, N\u00e9stor Marconi",
     "duration_s": 363,
     "rym_data": {
       "primary_genres": [
@@ -39932,7 +39932,7 @@
   {
     "id": "t1055",
     "title": "Piazzolla: Tango Remembrances",
-    "artist": "Yo-Yo Ma, Hector Console, Leonardo Marconi, Néstor Marconi",
+    "artist": "Yo-Yo Ma, Hector Console, Leonardo Marconi, N\u00e9stor Marconi",
     "duration_s": 381,
     "rym_data": {
       "primary_genres": [
@@ -40045,8 +40045,8 @@
   },
   {
     "id": "t1058",
-    "title": "Piazzolla: Milonga Del Ángel",
-    "artist": "Yo-Yo Ma, Hector Console, Leonardo Marconi, Néstor Marconi",
+    "title": "Piazzolla: Milonga Del \u00c1ngel",
+    "artist": "Yo-Yo Ma, Hector Console, Leonardo Marconi, N\u00e9stor Marconi",
     "duration_s": 400,
     "rym_data": {
       "primary_genres": [
@@ -40062,7 +40062,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Soul Of The Tango - The Music Of Astor P\\10 Piazzolla_ Milonga Del Ángel.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Soul Of The Tango - The Music Of Astor P\\10 Piazzolla_ Milonga Del \u00c1ngel.m4a",
     "spotify_uri": null,
     "tempo": 48.8,
     "danceability": 0.33,
@@ -40083,8 +40083,8 @@
   },
   {
     "id": "t1059",
-    "title": "Piazzolla: Café 1930",
-    "artist": "Yo-Yo Ma, Néstor Marconi",
+    "title": "Piazzolla: Caf\u00e9 1930",
+    "artist": "Yo-Yo Ma, N\u00e9stor Marconi",
     "duration_s": 467,
     "rym_data": {
       "primary_genres": [
@@ -40100,7 +40100,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Soul Of The Tango - The Music Of Astor P\\11 Piazzolla_ Café 1930.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Soul Of The Tango - The Music Of Astor P\\11 Piazzolla_ Caf\u00e9 1930.m4a",
     "spotify_uri": null,
     "tempo": 73.8,
     "danceability": 0.208,
@@ -41109,7 +41109,7 @@
   },
   {
     "id": "t1086",
-    "title": "Corazón Espinado",
+    "title": "Coraz\u00f3n Espinado",
     "artist": "Santana",
     "duration_s": 276,
     "rym_data": {
@@ -41126,7 +41126,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Supernatural\\09 Corazón Espinado.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Compilations\\Supernatural\\09 Coraz\u00f3n Espinado.m4a",
     "spotify_uri": null,
     "tempo": 60.1,
     "danceability": 0.505,
@@ -42363,7 +42363,7 @@
   },
   {
     "id": "t1119",
-    "title": "They Can’t Take That From Me",
+    "title": "They Can\u2019t Take That From Me",
     "artist": "Various Artists",
     "duration_s": 123,
     "rym_data": {
@@ -65885,7 +65885,7 @@
   },
   {
     "id": "t1738",
-    "title": "We Are Young (feat. Janelle Monáe)",
+    "title": "We Are Young (feat. Janelle Mon\u00e1e)",
     "artist": "Fun.",
     "duration_s": 250,
     "rym_data": {
@@ -65902,7 +65902,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Fun_\\We Are Young (feat. Janelle Monáe) - Sin\\01 We Are Young (feat. Janelle Monáe 1.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Fun_\\We Are Young (feat. Janelle Mon\u00e1e) - Sin\\01 We Are Young (feat. Janelle Mon\u00e1e 1.m4a",
     "spotify_uri": null,
     "tempo": 46.1,
     "danceability": 0.0,
@@ -65923,7 +65923,7 @@
   },
   {
     "id": "t1739",
-    "title": "We Are Young (feat. Janelle Monáe)",
+    "title": "We Are Young (feat. Janelle Mon\u00e1e)",
     "artist": "Fun.",
     "duration_s": 250,
     "rym_data": {
@@ -65940,7 +65940,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Fun_\\We Are Young (feat. Janelle Monáe) - Sin\\01 We Are Young (feat. Janelle Monáe.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Fun_\\We Are Young (feat. Janelle Mon\u00e1e) - Sin\\01 We Are Young (feat. Janelle Mon\u00e1e.m4a",
     "spotify_uri": null,
     "tempo": 46.1,
     "danceability": 0.0,
@@ -99134,28 +99134,6 @@
     "enrichment_source": "librosa"
   },
   {
-    "id": "t2613",
-    "title": "Union Federal",
-    "artist": "Phish",
-    "duration_s": 1,
-    "rym_data": {
-      "primary_genres": [
-        "Progressive Rock"
-      ],
-      "subgenres": [],
-      "descriptors": []
-    },
-    "energy": 0.65,
-    "valence": 0.5,
-    "intensity": 0.6,
-    "accessibility": 0.6,
-    "familiarity": 0.5,
-    "rating": 0.0,
-    "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Phish\\Junta [Disc 2]\\2-04 Union Federal 1.m4a",
-    "spotify_uri": null
-  },
-  {
     "id": "t2614",
     "title": "Sanity",
     "artist": "Phish",
@@ -121577,7 +121555,7 @@
   },
   {
     "id": "t3204",
-    "title": "Pompeii Am Götterdämmerung",
+    "title": "Pompeii Am G\u00f6tterd\u00e4mmerung",
     "artist": "The Flaming Lips",
     "duration_s": 261,
     "rym_data": {
@@ -121594,7 +121572,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\The Flaming Lips\\At War With The Mystics\\11 Pompeii Am Götterdämmerung.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\The Flaming Lips\\At War With The Mystics\\11 Pompeii Am G\u00f6tterd\u00e4mmerung.m4a",
     "spotify_uri": null,
     "tempo": 143.6,
     "danceability": 0.347,
@@ -127256,7 +127234,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\The Wanted\\iTunes Festival_ London 2011 – EP\\05 Lose My Mind (Live).m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\The Wanted\\iTunes Festival_ London 2011 \u2013 EP\\05 Lose My Mind (Live).m4a",
     "spotify_uri": null,
     "tempo": 64.6,
     "danceability": 0.305,
@@ -128265,7 +128243,7 @@
   },
   {
     "id": "t3380",
-    "title": "Jalapeño (Lady Gaga \"Alejandro” Parody)",
+    "title": "Jalape\u00f1o (Lady Gaga \"Alejandro\u201d Parody)",
     "artist": "Thecomputernerd01",
     "duration_s": 245,
     "rym_data": {
@@ -128282,7 +128260,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Thecomputernerd01\\Whoa! They're Purple\\12 Jalapeño (Lady Gaga _Alejandro_ P.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Thecomputernerd01\\Whoa! They're Purple\\12 Jalape\u00f1o (Lady Gaga _Alejandro_ P.m4a",
     "spotify_uri": null,
     "tempo": 49.7,
     "danceability": 0.243,
@@ -134497,7 +134475,7 @@
   },
   {
     "id": "t3544",
-    "title": "Bach: Cello Suite #3 In C, BWV 1009 - Bourrées 1 & 2",
+    "title": "Bach: Cello Suite #3 In C, BWV 1009 - Bourr\u00e9es 1 & 2",
     "artist": "Yo-Yo Ma",
     "duration_s": 199,
     "rym_data": {
@@ -134725,7 +134703,7 @@
   },
   {
     "id": "t3550",
-    "title": "Bach: Cello Suite #4 In E Flat, BWV 1010 - 2. Bourrée 1& 2",
+    "title": "Bach: Cello Suite #4 In E Flat, BWV 1010 - 2. Bourr\u00e9e 1& 2",
     "artist": "Yo-Yo Ma",
     "duration_s": 313,
     "rym_data": {
@@ -134801,7 +134779,7 @@
   },
   {
     "id": "t3552",
-    "title": "Bach: Cello Suite #5 In C Minor, BWV 1011 - 1. Prélude",
+    "title": "Bach: Cello Suite #5 In C Minor, BWV 1011 - 1. Pr\u00e9lude",
     "artist": "Yo-Yo Ma",
     "duration_s": 396,
     "rym_data": {
@@ -135029,7 +135007,7 @@
   },
   {
     "id": "t3558",
-    "title": "Bach: Cello Suite #6 In D, BWV 1012 - 1. Prélude",
+    "title": "Bach: Cello Suite #6 In D, BWV 1012 - 1. Pr\u00e9lude",
     "artist": "Yo-Yo Ma",
     "duration_s": 278,
     "rym_data": {
@@ -135980,7 +135958,7 @@
   {
     "id": "t3583",
     "title": "No One Noticed",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 237,
     "rym_data": {
       "primary_genres": [],
@@ -135994,7 +135972,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Chan's lib\\iTunes Media\\Music\\The Marías\\If Only + No One Noticed\\02 No One Noticed.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\Chan's lib\\iTunes Media\\Music\\The Mar\u00edas\\If Only + No One Noticed\\02 No One Noticed.mp3",
     "spotify_uri": null,
     "tempo": 48.8,
     "danceability": 0.782,
@@ -136091,7 +136069,7 @@
   },
   {
     "id": "t3586",
-    "title": "“When I found out you were black…” Isaiah Hartenstein SHOCKS Jalen & Josh, Reveals Funny NBA Stories",
+    "title": "\u201cWhen I found out you were black\u2026\u201d Isaiah Hartenstein SHOCKS Jalen & Josh, Reveals Funny NBA Stories",
     "artist": "Playmaker HQ, Jalen Brunson, Josh Hart, Matt Hillman",
     "duration_s": 4309,
     "rym_data": {
@@ -136108,7 +136086,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Chan's lib\\iTunes Media\\Podcasts\\Roommates Show with Jalen Brunson & Josh\\_When I found out you were black…_ I.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\Chan's lib\\iTunes Media\\Podcasts\\Roommates Show with Jalen Brunson & Josh\\_When I found out you were black\u2026_ I.mp3",
     "spotify_uri": null,
     "tempo": 136.0,
     "danceability": 0.165,
@@ -136400,7 +136378,7 @@
     "duration_s": 260,
     "rym_data": {
       "primary_genres": [
-        "Alternatif et Indé"
+        "Alternatif et Ind\u00e9"
       ],
       "subgenres": [],
       "descriptors": []
@@ -141108,7 +141086,7 @@
   {
     "id": "t3718",
     "title": "Voulez-Vous",
-    "artist": "Cast of Mamma Mia! the Movie, Philip Michael, Christine Baranski, Julie Walters & Stellan Skarsgård",
+    "artist": "Cast of Mamma Mia! the Movie, Philip Michael, Christine Baranski, Julie Walters & Stellan Skarsg\u00e5rd",
     "duration_s": 275,
     "rym_data": {
       "primary_genres": [
@@ -143311,7 +143289,7 @@
   },
   {
     "id": "t3776",
-    "title": "We Are Young (feat. Janelle Monáe)",
+    "title": "We Are Young (feat. Janelle Mon\u00e1e)",
     "artist": "Fun.",
     "duration_s": 250,
     "rym_data": {
@@ -143328,7 +143306,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Final Boss\\iTunes Media\\Music\\Fun_\\We Are Young (feat. Janelle Monáe) - Sin\\01 We Are Young (feat. Janelle Monáe.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\Final Boss\\iTunes Media\\Music\\Fun_\\We Are Young (feat. Janelle Mon\u00e1e) - Sin\\01 We Are Young (feat. Janelle Mon\u00e1e.m4a",
     "spotify_uri": null,
     "tempo": 46.1,
     "danceability": 0.0,
@@ -148403,7 +148381,7 @@
   },
   {
     "id": "t3910",
-    "title": "Telephone (feat. Beyoncé)",
+    "title": "Telephone (feat. Beyonc\u00e9)",
     "artist": "Lady Gaga",
     "duration_s": 220,
     "rym_data": {
@@ -148420,7 +148398,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Final Boss\\iTunes Media\\Music\\Lady Gaga\\The Fame Monster\\06 Telephone (feat. Beyoncé).m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\Final Boss\\iTunes Media\\Music\\Lady Gaga\\The Fame Monster\\06 Telephone (feat. Beyonc\u00e9).m4a",
     "spotify_uri": null,
     "tempo": 123.0,
     "danceability": 0.859,
@@ -150852,7 +150830,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Final Boss\\iTunes Media\\Music\\The Wanted\\iTunes Festival_ London 2011 – EP\\05 Lose My Mind (Live).m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\Final Boss\\iTunes Media\\Music\\The Wanted\\iTunes Festival_ London 2011 \u2013 EP\\05 Lose My Mind (Live).m4a",
     "spotify_uri": null,
     "tempo": 64.6,
     "danceability": 0.305,
@@ -151139,7 +151117,7 @@
   },
   {
     "id": "t3982",
-    "title": "Jalapeño (Lady Gaga \"Alejandro” Parody)",
+    "title": "Jalape\u00f1o (Lady Gaga \"Alejandro\u201d Parody)",
     "artist": "Thecomputernerd01",
     "duration_s": 245,
     "rym_data": {
@@ -151156,7 +151134,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Final Boss\\iTunes Media\\Music\\Thecomputernerd01\\Whoa! They're Purple\\12 Jalapeño (Lady Gaga _Alejandro_ P.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\Final Boss\\iTunes Media\\Music\\Thecomputernerd01\\Whoa! They're Purple\\12 Jalape\u00f1o (Lady Gaga _Alejandro_ P.m4a",
     "spotify_uri": null,
     "tempo": 49.7,
     "danceability": 0.243,
@@ -157106,7 +157084,7 @@
   {
     "id": "t4139",
     "title": "Voulez-Vous",
-    "artist": "Cast of Mamma Mia! the Movie, Philip Michael, Christine Baranski, Julie Walters & Stellan Skarsgård",
+    "artist": "Cast of Mamma Mia! the Movie, Philip Michael, Christine Baranski, Julie Walters & Stellan Skarsg\u00e5rd",
     "duration_s": 275,
     "rym_data": {
       "primary_genres": [
@@ -159955,7 +159933,7 @@
   },
   {
     "id": "t4214",
-    "title": "We Are Young (feat. Janelle Monáe)",
+    "title": "We Are Young (feat. Janelle Mon\u00e1e)",
     "artist": "Fun.",
     "duration_s": 250,
     "rym_data": {
@@ -159972,7 +159950,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Master iTunes Lib\\iTunes Media\\Music\\Fun_\\We Are Young (feat. Janelle Monáe) - Sin\\01 We Are Young (feat. Janelle Monáe.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\Master iTunes Lib\\iTunes Media\\Music\\Fun_\\We Are Young (feat. Janelle Mon\u00e1e) - Sin\\01 We Are Young (feat. Janelle Mon\u00e1e.m4a",
     "spotify_uri": null,
     "tempo": 46.1,
     "danceability": 0.0,
@@ -164097,7 +164075,7 @@
   },
   {
     "id": "t4323",
-    "title": "Telephone (feat. Beyoncé)",
+    "title": "Telephone (feat. Beyonc\u00e9)",
     "artist": "Lady Gaga",
     "duration_s": 220,
     "rym_data": {
@@ -164114,7 +164092,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Master iTunes Lib\\iTunes Media\\Music\\Lady Gaga\\The Fame Monster\\06 Telephone (feat. Beyoncé).m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\Master iTunes Lib\\iTunes Media\\Music\\Lady Gaga\\The Fame Monster\\06 Telephone (feat. Beyonc\u00e9).m4a",
     "spotify_uri": null,
     "tempo": 123.0,
     "danceability": 0.859,
@@ -167724,7 +167702,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Master iTunes Lib\\iTunes Media\\Music\\The Wanted\\iTunes Festival_ London 2011 – EP\\05 Lose My Mind (Live).m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\Master iTunes Lib\\iTunes Media\\Music\\The Wanted\\iTunes Festival_ London 2011 \u2013 EP\\05 Lose My Mind (Live).m4a",
     "spotify_uri": null,
     "tempo": 64.6,
     "danceability": 0.305,
@@ -168049,7 +168027,7 @@
   },
   {
     "id": "t4427",
-    "title": "Jalapeño (Lady Gaga \"Alejandro” Parody)",
+    "title": "Jalape\u00f1o (Lady Gaga \"Alejandro\u201d Parody)",
     "artist": "Thecomputernerd01",
     "duration_s": 245,
     "rym_data": {
@@ -168066,7 +168044,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Master iTunes Lib\\iTunes Media\\Music\\Thecomputernerd01\\Whoa! They're Purple\\12 Jalapeño (Lady Gaga _Alejandro_ P.m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\Master iTunes Lib\\iTunes Media\\Music\\Thecomputernerd01\\Whoa! They're Purple\\12 Jalape\u00f1o (Lady Gaga _Alejandro_ P.m4a",
     "spotify_uri": null,
     "tempo": 49.7,
     "danceability": 0.243,
@@ -169844,7 +169822,7 @@
   {
     "id": "t4476",
     "title": "7-11",
-    "artist": "Beyoncé",
+    "artist": "Beyonc\u00e9",
     "duration_s": 213,
     "rym_data": {
       "primary_genres": [],
@@ -169858,7 +169836,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Beyoncé\\BEYONCÉ [Platinum Edition]\\01 7-11.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Beyonc\u00e9\\BEYONC\u00c9 [Platinum Edition]\\01 7-11.mp3",
     "spotify_uri": null,
     "tempo": 45.3,
     "danceability": 0.0,
@@ -169894,7 +169872,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Beyond\\Deliberate 猶豫 (Remastered 2020)\\01 Amani.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Beyond\\Deliberate \u7336\u8c6b (Remastered 2020)\\01 Amani.mp3",
     "spotify_uri": null,
     "tempo": 78.3,
     "danceability": 0.0,
@@ -171788,7 +171766,7 @@
   {
     "id": "t4530",
     "title": "Averse Sombre",
-    "artist": "Créateurs De Pluie",
+    "artist": "Cr\u00e9ateurs De Pluie",
     "duration_s": 161,
     "rym_data": {
       "primary_genres": [],
@@ -171802,7 +171780,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Créateurs De Pluie\\Pluie Confortable\\01 Averse Sombre.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Cr\u00e9ateurs De Pluie\\Pluie Confortable\\01 Averse Sombre.mp3",
     "spotify_uri": null,
     "tempo": 143.6,
     "danceability": 0.068,
@@ -172220,7 +172198,7 @@
   {
     "id": "t4542",
     "title": "Anussati",
-    "artist": "Dhyāna One",
+    "artist": "Dhy\u0101na One",
     "duration_s": 342,
     "rym_data": {
       "primary_genres": [],
@@ -172234,7 +172212,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Dhyāna One\\Dhyāna\\01 Anussati.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Dhy\u0101na One\\Dhy\u0101na\\01 Anussati.mp3",
     "spotify_uri": null,
     "tempo": 136.0,
     "danceability": 0.486,
@@ -172363,7 +172341,7 @@
   },
   {
     "id": "t4546",
-    "title": "Açaí Bowl",
+    "title": "A\u00e7a\u00ed Bowl",
     "artist": "Dominic Fike",
     "duration_s": 177,
     "rym_data": {
@@ -172378,7 +172356,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Dominic Fike\\Açaí Bowl\\01 Açaí Bowl.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Dominic Fike\\A\u00e7a\u00ed Bowl\\01 A\u00e7a\u00ed Bowl.mp3",
     "spotify_uri": null,
     "tempo": 61.5,
     "danceability": 0.336,
@@ -172939,7 +172917,7 @@
   },
   {
     "id": "t4562",
-    "title": "American Cliché",
+    "title": "American Clich\u00e9",
     "artist": "FINNEAS",
     "duration_s": 203,
     "rym_data": {
@@ -172954,7 +172932,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\FINNEAS\\American Cliché\\01 American Cliché.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\FINNEAS\\American Clich\u00e9\\01 American Clich\u00e9.mp3",
     "spotify_uri": null,
     "tempo": 136.0,
     "danceability": 0.394,
@@ -173227,8 +173205,8 @@
   },
   {
     "id": "t4570",
-    "title": "12 Études, Op. 10- No. 1 in C Major 'Waterfall'",
-    "artist": "Frédéric Chopin,Yunchan Lim",
+    "title": "12 \u00c9tudes, Op. 10- No. 1 in C Major 'Waterfall'",
+    "artist": "Fr\u00e9d\u00e9ric Chopin,Yunchan Lim",
     "duration_s": 119,
     "rym_data": {
       "primary_genres": [],
@@ -173242,7 +173220,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Frédéric Chopin,Yunchan Lim\\Chopin- Études, Opp. 10 & 25\\01 12 Études, Op. 10- No. 1 in C Maj.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Fr\u00e9d\u00e9ric Chopin,Yunchan Lim\\Chopin- \u00c9tudes, Opp. 10 & 25\\01 12 \u00c9tudes, Op. 10- No. 1 in C Maj.mp3",
     "spotify_uri": null,
     "tempo": 83.4,
     "danceability": 0.253,
@@ -174775,7 +174753,7 @@
   },
   {
     "id": "t4613",
-    "title": "Be Your Husband - Live at Sin-é, New York, NY - July-August 1993",
+    "title": "Be Your Husband - Live at Sin-\u00e9, New York, NY - July-August 1993",
     "artist": "Jeff Buckley",
     "duration_s": 295,
     "rym_data": {
@@ -174790,7 +174768,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Jeff Buckley\\Live At Sin-é (Legacy Edition)\\01 Be Your Husband - Live at Sin-é,.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Jeff Buckley\\Live At Sin-\u00e9 (Legacy Edition)\\01 Be Your Husband - Live at Sin-\u00e9,.mp3",
     "spotify_uri": null,
     "tempo": 83.4,
     "danceability": 0.0,
@@ -174934,7 +174912,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Joanna Wang\\午夜劇院\\01 Alice in Wonderland.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Joanna Wang\\\u5348\u591c\u5287\u9662\\01 Alice in Wonderland.mp3",
     "spotify_uri": null,
     "tempo": 48.8,
     "danceability": 0.213,
@@ -175027,7 +175005,7 @@
   },
   {
     "id": "t4620",
-    "title": "A Love Supreme, Pt. I – Acknowledgement",
+    "title": "A Love Supreme, Pt. I \u2013 Acknowledgement",
     "artist": "John Coltrane",
     "duration_s": 462,
     "rym_data": {
@@ -175042,7 +175020,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\John Coltrane\\A Love Supreme\\01 A Love Supreme, Pt. I – Acknowled.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\John Coltrane\\A Love Supreme\\01 A Love Supreme, Pt. I \u2013 Acknowled.mp3",
     "spotify_uri": null,
     "tempo": 234.9,
     "danceability": 0.296,
@@ -175438,7 +175416,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Kelly Chen\\Red 新曲+精選\\01 Ask.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Kelly Chen\\Red \u65b0\u66f2+\u7cbe\u9078\\01 Ask.mp3",
     "spotify_uri": null,
     "tempo": 129.2,
     "danceability": 0.0,
@@ -175783,7 +175761,7 @@
   },
   {
     "id": "t4641",
-    "title": "Azalea Town (From 'Pokémon HeartGold & SoulSilver')",
+    "title": "Azalea Town (From 'Pok\u00e9mon HeartGold & SoulSilver')",
     "artist": "Kunning Fox",
     "duration_s": 116,
     "rym_data": {
@@ -175798,7 +175776,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Kunning Fox\\Azalea Town (From 'Pokémon HeartGold & S\\01 Azalea Town (From 'Pokémon HeartG.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Kunning Fox\\Azalea Town (From 'Pok\u00e9mon HeartGold & S\\01 Azalea Town (From 'Pok\u00e9mon HeartG.mp3",
     "spotify_uri": null,
     "tempo": 47.9,
     "danceability": 0.0,
@@ -176122,7 +176100,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Leslie Cheung\\寵愛\\01 A Thousand Dreams Of You.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Leslie Cheung\\\u5bf5\u611b\\01 A Thousand Dreams Of You.mp3",
     "spotify_uri": null,
     "tempo": 53.8,
     "danceability": 0.46,
@@ -176719,7 +176697,7 @@
   },
   {
     "id": "t4667",
-    "title": "Bagatelle No. 25 in A Minor, WoO 59 'Für Elise'",
+    "title": "Bagatelle No. 25 in A Minor, WoO 59 'F\u00fcr Elise'",
     "artist": "Ludwig van Beethoven,Igor Levit",
     "duration_s": 212,
     "rym_data": {
@@ -176734,7 +176712,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Ludwig van Beethoven,Igor Levit\\Für Elise, Bagatelle No. 25 in A Minor,\\01 Bagatelle No. 25 in A Minor, WoO.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Ludwig van Beethoven,Igor Levit\\F\u00fcr Elise, Bagatelle No. 25 in A Minor,\\01 Bagatelle No. 25 in A Minor, WoO.mp3",
     "spotify_uri": null,
     "tempo": 215.3,
     "danceability": 0.226,
@@ -178051,7 +178029,7 @@
   },
   {
     "id": "t4704",
-    "title": "Baianá",
+    "title": "Baian\u00e1",
     "artist": "Nia Archives",
     "duration_s": 152,
     "rym_data": {
@@ -178066,7 +178044,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Nia Archives\\Baianá\\01 Baianá.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Nia Archives\\Baian\u00e1\\01 Baian\u00e1.mp3",
     "spotify_uri": null,
     "tempo": 42.4,
     "danceability": 0.44,
@@ -179672,7 +179650,7 @@
   {
     "id": "t4749",
     "title": "313",
-    "artist": "Residente,Sílvia Pérez Cruz,Penélope Cruz",
+    "artist": "Residente,S\u00edlvia P\u00e9rez Cruz,Pen\u00e9lope Cruz",
     "duration_s": 367,
     "rym_data": {
       "primary_genres": [],
@@ -179686,7 +179664,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Residente,Sílvia Pérez Cruz,Penélope Cru\\313\\01 313.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Residente,S\u00edlvia P\u00e9rez Cruz,Pen\u00e9lope Cru\\313\\01 313.mp3",
     "spotify_uri": null,
     "tempo": 234.9,
     "danceability": 0.0,
@@ -179815,8 +179793,8 @@
   },
   {
     "id": "t4753",
-    "title": "A Palé",
-    "artist": "ROSALÍA",
+    "title": "A Pal\u00e9",
+    "artist": "ROSAL\u00cdA",
     "duration_s": 143,
     "rym_data": {
       "primary_genres": [],
@@ -179830,7 +179808,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\ROSALÍA\\A Palé\\01 A Palé.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\ROSAL\u00cdA\\A Pal\u00e9\\01 A Pal\u00e9.mp3",
     "spotify_uri": null,
     "tempo": 41.0,
     "danceability": 0.618,
@@ -181488,7 +181466,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\The Beatles\\The Beatles 1967 – 1970 (2023 Edition)\\01 Back In The U.S.S.R - 2018 Mix.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\The Beatles\\The Beatles 1967 \u2013 1970 (2023 Edition)\\01 Back In The U.S.S.R - 2018 Mix.mp3",
     "spotify_uri": null,
     "tempo": 143.6,
     "danceability": 0.217,
@@ -181762,7 +181740,7 @@
   {
     "id": "t4807",
     "title": "...baby one more time",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 125,
     "rym_data": {
       "primary_genres": [],
@@ -181776,7 +181754,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\The Marías\\_..baby one more time\\01 ...baby one more time.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\The Mar\u00edas\\_..baby one more time\\01 ...baby one more time.mp3",
     "spotify_uri": null,
     "tempo": 89.1,
     "danceability": 0.535,
@@ -181834,7 +181812,7 @@
   {
     "id": "t4809",
     "title": "Addicted - 2015 Version",
-    "artist": "The Night Café",
+    "artist": "The Night Caf\u00e9",
     "duration_s": 285,
     "rym_data": {
       "primary_genres": [],
@@ -181848,7 +181826,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\The Night Café\\Addicted (2015 Version)\\01 Addicted - 2015 Version.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\The Night Caf\u00e9\\Addicted (2015 Version)\\01 Addicted - 2015 Version.mp3",
     "spotify_uri": null,
     "tempo": 55.0,
     "danceability": 0.36,
@@ -182050,7 +182028,7 @@
   {
     "id": "t4815",
     "title": "All Nighter",
-    "artist": "Tiësto",
+    "artist": "Ti\u00ebsto",
     "duration_s": 134,
     "rym_data": {
       "primary_genres": [],
@@ -182064,7 +182042,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Tiësto\\DRIVE\\01 All Nighter.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Ti\u00ebsto\\DRIVE\\01 All Nighter.mp3",
     "spotify_uri": null,
     "tempo": 63.0,
     "danceability": 0.298,
@@ -182770,7 +182748,7 @@
   {
     "id": "t4835",
     "title": "Afraid",
-    "artist": "Xavier Omär",
+    "artist": "Xavier Om\u00e4r",
     "duration_s": 220,
     "rym_data": {
       "primary_genres": [],
@@ -182784,7 +182762,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Xavier Omär\\Afraid\\01 Afraid.mp3",
+    "file_path": "C:\\Users\\ericl\\Music\\New Master\\iTunes Media\\Music\\Xavier Om\u00e4r\\Afraid\\01 Afraid.mp3",
     "spotify_uri": null,
     "tempo": 123.0,
     "danceability": 0.0,
@@ -183973,7 +183951,7 @@
   },
   {
     "id": "t4867",
-    "title": "Evergreen (You Didn’t Deserve Me At All)",
+    "title": "Evergreen (You Didn\u2019t Deserve Me At All)",
     "artist": "Omar Apollo",
     "duration_s": 216,
     "rym_data": {
@@ -183990,7 +183968,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Omar Apollo\\Ivory  (Marfil)\\14 - Omar Apollo - Evergreen (You Didn’t Deserve Me At All).m4a",
+    "file_path": "C:\\Users\\ericl\\Music\\Omar Apollo\\Ivory  (Marfil)\\14 - Omar Apollo - Evergreen (You Didn\u2019t Deserve Me At All).m4a",
     "spotify_uri": null,
     "tempo": 55.0,
     "danceability": 0.0,
@@ -185265,7 +185243,7 @@
   },
   {
     "id": "t4901",
-    "title": "Evergreen (You Didn’t Deserve Me At All)",
+    "title": "Evergreen (You Didn\u2019t Deserve Me At All)",
     "artist": "Omar Apollo",
     "duration_s": 216,
     "rym_data": {
@@ -185282,7 +185260,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Music\\Qobuz\\Omar Apollo\\Ivory\\14. Evergreen (You Didn’t Deserve Me At All) (6).flac",
+    "file_path": "C:\\Users\\ericl\\Music\\Qobuz\\Omar Apollo\\Ivory\\14. Evergreen (You Didn\u2019t Deserve Me At All) (6).flac",
     "spotify_uri": null,
     "tempo": 55.0,
     "danceability": 0.451,
@@ -189217,7 +189195,7 @@
   },
   {
     "id": "t5005",
-    "title": "Queda do Céu",
+    "title": "Queda do C\u00e9u",
     "artist": "Antropoceno",
     "duration_s": 357,
     "rym_data": {
@@ -189234,7 +189212,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Antropoceno - Natureza Morta\\Antropoceno - Natureza Morta - 01 Queda do Céu.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Antropoceno - Natureza Morta\\Antropoceno - Natureza Morta - 01 Queda do C\u00e9u.m4a",
     "spotify_uri": null,
     "tempo": 123.0,
     "danceability": 0.298,
@@ -189255,7 +189233,7 @@
   },
   {
     "id": "t5006",
-    "title": "35ºC de Bulbo Úmido",
+    "title": "35\u00baC de Bulbo \u00damido",
     "artist": "Antropoceno",
     "duration_s": 278,
     "rym_data": {
@@ -189272,7 +189250,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Antropoceno - Natureza Morta\\Antropoceno - Natureza Morta - 02 35ºC de Bulbo Úmido.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Antropoceno - Natureza Morta\\Antropoceno - Natureza Morta - 02 35\u00baC de Bulbo \u00damido.m4a",
     "spotify_uri": null,
     "tempo": 52.7,
     "danceability": 0.218,
@@ -189445,7 +189423,7 @@
   },
   {
     "id": "t5011",
-    "title": "Corpo Território",
+    "title": "Corpo Territ\u00f3rio",
     "artist": "Antropoceno",
     "duration_s": 112,
     "rym_data": {
@@ -189462,7 +189440,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Antropoceno - Natureza Morta\\Antropoceno - Natureza Morta - 07 Corpo Território.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Antropoceno - Natureza Morta\\Antropoceno - Natureza Morta - 07 Corpo Territ\u00f3rio.m4a",
     "spotify_uri": null,
     "tempo": 45.3,
     "danceability": 0.173,
@@ -189483,7 +189461,7 @@
   },
   {
     "id": "t5012",
-    "title": "Gosto de Câncer",
+    "title": "Gosto de C\u00e2ncer",
     "artist": "Antropoceno",
     "duration_s": 237,
     "rym_data": {
@@ -189500,7 +189478,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Antropoceno - Natureza Morta\\Antropoceno - Natureza Morta - 08 Gosto de Câncer.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Antropoceno - Natureza Morta\\Antropoceno - Natureza Morta - 08 Gosto de C\u00e2ncer.m4a",
     "spotify_uri": null,
     "tempo": 123.0,
     "danceability": 0.366,
@@ -194098,7 +194076,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clichés)\\Breakup Shoes - Unrequited Love (& other clichés) - 01 Brian Wilson Is My Dad.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clich\u00e9s)\\Breakup Shoes - Unrequited Love (& other clich\u00e9s) - 01 Brian Wilson Is My Dad.m4a",
     "spotify_uri": null,
     "tempo": 143.6,
     "danceability": 0.474,
@@ -194136,7 +194114,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clichés)\\Breakup Shoes - Unrequited Love (& other clichés) - 02 Sometimes We Make Decisions.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clich\u00e9s)\\Breakup Shoes - Unrequited Love (& other clich\u00e9s) - 02 Sometimes We Make Decisions.m4a",
     "spotify_uri": null,
     "tempo": 69.8,
     "danceability": 0.377,
@@ -194174,7 +194152,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clichés)\\Breakup Shoes - Unrequited Love (& other clichés) - 03 Breakup Shoes.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clich\u00e9s)\\Breakup Shoes - Unrequited Love (& other clich\u00e9s) - 03 Breakup Shoes.m4a",
     "spotify_uri": null,
     "tempo": 161.5,
     "danceability": 0.428,
@@ -194212,7 +194190,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clichés)\\Breakup Shoes - Unrequited Love (& other clichés) - 04 Phony.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clich\u00e9s)\\Breakup Shoes - Unrequited Love (& other clich\u00e9s) - 04 Phony.m4a",
     "spotify_uri": null,
     "tempo": 57.4,
     "danceability": 0.703,
@@ -194250,7 +194228,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clichés)\\Breakup Shoes - Unrequited Love (& other clichés) - 05 innertube -interlude-.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clich\u00e9s)\\Breakup Shoes - Unrequited Love (& other clich\u00e9s) - 05 innertube -interlude-.m4a",
     "spotify_uri": null,
     "tempo": 68.0,
     "danceability": 0.937,
@@ -194271,7 +194249,7 @@
   },
   {
     "id": "t5138",
-    "title": "Unrequited Love (& other clichés)",
+    "title": "Unrequited Love (& other clich\u00e9s)",
     "artist": "Breakup Shoes",
     "duration_s": 286,
     "rym_data": {
@@ -194288,7 +194266,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clichés)\\Breakup Shoes - Unrequited Love (& other clichés) - 06 Unrequited Love (& other clichés).m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clich\u00e9s)\\Breakup Shoes - Unrequited Love (& other clich\u00e9s) - 06 Unrequited Love (& other clich\u00e9s).m4a",
     "spotify_uri": null,
     "tempo": 55.0,
     "danceability": 0.449,
@@ -194326,7 +194304,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clichés)\\Breakup Shoes - Unrequited Love (& other clichés) - 07 shower-beer.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clich\u00e9s)\\Breakup Shoes - Unrequited Love (& other clich\u00e9s) - 07 shower-beer.m4a",
     "spotify_uri": null,
     "tempo": 46.1,
     "danceability": 0.454,
@@ -194364,7 +194342,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clichés)\\Breakup Shoes - Unrequited Love (& other clichés) - 08 Natural.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clich\u00e9s)\\Breakup Shoes - Unrequited Love (& other clich\u00e9s) - 08 Natural.m4a",
     "spotify_uri": null,
     "tempo": 172.3,
     "danceability": 0.459,
@@ -194402,7 +194380,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clichés)\\Breakup Shoes - Unrequited Love (& other clichés) - 09 Platonic Cuddling.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Breakup Shoes - Unrequited Love (& other clich\u00e9s)\\Breakup Shoes - Unrequited Love (& other clich\u00e9s) - 09 Platonic Cuddling.m4a",
     "spotify_uri": null,
     "tempo": 152.0,
     "danceability": 0.448,
@@ -194727,7 +194705,7 @@
   },
   {
     "id": "t5150",
-    "title": "Oxygène",
+    "title": "Oxyg\u00e8ne",
     "artist": "C418",
     "duration_s": 65,
     "rym_data": {
@@ -194744,7 +194722,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\C418 - Minecraft - Volume Alpha\\C418 - Minecraft - Volume Alpha - 09 Oxygène.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\C418 - Minecraft - Volume Alpha\\C418 - Minecraft - Volume Alpha - 09 Oxyg\u00e8ne.m4a",
     "spotify_uri": null,
     "tempo": 152.0,
     "danceability": 0.235,
@@ -194765,7 +194743,7 @@
   },
   {
     "id": "t5151",
-    "title": "Équinoxe",
+    "title": "\u00c9quinoxe",
     "artist": "C418",
     "duration_s": 114,
     "rym_data": {
@@ -194782,7 +194760,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\C418 - Minecraft - Volume Alpha\\C418 - Minecraft - Volume Alpha - 10 Équinoxe.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\C418 - Minecraft - Volume Alpha\\C418 - Minecraft - Volume Alpha - 10 \u00c9quinoxe.m4a",
     "spotify_uri": null,
     "tempo": 45.3,
     "danceability": 0.807,
@@ -195373,7 +195351,7 @@
   },
   {
     "id": "t5167",
-    "title": "Nausicaä (Love Will Be Revealed)",
+    "title": "Nausica\u00e4 (Love Will Be Revealed)",
     "artist": "Cameron Winter",
     "duration_s": 251,
     "rym_data": {
@@ -195390,7 +195368,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Cameron Winter - Heavy Metal\\Cameron Winter - Heavy Metal - 02 Nausicaä (Love Will Be Revealed).m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Cameron Winter - Heavy Metal\\Cameron Winter - Heavy Metal - 02 Nausica\u00e4 (Love Will Be Revealed).m4a",
     "spotify_uri": null,
     "tempo": 86.1,
     "danceability": 0.856,
@@ -195563,7 +195541,7 @@
   },
   {
     "id": "t5172",
-    "title": "We’re Thinking the Same Thing",
+    "title": "We\u2019re Thinking the Same Thing",
     "artist": "Cameron Winter",
     "duration_s": 167,
     "rym_data": {
@@ -195580,7 +195558,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Cameron Winter - Heavy Metal\\Cameron Winter - Heavy Metal - 07 We’re Thinking the Same Thing.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Cameron Winter - Heavy Metal\\Cameron Winter - Heavy Metal - 07 We\u2019re Thinking the Same Thing.m4a",
     "spotify_uri": null,
     "tempo": 86.1,
     "danceability": 0.343,
@@ -195677,7 +195655,7 @@
   },
   {
     "id": "t5175",
-    "title": "Can’t Keep Anything",
+    "title": "Can\u2019t Keep Anything",
     "artist": "Cameron Winter",
     "duration_s": 229,
     "rym_data": {
@@ -195694,7 +195672,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Cameron Winter - Heavy Metal\\Cameron Winter - Heavy Metal - 10 Can’t Keep Anything.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Cameron Winter - Heavy Metal\\Cameron Winter - Heavy Metal - 10 Can\u2019t Keep Anything.m4a",
     "spotify_uri": null,
     "tempo": 46.1,
     "danceability": 0.323,
@@ -209415,7 +209393,7 @@
   },
   {
     "id": "t5547",
-    "title": "Paul’s Theme",
+    "title": "Paul\u2019s Theme",
     "artist": "Men I Trust",
     "duration_s": 185,
     "rym_data": {
@@ -209432,7 +209410,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Men I Trust - Equus Asinus\\Men I Trust - Equus Asinus - 08 Paul’s Theme.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Men I Trust - Equus Asinus\\Men I Trust - Equus Asinus - 08 Paul\u2019s Theme.m4a",
     "spotify_uri": null,
     "tempo": 83.4,
     "danceability": 0.644,
@@ -209567,7 +209545,7 @@
   },
   {
     "id": "t5551",
-    "title": "I Don’t Like Music",
+    "title": "I Don\u2019t Like Music",
     "artist": "Men I Trust",
     "duration_s": 203,
     "rym_data": {
@@ -209584,7 +209562,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Men I Trust - Equus Asinus\\Men I Trust - Equus Asinus - 12 I Don’t Like Music.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Men I Trust - Equus Asinus\\Men I Trust - Equus Asinus - 12 I Don\u2019t Like Music.m4a",
     "spotify_uri": null,
     "tempo": 42.4,
     "danceability": 0.583,
@@ -210859,7 +210837,7 @@
   },
   {
     "id": "t5585",
-    "title": "System ft. Gabrielle & Marie-Renée",
+    "title": "System ft. Gabrielle & Marie-Ren\u00e9e",
     "artist": "Men I Trust",
     "duration_s": 236,
     "rym_data": {
@@ -210876,7 +210854,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Men I Trust - Men I Trust\\Men I Trust - Men I Trust - 06 System ft. Gabrielle & Marie-Renée.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Men I Trust - Men I Trust\\Men I Trust - Men I Trust - 06 System ft. Gabrielle & Marie-Ren\u00e9e.m4a",
     "spotify_uri": null,
     "tempo": 161.5,
     "danceability": 0.843,
@@ -213937,7 +213915,7 @@
   },
   {
     "id": "t5666",
-    "title": "The Thrash Particle – Live from Exit/In",
+    "title": "The Thrash Particle \u2013 Live from Exit/In",
     "artist": "Modern Baseball",
     "duration_s": 204,
     "rym_data": {
@@ -213954,7 +213932,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 07 The Thrash Particle – Live from Exit-In.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 07 The Thrash Particle \u2013 Live from Exit-In.m4a",
     "spotify_uri": null,
     "tempo": 63.0,
     "danceability": 0.322,
@@ -213975,7 +213953,7 @@
   },
   {
     "id": "t5667",
-    "title": "Revenge of the Nameless Ranger – Live from The Wonder Bar",
+    "title": "Revenge of the Nameless Ranger \u2013 Live from The Wonder Bar",
     "artist": "Modern Baseball",
     "duration_s": 186,
     "rym_data": {
@@ -213992,7 +213970,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 08 Revenge of the Nameless Ranger – Live from The Wonder Bar.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 08 Revenge of the Nameless Ranger \u2013 Live from The Wonder Bar.m4a",
     "spotify_uri": null,
     "tempo": 112.3,
     "danceability": 0.438,
@@ -214013,7 +213991,7 @@
   },
   {
     "id": "t5668",
-    "title": "Alpha Kappa Fall of Troy the Movie Part Deux (2 Disc Director's Cut) – Live from Exit/In",
+    "title": "Alpha Kappa Fall of Troy the Movie Part Deux (2 Disc Director's Cut) \u2013 Live from Exit/In",
     "artist": "Modern Baseball",
     "duration_s": 175,
     "rym_data": {
@@ -214030,7 +214008,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 09 Alpha Kappa Fall of Troy the Movie Part Deux (2 Disc Director's Cut) – Live from Exit-In.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 09 Alpha Kappa Fall of Troy the Movie Part Deux (2 Disc Director's Cut) \u2013 Live from Exit-In.m4a",
     "spotify_uri": null,
     "tempo": 152.0,
     "danceability": 0.314,
@@ -214051,7 +214029,7 @@
   },
   {
     "id": "t5669",
-    "title": "Revenge of the Nameless Ranger – Live from Altered Course 043",
+    "title": "Revenge of the Nameless Ranger \u2013 Live from Altered Course 043",
     "artist": "Modern Baseball",
     "duration_s": 163,
     "rym_data": {
@@ -214068,7 +214046,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 10 Revenge of the Nameless Ranger – Live from Altered Course 043.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 10 Revenge of the Nameless Ranger \u2013 Live from Altered Course 043.m4a",
     "spotify_uri": null,
     "tempo": 117.5,
     "danceability": 0.377,
@@ -214089,7 +214067,7 @@
   },
   {
     "id": "t5670",
-    "title": "Alpha Kappa Fall of Troy the Movie Part Deux – Live from Altered Course",
+    "title": "Alpha Kappa Fall of Troy the Movie Part Deux \u2013 Live from Altered Course",
     "artist": "Modern Baseball",
     "duration_s": 155,
     "rym_data": {
@@ -214106,7 +214084,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 11 Alpha Kappa Fall of Troy the Movie Part Deux – Live from Altered Course.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 11 Alpha Kappa Fall of Troy the Movie Part Deux \u2013 Live from Altered Course.m4a",
     "spotify_uri": null,
     "tempo": 78.3,
     "danceability": 0.516,
@@ -214127,7 +214105,7 @@
   },
   {
     "id": "t5671",
-    "title": "The Thrash Particle – Live! from Sunday Night Salad",
+    "title": "The Thrash Particle \u2013 Live! from Sunday Night Salad",
     "artist": "Modern Baseball",
     "duration_s": 185,
     "rym_data": {
@@ -214144,7 +214122,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 12 The Thrash Particle – Live! from Sunday Night Salad.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 12 The Thrash Particle \u2013 Live! from Sunday Night Salad.m4a",
     "spotify_uri": null,
     "tempo": 64.6,
     "danceability": 0.275,
@@ -214165,7 +214143,7 @@
   },
   {
     "id": "t5672",
-    "title": "Revenge of the Nameless Ranger – Live! from Sunday Night Salad",
+    "title": "Revenge of the Nameless Ranger \u2013 Live! from Sunday Night Salad",
     "artist": "Modern Baseball",
     "duration_s": 163,
     "rym_data": {
@@ -214182,7 +214160,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 13 Revenge of the Nameless Ranger – Live! from Sunday Night Salad.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Modern Baseball - MOBO Presents- The Perfect Cast\\Modern Baseball - MOBO Presents- The Perfect Cast LP feat. Modern Baseball (30th - 13 Revenge of the Nameless Ranger \u2013 Live! from Sunday Night Salad.m4a",
     "spotify_uri": null,
     "tempo": 123.0,
     "danceability": 0.232,
@@ -216709,7 +216687,7 @@
   },
   {
     "id": "t5739",
-    "title": "도피처 (Escape)",
+    "title": "\ub3c4\ud53c\ucc98 (Escape)",
     "artist": "Parannoul",
     "duration_s": 284,
     "rym_data": {
@@ -216726,7 +216704,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 01 도피처 (Escape).m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 01 \ub3c4\ud53c\ucc98 (Escape).m4a",
     "spotify_uri": null,
     "tempo": 161.5,
     "danceability": 0.208,
@@ -216747,7 +216725,7 @@
   },
   {
     "id": "t5740",
-    "title": "언젠가 (Someday)",
+    "title": "\uc5b8\uc820\uac00 (Someday)",
     "artist": "Parannoul",
     "duration_s": 156,
     "rym_data": {
@@ -216764,7 +216742,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 02 언젠가 (Someday).m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 02 \uc5b8\uc820\uac00 (Someday).m4a",
     "spotify_uri": null,
     "tempo": 60.1,
     "danceability": 0.424,
@@ -216785,7 +216763,7 @@
   },
   {
     "id": "t5741",
-    "title": "그곳에는 낭만이 있다 (Soft Bruise)",
+    "title": "\uadf8\uacf3\uc5d0\ub294 \ub0ad\ub9cc\uc774 \uc788\ub2e4 (Soft Bruise)",
     "artist": "Parannoul",
     "duration_s": 278,
     "rym_data": {
@@ -216802,7 +216780,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 03 그곳에는 낭만이 있다 (Soft Bruise).m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 03 \uadf8\uacf3\uc5d0\ub294 \ub0ad\ub9cc\uc774 \uc788\ub2e4 (Soft Bruise).m4a",
     "spotify_uri": null,
     "tempo": 172.3,
     "danceability": 0.301,
@@ -216823,7 +216801,7 @@
   },
   {
     "id": "t5742",
-    "title": "흰천장 (White Ceiling) (demo)",
+    "title": "\ud770\ucc9c\uc7a5 (White Ceiling) (demo)",
     "artist": "Parannoul",
     "duration_s": 1051,
     "rym_data": {
@@ -216840,7 +216818,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 04 흰천장 (White Ceiling) (demo).m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 04 \ud770\ucc9c\uc7a5 (White Ceiling) (demo).m4a",
     "spotify_uri": null,
     "tempo": 45.3,
     "danceability": 0.302,
@@ -216861,7 +216839,7 @@
   },
   {
     "id": "t5743",
-    "title": "성장통 (Growing Pain)",
+    "title": "\uc131\uc7a5\ud1b5 (Growing Pain)",
     "artist": "Parannoul",
     "duration_s": 465,
     "rym_data": {
@@ -216878,7 +216856,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 05 성장통 (Growing Pain).m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\Parannoul - White Ceiling - Black Dots Wandering Around\\Parannoul - White Ceiling - Black Dots Wandering Around - 05 \uc131\uc7a5\ud1b5 (Growing Pain).m4a",
     "spotify_uri": null,
     "tempo": 80.7,
     "danceability": 0.482,
@@ -220965,8 +220943,8 @@
   },
   {
     "id": "t5851",
-    "title": "心を入力して",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u5fc3\u3092\u5165\u529b\u3057\u3066",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 284,
     "rym_data": {
       "primary_genres": [
@@ -220982,7 +220960,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 01 心を入力して.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 01 \u5fc3\u3092\u5165\u529b\u3057\u3066.m4a",
     "spotify_uri": null,
     "tempo": 86.1,
     "danceability": 0.147,
@@ -221003,8 +220981,8 @@
   },
   {
     "id": "t5852",
-    "title": "愛の瞬間",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u611b\u306e\u77ac\u9593",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 1117,
     "rym_data": {
       "primary_genres": [
@@ -221020,7 +220998,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 02 愛の瞬間.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 02 \u611b\u306e\u77ac\u9593.m4a",
     "spotify_uri": null,
     "tempo": 95.7,
     "danceability": 0.406,
@@ -221041,8 +221019,8 @@
   },
   {
     "id": "t5853",
-    "title": "深夜の愛",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u6df1\u591c\u306e\u611b",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 870,
     "rym_data": {
       "primary_genres": [
@@ -221058,7 +221036,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 03 深夜の愛.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 03 \u6df1\u591c\u306e\u611b.m4a",
     "spotify_uri": null,
     "tempo": 73.8,
     "danceability": 0.541,
@@ -221079,8 +221057,8 @@
   },
   {
     "id": "t5854",
-    "title": "強迫観念",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u5f37\u8feb\u89b3\u5ff5",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 598,
     "rym_data": {
       "primary_genres": [
@@ -221096,7 +221074,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 04 強迫観念.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 04 \u5f37\u8feb\u89b3\u5ff5.m4a",
     "spotify_uri": null,
     "tempo": 76.0,
     "danceability": 0.995,
@@ -221117,8 +221095,8 @@
   },
   {
     "id": "t5855",
-    "title": "選ばれし者",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u9078\u3070\u308c\u3057\u8005",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 548,
     "rym_data": {
       "primary_genres": [
@@ -221134,7 +221112,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 05 選ばれし者.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 05 \u9078\u3070\u308c\u3057\u8005.m4a",
     "spotify_uri": null,
     "tempo": 69.8,
     "danceability": 0.692,
@@ -221155,8 +221133,8 @@
   },
   {
     "id": "t5856",
-    "title": "星間性交",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u661f\u9593\u6027\u4ea4",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 545,
     "rym_data": {
       "primary_genres": [
@@ -221172,7 +221150,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 06 星間性交.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 06 \u661f\u9593\u6027\u4ea4.m4a",
     "spotify_uri": null,
     "tempo": 215.3,
     "danceability": 0.978,
@@ -221193,8 +221171,8 @@
   },
   {
     "id": "t5857",
-    "title": "強い願望",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u5f37\u3044\u9858\u671b",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 402,
     "rym_data": {
       "primary_genres": [
@@ -221210,7 +221188,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 07 強い願望.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 07 \u5f37\u3044\u9858\u671b.m4a",
     "spotify_uri": null,
     "tempo": 43.1,
     "danceability": 0.516,
@@ -221231,8 +221209,8 @@
   },
   {
     "id": "t5858",
-    "title": "ひとつだけ",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u3072\u3068\u3064\u3060\u3051",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 472,
     "rym_data": {
       "primary_genres": [
@@ -221248,7 +221226,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 08 ひとつだけ.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 08 \u3072\u3068\u3064\u3060\u3051.m4a",
     "spotify_uri": null,
     "tempo": 66.3,
     "danceability": 0.296,
@@ -221269,8 +221247,8 @@
   },
   {
     "id": "t5859",
-    "title": "同感です",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u540c\u611f\u3067\u3059",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 567,
     "rym_data": {
       "primary_genres": [
@@ -221286,7 +221264,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 09 同感です.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 09 \u540c\u611f\u3067\u3059.m4a",
     "spotify_uri": null,
     "tempo": 55.0,
     "danceability": 0.313,
@@ -221307,8 +221285,8 @@
   },
   {
     "id": "t5860",
-    "title": "夜に愛",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u591c\u306b\u611b",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 1322,
     "rym_data": {
       "primary_genres": [
@@ -221324,7 +221302,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 10 夜に愛.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 10 \u591c\u306b\u611b.m4a",
     "spotify_uri": null,
     "tempo": 52.7,
     "danceability": 0.198,
@@ -221345,8 +221323,8 @@
   },
   {
     "id": "t5861",
-    "title": "魅惑的な美しさ",
-    "artist": "t e l e p a t h テレパシー能力者",
+    "title": "\u9b45\u60d1\u7684\u306a\u7f8e\u3057\u3055",
+    "artist": "t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005",
     "duration_s": 1213,
     "rym_data": {
       "primary_genres": [
@@ -221362,7 +221340,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h テレパシー能力者 - 星間性交\\t e l e p a t h テレパシー能力者 - 星間性交 - 11 魅惑的な美しさ.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4\\t e l e p a t h \u30c6\u30ec\u30d1\u30b7\u30fc\u80fd\u529b\u8005 - \u661f\u9593\u6027\u4ea4 - 11 \u9b45\u60d1\u7684\u306a\u7f8e\u3057\u3055.m4a",
     "spotify_uri": null,
     "tempo": 42.4,
     "danceability": 0.221,
@@ -222372,7 +222350,7 @@
   {
     "id": "t5888",
     "title": "Just a Feeling",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 82,
     "rym_data": {
       "primary_genres": [
@@ -222388,7 +222366,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 01 Just a Feeling.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 01 Just a Feeling.m4a",
     "spotify_uri": null,
     "tempo": 99.4,
     "danceability": 0.206,
@@ -222410,7 +222388,7 @@
   {
     "id": "t5889",
     "title": "Calling U Back",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 199,
     "rym_data": {
       "primary_genres": [
@@ -222426,7 +222404,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 02 Calling U Back.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 02 Calling U Back.m4a",
     "spotify_uri": null,
     "tempo": 184.6,
     "danceability": 0.275,
@@ -222448,7 +222426,7 @@
   {
     "id": "t5890",
     "title": "Hush",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 181,
     "rym_data": {
       "primary_genres": [
@@ -222464,7 +222442,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 03 Hush.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 03 Hush.m4a",
     "spotify_uri": null,
     "tempo": 92.3,
     "danceability": 0.496,
@@ -222486,7 +222464,7 @@
   {
     "id": "t5891",
     "title": "All I Really Want Is You",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 191,
     "rym_data": {
       "primary_genres": [
@@ -222502,7 +222480,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 04 All I Really Want Is You.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 04 All I Really Want Is You.m4a",
     "spotify_uri": null,
     "tempo": 60.1,
     "danceability": 0.302,
@@ -222524,7 +222502,7 @@
   {
     "id": "t5892",
     "title": "Hable con Ella",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 33,
     "rym_data": {
       "primary_genres": [
@@ -222540,7 +222518,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 05 Hable con Ella.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 05 Hable con Ella.m4a",
     "spotify_uri": null,
     "tempo": 234.9,
     "danceability": 0.287,
@@ -222562,7 +222540,7 @@
   {
     "id": "t5893",
     "title": "Little by little",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 178,
     "rym_data": {
       "primary_genres": [
@@ -222578,7 +222556,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 06 Little by little.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 06 Little by little.m4a",
     "spotify_uri": null,
     "tempo": 66.3,
     "danceability": 0.404,
@@ -222600,7 +222578,7 @@
   {
     "id": "t5894",
     "title": "Heavy",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 253,
     "rym_data": {
       "primary_genres": [
@@ -222616,7 +222594,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 07 Heavy.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 07 Heavy.m4a",
     "spotify_uri": null,
     "tempo": 64.6,
     "danceability": 0.723,
@@ -222637,8 +222615,8 @@
   },
   {
     "id": "t5895",
-    "title": "Un Millón",
-    "artist": "The Marías",
+    "title": "Un Mill\u00f3n",
+    "artist": "The Mar\u00edas",
     "duration_s": 167,
     "rym_data": {
       "primary_genres": [
@@ -222654,7 +222632,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 08 Un Millón.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 08 Un Mill\u00f3n.m4a",
     "spotify_uri": null,
     "tempo": 43.8,
     "danceability": 0.643,
@@ -222676,7 +222654,7 @@
   {
     "id": "t5896",
     "title": "Spin Me Around",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 146,
     "rym_data": {
       "primary_genres": [
@@ -222692,7 +222670,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 09 Spin Me Around.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 09 Spin Me Around.m4a",
     "spotify_uri": null,
     "tempo": 76.0,
     "danceability": 0.347,
@@ -222714,7 +222692,7 @@
   {
     "id": "t5897",
     "title": "The Mice Inside This Room",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 248,
     "rym_data": {
       "primary_genres": [
@@ -222730,7 +222708,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 10 The Mice Inside This Room.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 10 The Mice Inside This Room.m4a",
     "spotify_uri": null,
     "tempo": 47.0,
     "danceability": 0.555,
@@ -222752,7 +222730,7 @@
   {
     "id": "t5898",
     "title": "To Say Hello",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 202,
     "rym_data": {
       "primary_genres": [
@@ -222768,7 +222746,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 11 To Say Hello.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 11 To Say Hello.m4a",
     "spotify_uri": null,
     "tempo": 69.8,
     "danceability": 0.263,
@@ -222790,7 +222768,7 @@
   {
     "id": "t5899",
     "title": "Fog as a Bullet",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 177,
     "rym_data": {
       "primary_genres": [
@@ -222806,7 +222784,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 12 Fog as a Bullet.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 12 Fog as a Bullet.m4a",
     "spotify_uri": null,
     "tempo": 103.4,
     "danceability": 0.464,
@@ -222828,7 +222806,7 @@
   {
     "id": "t5900",
     "title": "Talk to Her",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 326,
     "rym_data": {
       "primary_genres": [
@@ -222844,7 +222822,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - CINEMA\\The Marías - CINEMA - 13 Talk to Her.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - CINEMA\\The Mar\u00edas - CINEMA - 13 Talk to Her.m4a",
     "spotify_uri": null,
     "tempo": 172.3,
     "danceability": 0.487,
@@ -222866,7 +222844,7 @@
   {
     "id": "t5901",
     "title": "Ride",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 81,
     "rym_data": {
       "primary_genres": [
@@ -222882,7 +222860,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 01 Ride.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 01 Ride.m4a",
     "spotify_uri": null,
     "tempo": 47.0,
     "danceability": 0.803,
@@ -222904,7 +222882,7 @@
   {
     "id": "t5902",
     "title": "Hamptons",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 188,
     "rym_data": {
       "primary_genres": [
@@ -222920,7 +222898,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 02 Hamptons.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 02 Hamptons.m4a",
     "spotify_uri": null,
     "tempo": 64.6,
     "danceability": 0.594,
@@ -222942,7 +222920,7 @@
   {
     "id": "t5903",
     "title": "Echo",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 209,
     "rym_data": {
       "primary_genres": [
@@ -222958,7 +222936,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 03 Echo.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 03 Echo.m4a",
     "spotify_uri": null,
     "tempo": 161.5,
     "danceability": 0.714,
@@ -222980,7 +222958,7 @@
   {
     "id": "t5904",
     "title": "Run Your Mouth",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 160,
     "rym_data": {
       "primary_genres": [
@@ -222996,7 +222974,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 04 Run Your Mouth.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 04 Run Your Mouth.m4a",
     "spotify_uri": null,
     "tempo": 55.0,
     "danceability": 0.361,
@@ -223018,7 +222996,7 @@
   {
     "id": "t5905",
     "title": "Real Life",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 206,
     "rym_data": {
       "primary_genres": [
@@ -223034,7 +223012,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 05 Real Life.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 05 Real Life.m4a",
     "spotify_uri": null,
     "tempo": 50.7,
     "danceability": 0.812,
@@ -223056,7 +223034,7 @@
   {
     "id": "t5906",
     "title": "Blur",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 225,
     "rym_data": {
       "primary_genres": [
@@ -223072,7 +223050,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 06 Blur.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 06 Blur.m4a",
     "spotify_uri": null,
     "tempo": 161.5,
     "danceability": 0.67,
@@ -223094,7 +223072,7 @@
   {
     "id": "t5907",
     "title": "Paranoia",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 231,
     "rym_data": {
       "primary_genres": [
@@ -223110,7 +223088,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 07 Paranoia.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 07 Paranoia.m4a",
     "spotify_uri": null,
     "tempo": 80.7,
     "danceability": 0.777,
@@ -223132,7 +223110,7 @@
   {
     "id": "t5908",
     "title": "Lejos de Ti",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 179,
     "rym_data": {
       "primary_genres": [
@@ -223148,7 +223126,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 08 Lejos de Ti.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 08 Lejos de Ti.m4a",
     "spotify_uri": null,
     "tempo": 55.0,
     "danceability": 0.692,
@@ -223170,7 +223148,7 @@
   {
     "id": "t5909",
     "title": "Love You Anyway",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 237,
     "rym_data": {
       "primary_genres": [
@@ -223186,7 +223164,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 09 Love You Anyway.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 09 Love You Anyway.m4a",
     "spotify_uri": null,
     "tempo": 71.8,
     "danceability": 0.413,
@@ -223208,7 +223186,7 @@
   {
     "id": "t5910",
     "title": "Ay No Puedo",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 181,
     "rym_data": {
       "primary_genres": [
@@ -223224,7 +223202,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 10 Ay No Puedo.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 10 Ay No Puedo.m4a",
     "spotify_uri": null,
     "tempo": 60.1,
     "danceability": 0.918,
@@ -223246,7 +223224,7 @@
   {
     "id": "t5911",
     "title": "No One Noticed",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 236,
     "rym_data": {
       "primary_genres": [
@@ -223262,7 +223240,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 11 No One Noticed.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 11 No One Noticed.m4a",
     "spotify_uri": null,
     "tempo": 48.8,
     "danceability": 0.787,
@@ -223284,7 +223262,7 @@
   {
     "id": "t5912",
     "title": "Vicious Sensitive Robot",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 194,
     "rym_data": {
       "primary_genres": [
@@ -223300,7 +223278,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 12 Vicious Sensitive Robot.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 12 Vicious Sensitive Robot.m4a",
     "spotify_uri": null,
     "tempo": 95.7,
     "danceability": 0.343,
@@ -223322,7 +223300,7 @@
   {
     "id": "t5913",
     "title": "If Only",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 156,
     "rym_data": {
       "primary_genres": [
@@ -223338,7 +223316,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 13 If Only.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 13 If Only.m4a",
     "spotify_uri": null,
     "tempo": 60.1,
     "danceability": 0.419,
@@ -223360,7 +223338,7 @@
   {
     "id": "t5914",
     "title": "Sienna",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 224,
     "rym_data": {
       "primary_genres": [
@@ -223376,7 +223354,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Submarine\\The Marías - Submarine - 14 Sienna.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Submarine\\The Mar\u00edas - Submarine - 14 Sienna.m4a",
     "spotify_uri": null,
     "tempo": 73.8,
     "danceability": 0.847,
@@ -223398,7 +223376,7 @@
   {
     "id": "t5915",
     "title": "I Don't Know You",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 209,
     "rym_data": {
       "primary_genres": [
@@ -223414,7 +223392,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Superclean- Vol. I\\The Marías - Superclean, Vol. I - 01 I Don't Know You.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Superclean- Vol. I\\The Mar\u00edas - Superclean, Vol. I - 01 I Don't Know You.m4a",
     "spotify_uri": null,
     "tempo": 58.7,
     "danceability": 0.323,
@@ -223436,7 +223414,7 @@
   {
     "id": "t5916",
     "title": "Basta Ya",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 176,
     "rym_data": {
       "primary_genres": [
@@ -223452,7 +223430,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Superclean- Vol. I\\The Marías - Superclean, Vol. I - 02 Basta Ya.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Superclean- Vol. I\\The Mar\u00edas - Superclean, Vol. I - 02 Basta Ya.m4a",
     "spotify_uri": null,
     "tempo": 86.1,
     "danceability": 0.71,
@@ -223474,7 +223452,7 @@
   {
     "id": "t5917",
     "title": "I Like It",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 203,
     "rym_data": {
       "primary_genres": [
@@ -223490,7 +223468,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Superclean- Vol. I\\The Marías - Superclean, Vol. I - 03 I Like It.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Superclean- Vol. I\\The Mar\u00edas - Superclean, Vol. I - 03 I Like It.m4a",
     "spotify_uri": null,
     "tempo": 99.4,
     "danceability": 0.0,
@@ -223512,7 +223490,7 @@
   {
     "id": "t5918",
     "title": "Only in My Dreams",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 170,
     "rym_data": {
       "primary_genres": [
@@ -223528,7 +223506,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Superclean- Vol. I\\The Marías - Superclean, Vol. I - 04 Only in My Dreams.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Superclean- Vol. I\\The Mar\u00edas - Superclean, Vol. I - 04 Only in My Dreams.m4a",
     "spotify_uri": null,
     "tempo": 47.9,
     "danceability": 0.43,
@@ -223550,7 +223528,7 @@
   {
     "id": "t5919",
     "title": "Superclean",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 155,
     "rym_data": {
       "primary_genres": [
@@ -223566,7 +223544,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Superclean- Vol. I\\The Marías - Superclean, Vol. I - 05 Superclean.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Superclean- Vol. I\\The Mar\u00edas - Superclean, Vol. I - 05 Superclean.m4a",
     "spotify_uri": null,
     "tempo": 44.6,
     "danceability": 0.658,
@@ -223587,8 +223565,8 @@
   },
   {
     "id": "t5920",
-    "title": "Déjate Llevar",
-    "artist": "The Marías",
+    "title": "D\u00e9jate Llevar",
+    "artist": "The Mar\u00edas",
     "duration_s": 163,
     "rym_data": {
       "primary_genres": [
@@ -223604,7 +223582,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - Superclean- Vol. I\\The Marías - Superclean, Vol. I - 06 Déjate Llevar.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - Superclean- Vol. I\\The Mar\u00edas - Superclean, Vol. I - 06 D\u00e9jate Llevar.m4a",
     "spotify_uri": null,
     "tempo": 129.2,
     "danceability": 0.674,
@@ -223626,7 +223604,7 @@
   {
     "id": "t5921",
     "title": "Ruthless",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 247,
     "rym_data": {
       "primary_genres": [
@@ -223642,7 +223620,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - VOl 2\\The Marías - VOl 2 - 01 Ruthless.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - VOl 2\\The Mar\u00edas - VOl 2 - 01 Ruthless.m4a",
     "spotify_uri": null,
     "tempo": 52.7,
     "danceability": 0.559,
@@ -223663,8 +223641,8 @@
   },
   {
     "id": "t5922",
-    "title": "Cariño",
-    "artist": "The Marías",
+    "title": "Cari\u00f1o",
+    "artist": "The Mar\u00edas",
     "duration_s": 258,
     "rym_data": {
       "primary_genres": [
@@ -223680,7 +223658,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - VOl 2\\The Marías - VOl 2 - 02 Cariño.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - VOl 2\\The Mar\u00edas - VOl 2 - 02 Cari\u00f1o.m4a",
     "spotify_uri": null,
     "tempo": 57.4,
     "danceability": 0.763,
@@ -223702,7 +223680,7 @@
   {
     "id": "t5923",
     "title": "ABQ",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 311,
     "rym_data": {
       "primary_genres": [
@@ -223718,7 +223696,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - VOl 2\\The Marías - VOl 2 - 03 ABQ.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - VOl 2\\The Mar\u00edas - VOl 2 - 03 ABQ.m4a",
     "spotify_uri": null,
     "tempo": 92.3,
     "danceability": 0.926,
@@ -223740,7 +223718,7 @@
   {
     "id": "t5924",
     "title": "Loverboy",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 73,
     "rym_data": {
       "primary_genres": [
@@ -223756,7 +223734,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - VOl 2\\The Marías - VOl 2 - 04 Loverboy.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - VOl 2\\The Mar\u00edas - VOl 2 - 04 Loverboy.m4a",
     "spotify_uri": null,
     "tempo": 123.0,
     "danceability": 0.298,
@@ -223778,7 +223756,7 @@
   {
     "id": "t5925",
     "title": "Over the Moon",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 182,
     "rym_data": {
       "primary_genres": [
@@ -223794,7 +223772,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - VOl 2\\The Marías - VOl 2 - 05 Over the Moon.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - VOl 2\\The Mar\u00edas - VOl 2 - 05 Over the Moon.m4a",
     "spotify_uri": null,
     "tempo": 73.8,
     "danceability": 0.443,
@@ -223816,7 +223794,7 @@
   {
     "id": "t5926",
     "title": "Clueless",
-    "artist": "The Marías",
+    "artist": "The Mar\u00edas",
     "duration_s": 227,
     "rym_data": {
       "primary_genres": [
@@ -223832,7 +223810,7 @@
     "familiarity": 0.5,
     "rating": 0.0,
     "recommendability": 0.5,
-    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Marías - VOl 2\\The Marías - VOl 2 - 06 Clueless.m4a",
+    "file_path": "C:\\Users\\ericl\\Downloads\\zips\\The Mar\u00edas - VOl 2\\The Mar\u00edas - VOl 2 - 06 Clueless.m4a",
     "spotify_uri": null,
     "tempo": 95.7,
     "danceability": 0.589,
