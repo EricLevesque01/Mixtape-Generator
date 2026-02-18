@@ -124,9 +124,23 @@ class ReActAgent:
             
         # Artist Limit (Max 2)
         artist_counts = {}
+        exclude_artists_lower = [a.lower() for a in profile.exclude_artists]
+        
         for tid in playlist.track_ids:
             t = library.get_track(tid)
             if t:
+                # Check Excluded Artist
+                if t.artist.lower() in exclude_artists_lower:
+                    violations.append(f"Forbidden Artist: {t.artist}")
+                
+                # Check Excluded Genres
+                if profile.exclude_genres:
+                    genres = set(t.rym_data.primary_genres + t.rym_data.subgenres)
+                    for eg in profile.exclude_genres:
+                        if eg.lower() in [g.lower() for g in genres]:
+                            violations.append(f"Forbidden Genre '{eg}' on {t.title}")
+
+                # Artist concentration
                 artist_counts[t.artist] = artist_counts.get(t.artist, 0) + 1
         
         for artist, count in artist_counts.items():

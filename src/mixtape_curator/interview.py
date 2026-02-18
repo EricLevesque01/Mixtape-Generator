@@ -50,11 +50,28 @@ class Interviewer:
             return reply, False
 
         if q_count == 2:
-            # Intake of Must-includes/Excludes
-            if "not" in user_input.lower() or "exclude" in user_input.lower():
-                self.profile.exclude_artists = ["Sample Artist"] 
-            if "include" in user_input.lower():
-                 self.profile.must_include_artists = ["Sample Artist"]
+            # Intake of Must-includes/Excludes (Naive extraction for demo)
+            lower_input = user_input.lower()
+            if "exclude" in lower_input or "no " in lower_input or "not " in lower_input:
+                # Try to extract artist after the keyword
+                for word in ["exclude", "no ", "not ", "dont want ", "don't want "]:
+                    if word in lower_input:
+                        parts = lower_input.split(word)
+                        if len(parts) > 1:
+                            artist = parts[1].strip().title()
+                            if artist:
+                                self.profile.exclude_artists.append(artist)
+                                logger.info(f"Adding {artist} to exclusion list.")
+            
+            if "include" in lower_input or "must have" in lower_input:
+                for word in ["include", "must have", "want "]:
+                    if word in lower_input:
+                        parts = lower_input.split(word)
+                        if len(parts) > 1:
+                            artist = parts[1].strip().title()
+                            if artist:
+                                self.profile.must_include_artists.append(artist)
+            
             self.confidence["constraints"] = 0.8
             # Next: Stage 2 GenreCalibration
             reply = "Which genres should I focus on? (e.g. '80s synthpop', 'classical', 'hip-hop')"

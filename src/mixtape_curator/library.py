@@ -66,13 +66,27 @@ class Library:
             energy=row.get('energy', 0.0),
             valence=row.get('valence', 0.0),
             intensity=row.get('intensity', 0.0),
-            accessibility=row.get('accessibility', 0.0),
-            familiarity=row.get('familiarity', 0.0),
+            tempo=row.get('tempo', 120.0),
+            danceability=row.get('danceability', 0.5),
+            key=row.get('key', 0),
+            mode=row.get('mode', 1),
+            key_full=row.get('key_full', "Unknown"),
+            acousticness=row.get('acousticness', 0.0),
+            instrumentalness=row.get('instrumentalness', 0.0),
+            speechiness=row.get('speechiness', 0.0),
+            liveness=row.get('liveness', 0.0),
+            brightness=row.get('brightness', 0.0),
+            flatness=row.get('flatness', 0.0),
+            entropy=row.get('entropy', 0.0),
+            dynamic_range=row.get('dynamic_range', 0.0),
+            accessibility=row.get('accessibility', 0.6),
+            familiarity=row.get('familiarity', 0.5),
             rating=row.get('rating', 0.0),
-            recommendability=row.get('recommendability', 0.0),
+            recommendability=row.get('recommendability', 0.5),
             rym_data=rym,
             file_path=row.get('file_path'),
-            spotify_uri=row.get('spotify_uri')
+            spotify_uri=row.get('spotify_uri'),
+            enrichment_source=row.get('enrichment_source')
         )
 
     def filter_candidates(self, profile: UserProfile) -> List[Track]:
@@ -85,7 +99,8 @@ class Library:
         
         # 1. Exclude Artists
         if profile.exclude_artists:
-            candidates = candidates[~candidates['artist'].isin(profile.exclude_artists)]
+            exclude_lower = [a.lower() for a in profile.exclude_artists]
+            candidates = candidates[~candidates['artist'].str.lower().isin(exclude_lower)]
             
         # 2. Exclude Genres (Broad match against primary and sub)
         if profile.exclude_genres:
