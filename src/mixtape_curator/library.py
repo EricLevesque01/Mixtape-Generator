@@ -210,6 +210,17 @@ class Library:
             gaps.append(field_name)
             return []
         
+        def _ss(val, default=None):
+            """Safe string: coerce NaN to default (None)."""
+            if val is None:
+                return default
+            try:
+                if isinstance(val, float) and math.isnan(val):
+                    return default
+            except (ValueError, TypeError):
+                pass
+            return str(val) if val != "" else default
+        
         rym = RYMData(
             primary_genres=_sl('primary_genres', row.get('rym_data_primary_genres', [])),
             subgenres=_sl('subgenres', row.get('rym_data_subgenres', [])),
@@ -218,8 +229,9 @@ class Library:
         
         return Track(
             id=row['id'],
-            title=row.get('title', 'Unknown Title') or 'Unknown Title',
-            artist=row.get('artist', 'Unknown Artist') or 'Unknown Artist',
+            title=_ss(row.get('title'), 'Unknown Title') or 'Unknown Title',
+            artist=_ss(row.get('artist'), 'Unknown Artist') or 'Unknown Artist',
+            album=_ss(row.get('album')),
             duration_s=_si('duration_s', row.get('duration_s', 0), 0),
             energy=_sf('energy', row.get('energy'), 0.5),
             valence=_sf('valence', row.get('valence'), 0.5),
@@ -228,7 +240,7 @@ class Library:
             danceability=_sf('danceability', row.get('danceability'), 0.5),
             key=_si('key', row.get('key'), 0),
             mode=_si('mode', row.get('mode'), 1),
-            key_full=row.get('key_full', "Unknown") or "Unknown",
+            key_full=_ss(row.get('key_full'), "Unknown") or "Unknown",
             acousticness=_sf('acousticness', row.get('acousticness'), 0.0),
             instrumentalness=_sf('instrumentalness', row.get('instrumentalness'), 0.0),
             speechiness=_sf('speechiness', row.get('speechiness'), 0.0),
@@ -242,9 +254,9 @@ class Library:
             rating=_sf('rating', row.get('rating'), 0.0),
             recommendability=_sf('recommendability', row.get('recommendability'), 0.5),
             rym_data=rym,
-            file_path=row.get('file_path'),
-            spotify_uri=row.get('spotify_uri'),
-            enrichment_source=row.get('enrichment_source'),
+            file_path=_ss(row.get('file_path')),
+            spotify_uri=_ss(row.get('spotify_uri')),
+            enrichment_source=_ss(row.get('enrichment_source')),
             release_year=_si('release_year', row.get('release_year')),
             enrichment_gaps=gaps
         )
