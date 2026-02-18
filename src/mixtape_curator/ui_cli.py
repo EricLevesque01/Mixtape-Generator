@@ -42,8 +42,14 @@ class MixtapeCLI(cmd.Cmd):
         
         # 3. Agent Repair
         print("Agent Reviewing Constraints...")
+        
+        # Callback for agent to ask user
+        def ask_user(question):
+            print(f"\n[Agent Question]: {question}")
+            return input("> ")
+
         # TODO: wire real LLM here later
-        agent = ReActAgent(llm=MockLLM())
+        agent = ReActAgent(llm=MockLLM(), user_callback=ask_user)
         playlist_a = agent.repair_playlist(sequenced, profile)
         
         print(f"Playlist A Finalized: {len(playlist_a.track_ids)} tracks.")

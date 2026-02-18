@@ -1,0 +1,9 @@
+start
+Test User
+Pop, Synthpop
+Uniform
+High
+yes
+yes
+yes
+quit
