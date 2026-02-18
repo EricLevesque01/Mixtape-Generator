@@ -2,6 +2,9 @@
 duration_target_s: 4620       # Target ≈ 77 minutes (CD-length mixtape)
 duration_cap_s: 7200          # Absolute max ≈ 120 minutes
 
+
+music_library_path: "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music"
+
 max_tracks_per_artist: 2
 
 # Interview

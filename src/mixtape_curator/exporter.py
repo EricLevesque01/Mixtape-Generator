@@ -46,9 +46,10 @@ class Exporter:
             f.write("#EXTM3U\n")
             for t in tracks:
                 f.write(f"#EXTINF:{t.duration_s},{t.artist} - {t.title}\n")
-                # Placeholder for file path or URI if we had one
-                # f.write(f"{t.file_path}\n") 
-                # For now just write a comment or mock path
-                f.write(f"# Spotify URI: {t.spotify_uri}\n")
+                # Write file path if available, otherwise fallback
+                if t.file_path:
+                   f.write(f"{t.file_path}\n")
+                else:
+                   f.write(f"# Spotify URI: {t.spotify_uri}\n")
 
 exporter = Exporter()
