@@ -57,18 +57,41 @@ class ABTester:
         pool_with_scores = [(scorer.compute_fit_score([t], profile), t) for t in pool]
         pool_with_scores.sort(key=lambda x: x[0], reverse=True)
         
-        # Swap
+        # Swap - prefer brand-new artists to maximize B-side variety
         for idx in indices_to_swap:
-            if not pool_with_scores:
+            # Rebuild artist counts fresh each swap (since we modify the list)
+            current_artist_counts = {}
+            for tid in playlist_b.track_ids:
+                t = library.get_track(tid)
+                if t:
+                    current_artist_counts[t.artist] = current_artist_counts.get(t.artist, 0) + 1
+            
+            # Account for the track being replaced (it will be removed)
+            old_track = library.get_track(playlist_b.track_ids[idx])
+            if old_track:
+                current_artist_counts[old_track.artist] = max(0, current_artist_counts.get(old_track.artist, 0) - 1)
+            
+            # Pass 1: Find best replacement from a brand-new artist (count == 0)
+            replacement = None
+            for new_score, new_track in pool_with_scores:
+                if current_artist_counts.get(new_track.artist, 0) == 0:
+                    replacement = new_track
+                    pool_with_scores.remove((new_score, new_track))
+                    break
+            
+            # Pass 2: Fall back to any artist under the limit
+            if replacement is None:
+                for new_score, new_track in pool_with_scores:
+                    if current_artist_counts.get(new_track.artist, 0) < config.max_tracks_per_artist:
+                        replacement = new_track
+                        pool_with_scores.remove((new_score, new_track))
+                        break
+            
+            if replacement is None:
                 break
             
-            # Take best available replacement
-            new_score, new_track = pool_with_scores.pop(0)
-            
-            # Replace in list works because indices are from original list
-            # But we must be careful if indices shift. Here we just replace by ID in the list.
-            old_id = playlist_b.track_ids[idx]
-            playlist_b.track_ids[idx] = new_track.id
+            playlist_b.track_ids[idx] = replacement.id
+
             
         # 5. Resequence B
         playlist_b = generator.optimize_flow(playlist_b, profile)
