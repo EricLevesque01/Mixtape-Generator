@@ -81,6 +81,11 @@ class MixtapeCLI(cmd.Cmd):
         """Exit the program."""
         return True
 
+    def do_EOF(self, arg):
+        """Handle EOF to exit cleanly."""
+        print()
+        return True
+
 if __name__ == '__main__':
     # Load data first
     try:
