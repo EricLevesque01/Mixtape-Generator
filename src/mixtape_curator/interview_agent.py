@@ -11,39 +11,42 @@ from .library import library
 logger = logging.getLogger(__name__)
 
 # System prompt for the Interview Agent
-SYSTEM_PROMPT = """You are a Mixtape Curator AI conducting a conversational interview to build a playlist.
-Your goal is to gather enough information to create a perfect mixtape.
+SYSTEM_PROMPT = """You are a professional Mixtape Curator, A&R, and Creative Director. 
+Your goal is to help the user craft a cohesive musical experience, not just a list of songs.
+You are building something special, like a physical CD-R with a curated journey.
 
-You need to determine:
-1. WHO is this for? (recipient / occasion / context)
-2. WHAT kind of music? (genres, artists, era/decade)
-3. WHAT VIBE? (energy level, mood/valence, tempo preference)
+Think about the "DNA" of the project:
+1. The Mission Statement: What's the mood? (e.g. "Main Character", "Late Night Drive", "Focus")
+2. Anchor Artist/Song: Is there a centerpiece we should build around?
+3. The Texture: Crisp and modern? Warm and lo-fi? Esoteric?
+4. The Journey Length: CD-R (80 mins)? EP style?
 
-Be conversational, warm, and enthusiastic about music. Ask follow-up questions naturally.
-If the user provides a lot of info at once, acknowledge it and ask about what's still missing.
-If the user seems impatient or says "just go" or "that's enough", respect that and wrap up.
+Be sophisticated, warm, and highly knowledgeable about music. Use terms like "A&R", "Creative Director", "Centerpiece", "Vibe", and "Sonic Texture".
 
-IMPORTANT: After each user message, you must also extract structured data.
-Always respond with valid JSON in this format:
+IMPORTANT: Even if you have enough info, check if there are specific "must-haves" or "exclusions" to ensure better grounding.
+
+Always respond with valid JSON:
 {
-    "response": "Your conversational response to the user",
+    "response": "Your conversational response as a curator",
     "extracted": {
-        "recipient": "who the mix is for (or null)",
-        "context": "occasion/setting (or null)",
-        "genres": ["list of mentioned genres"],
-        "artists_include": ["artists to include"],
-        "artists_exclude": ["artists to exclude"],
-        "descriptors": ["mood/vibe words like 'chill', 'energetic'"],
+        "recipient": "who (or null)",
+        "context": "occasion (or null)",
+        "genres": ["genres"],
+        "artists_include": ["artists"],
+        "artists_exclude": ["artists"],
+        "tracks_include": ["titles"],
+        "tracks_exclude": ["titles"],
+        "descriptors": ["vibe words like 'crooner', 'glitchy'"],
         "energy": 0.0-1.0 or null,
         "valence": 0.0-1.0 or null,
-        "era": "e.g. '90s' or '1980-1995' or null",
+        "era": "e.g. '80s' or null",
         "is_sufficient": false,
         "user_wants_to_proceed": false
     }
 }
 
-Set "is_sufficient" to true when you have at least a recipient/context AND some musical direction.
-Set "user_wants_to_proceed" to true if the user explicitly wants to skip ahead.
+Set "is_sufficient" to true only when you have a strong vision for the mix.
+Set "user_wants_to_proceed" to true ONLY if the user explicitly says they are ready to generate.
 """
 
 
@@ -167,11 +170,17 @@ class InterviewAgent:
         # Apply extracted data to profile
         self._apply_extraction(extracted)
         
-        # Library grounding: check if requested artists exist
-        grounding_notes = self._ground_artists(user_callback)
+        # Library grounding: check if requested artists/tracks exist
+        notes_artists = self._ground_artists(user_callback)
+        notes_tracks = self._ground_tracks(extracted.get("tracks_include", []), user_callback)
+        
+        grounding_notes = ""
+        if notes_artists: grounding_notes += notes_artists + " "
+        if notes_tracks: grounding_notes += notes_tracks
+        
         if grounding_notes:
             # Inject grounding info and ask LLM to regenerate response with this context
-            self.history.append({"role": "system", "content": grounding_notes})
+            self.history.append({"role": "system", "content": grounding_notes.strip()})
             self.llm_call_count += 1
             try:
                 regen = self.llm.json(self.history, model=current_model, temperature=0.4)
@@ -188,13 +197,23 @@ class InterviewAgent:
             if missing:
                 user_callback(f"[Thought] Still need: {', '.join(missing)}")
             else:
-                user_callback("[Thought] Profile looks complete!")
+                user_callback("[Thought] Profile looks sufficient, but checking if user wants more.")
         
-        if (is_sufficient or user_wants_proceed) and not missing:
+        # We only finish if the user explicitly wants to proceed or if we hit the limit
+        # or if we are sufficient AND the user gives a positive signal (handled by LLM setting user_wants_to_proceed)
+        if user_wants_proceed and not missing:
             summary = self._generate_summary()
             self.completed = True
             self.history.append({"role": "assistant", "content": response_text})
             return f"{response_text}\n\n{summary}\n\nStarting generation now...", True
+        
+        # If we hit max turns, force wrap-up
+        if self.turn_count >= MAX_INTERVIEW_TURNS:
+            summary = self._generate_summary()
+            self.completed = True
+            msg = f"I've got quite a bit of info now! Let's get started on the music.\n\n{summary}"
+            self.history.append({"role": "assistant", "content": msg})
+            return msg, True
         
         # If LLM thinks sufficient but we still have missing fields, keep going
         if is_sufficient and missing:
@@ -223,6 +242,9 @@ class InterviewAgent:
             if a and a not in self.profile.exclude_artists:
                 self.profile.exclude_artists.append(a)
                 
+        # Tracks are handled via grounding to map to IDs
+        # (Already handled in _ground_tracks if they exist)
+
         for d in extracted.get("descriptors", []):
             if d and d not in self.profile.target_descriptors:
                 self.profile.target_descriptors.append(d)
@@ -298,10 +320,50 @@ class InterviewAgent:
         if not parts:
             return None
             
-        note = "LIBRARY GROUNDING: " + ". ".join(parts) + ". Please naturally inform the user about library availability and suggest alternatives where needed."
+        note = "LIBRARY GROUNDING (ARTISTS): " + ". ".join(parts) + ". Please naturally inform the user about library availability (especially mention if an artist is completely missing) and suggest alternatives where needed."
         if user_callback:
             user_callback(f"[Thought] {note}")
         return note
+
+    def _ground_tracks(self, tracks: List[str], user_callback=None) -> Optional[str]:
+        """Match requested song titles to specific track IDs."""
+        if not tracks or library.df.empty:
+            return None
+            
+        parts = []
+        for title in tracks:
+            # Search library for title
+            # (Case insensitive search in DataFrame)
+            matches = library.df[library.df['title'].str.lower() == title.lower()]
+            
+            if matches.empty:
+                # Try partial match or fuzzy?
+                mask = library.df['title'].str.lower().str.contains(title.lower(), na=False)
+                matches = library.df[mask]
+
+            if not matches.empty:
+                if len(matches) == 1:
+                    track_id = matches.iloc[0]['id']
+                    track_title = matches.iloc[0]['title']
+                    artist = matches.iloc[0]['artist']
+                    if track_id not in self.profile.must_include_track_ids:
+                        self.profile.must_include_track_ids.append(track_id)
+                    if user_callback:
+                        user_callback(f"[Thought] Track '{title}' matched to '{track_title}' by {artist} ({track_id}).")
+                else:
+                    # Multiple matches (Disambiguation needed - like Clarity)
+                    options = [f"{m['title']} by {m['artist']}" for _, m in matches.head(3).iterrows()]
+                    parts.append(f"Found multiple versions of '{title}': {', '.join(options)}. Ask the user to specify which one they want.")
+                    if user_callback:
+                        user_callback(f"[Thought] Multiple matches for '{title}': {len(matches)} found.")
+            else:
+                parts.append(f"Track '{title}' was not found in the library.")
+                if user_callback:
+                    user_callback(f"[Thought] Track '{title}' not found.")
+
+        if not parts:
+            return None
+        return "LIBRARY GROUNDING (TRACKS): " + ". ".join(parts) + ". Be sure to ask for clarification if there are multiple versions of a song."
 
     # ─── Mock Path (Fallback) ────────────────────────────────────────
     def _process_with_mock(self, user_input: str, user_callback=None) -> Tuple[str, bool]:
@@ -363,18 +425,115 @@ class InterviewAgent:
             return "Got it. What kind of vibe or genres are we looking for? (e.g. 'Upbeat Pop', 'Mellow Jazz')"
         return "Is there anything else you'd like to add? Specific artists to include or avoid?"
 
+    # ─── Refinement (Neither Loop) ───────────────────────────────────
+    def refine_profile(self, feedback: str, user_callback: Callable[[str], None] = None):
+        """
+        Update the profile based on user feedback when they reject a draft.
+        Uses the LLM for intelligent extraction from the feedback string.
+        """
+        if user_callback:
+            user_callback(f"[Thought] Processing refinement feedback: '{feedback}'")
+            
+        if not self.use_llm:
+            # Fallback to simple keyword logic if no LLM
+            self._refine_mock(feedback)
+            return
+
+        refine_prompt = f"""
+        The user rejected the generated mixtape drafts and provided this feedback: "{feedback}"
+        
+        Update the structured profile based on this feedback. 
+        If they want it faster, increase energy. If they want it more similar, increase uniformity.
+        Extract any new artists to include or exclude.
+        
+        Respond with valid JSON in this format:
+        {{
+            "extracted": {{
+                "genres": ["new genres to add"],
+                "artists_include": ["new artists"],
+                "artists_exclude": ["artists to now avoid"],
+                "descriptors": ["new vibe words"],
+                "energy_delta": 0.0 (e.g. +0.2 or -0.2),
+                "uniformity_delta": 0.0 (e.g. +0.2 or -0.2),
+                "valence_delta": 0.0
+            }}
+        }}
+        """
+        
+        try:
+            current_model = self.model_smart if self.escalated else self.model_fast
+            result = self.llm.json([{"role": "user", "content": refine_prompt}], model=current_model)
+            ext = result.get("extracted", {})
+            
+            # Apply changes
+            self._apply_refinement(ext)
+            
+            if user_callback:
+                user_callback(f"[Thought] Profile updated based on feedback.")
+                
+        except Exception as e:
+            logger.error(f"Refinement LLM call failed: {e}")
+            self._refine_mock(feedback)
+
+    def _apply_refinement(self, ext: dict):
+        """Helper to apply LLM-extracted refinement deltas."""
+        for g in ext.get("genres", []):
+            if g not in self.profile.target_genres:
+                self.profile.target_genres.append(g)
+        
+        for a in ext.get("artists_include", []):
+            if a not in self.profile.must_include_artists:
+                self.profile.must_include_artists.append(a)
+                
+        for a in ext.get("artists_exclude", []):
+            if a not in self.profile.exclude_artists:
+                self.profile.exclude_artists.append(a)
+                
+        for d in ext.get("descriptors", []):
+            if d not in self.profile.target_descriptors:
+                self.profile.target_descriptors.append(d)
+                
+        # Deltas
+        self.profile.targets.energy = max(0.0, min(1.0, self.profile.targets.energy + ext.get("energy_delta", 0.0)))
+        self.profile.targets.uniformity = max(0.0, min(1.0, self.profile.targets.uniformity + ext.get("uniformity_delta", 0.0)))
+        self.profile.targets.valence = max(0.0, min(1.0, self.profile.targets.valence + ext.get("valence_delta", 0.0)))
+
+    def _refine_mock(self, feedback: str):
+        """Fallback keyword-based refinement (ported from interview.py)."""
+        feedback = feedback.lower()
+        if any(w in feedback for w in ["slow", "sleepy", "boring", "low energy", "faster"]):
+            self.profile.targets.energy = min(1.0, self.profile.targets.energy + 0.2)
+        if any(w in feedback for w in ["fast", "intense", "aggressive", "too hard", "slower"]):
+            self.profile.targets.energy = max(0.0, self.profile.targets.energy - 0.2)
+        if any(w in feedback for w in ["messy", "random", "all over", "inconsistent", "too eclectic"]):
+            self.profile.targets.uniformity = min(1.0, self.profile.targets.uniformity + 0.2)
+        if any(w in feedback for w in ["samey", "repetitive", "boring", "too similar", "vary"]):
+            self.profile.targets.uniformity = max(0.0, self.profile.targets.uniformity - 0.2)
+        
+        # Simple exclusion
+        if "exclude" in feedback or "no " in feedback:
+            for word in ["exclude", "no ", "not ", "dont want ", "don't want "]:
+                if word in feedback:
+                    parts = feedback.split(word)
+                    if len(parts) > 1:
+                        artist = parts[1].split(',')[0].strip().title()
+                        if artist and artist not in self.profile.exclude_artists:
+                            self.profile.exclude_artists.append(artist)
+
     # ─── Shared Logic ────────────────────────────────────────────────
     def _check_missing_fields(self) -> List[str]:
         """Return list of fields that need more info."""
         missing = []
         
-        if not self.profile.recipient:
-            missing.append("Recipient/Context")
+        if not self.profile.recipient or self.profile.recipient == "self":
+            # If it's just 'self', check if we have context
+            if not self.profile.context_notes:
+                missing.append("Recipient/Context")
             
         has_content = (self.profile.target_genres or 
                        self.profile.must_include_artists or 
                        self.profile.targets.energy != 0.5)
-                       
+                        
         if not has_content:
             missing.append("Musical Direction (Genre/Vibe)")
             

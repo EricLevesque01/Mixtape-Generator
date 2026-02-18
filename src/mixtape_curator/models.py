@@ -44,6 +44,9 @@ class Track(BaseModel):
     spotify_uri: Optional[str] = None
     enrichment_source: Optional[str] = None
     release_year: Optional[int] = None
+    track_number: Optional[int] = None
+    total_tracks: Optional[int] = None
+    disc_number: Optional[int] = None
     enrichment_gaps: List[str] = Field(default_factory=list)  # Fields that were missing/defaulted
     
     @property
@@ -92,6 +95,7 @@ class Playlist(BaseModel):
     scores: PlaylistScores = Field(default_factory=PlaylistScores)
     violations: List[str] = Field(default_factory=list)
     generation_notes: Optional[str] = None
+    track_notes: Dict[str, str] = Field(default_factory=dict) # Mapping of track_id -> curator reasoning
 
 class EvalResult(BaseModel):
     case_id: str

@@ -258,6 +258,9 @@ class Library:
             spotify_uri=_ss(row.get('spotify_uri')),
             enrichment_source=_ss(row.get('enrichment_source')),
             release_year=_si('release_year', row.get('release_year')),
+            track_number=_si('track_number', row.get('track_number')),
+            total_tracks=_si('total_tracks', row.get('total_tracks')),
+            disc_number=_si('disc_number', row.get('disc_number')),
             enrichment_gaps=gaps
         )
 

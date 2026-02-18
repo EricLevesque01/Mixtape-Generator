@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
 from typing import List
-from .models import Playlist, Track
-from .library import library
-from .config import config
+from mixtape_curator.models import Playlist, Track
+from mixtape_curator.library import library
+from mixtape_curator.config import config
 
 class Exporter:
     def __init__(self, export_dir: str = "exports"):
@@ -33,7 +33,9 @@ class Exporter:
             f.write(f"Score: {playlist.scores.total:.2f}\n")
             f.write("-" * 40 + "\n")
             for i, t in enumerate(tracks):
+                reason = playlist.track_notes.get(t.id, "Selected for its fit in the journey.")
                 f.write(f"{i+1}. {t.artist} - {t.title} ({t.duration_s}s)\n")
+                f.write(f"   Why it fits: {reason}\n")
 
     def _write_m3u8(self, tracks: List[Track], base: str):
         """

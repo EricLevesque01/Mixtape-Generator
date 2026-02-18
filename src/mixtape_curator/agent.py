@@ -1,16 +1,15 @@
 import logging
 import json
+import copy
 from typing import List, Dict, Any, Optional
 import pandas as pd
-from .models import Playlist, UserProfile
-from .library import library
-from .scoring import scorer
-from .generator import generator
-from .llm.interface import LLMProvider
-from .llm.providers.local import MockLLM
-from .config import config
-
-logger = logging.getLogger("mixtape_curator")
+from mixtape_curator.models import Playlist, UserProfile
+from mixtape_curator.library import library
+from mixtape_curator.scoring import scorer
+from mixtape_curator.generator import generator
+from mixtape_curator.llm.interface import LLMProvider
+from mixtape_curator.llm.providers.local import MockLLM
+from mixtape_curator.config import config
 
 class ReActAgent:
     def __init__(self, llm: LLMProvider, user_callback=None):
@@ -24,109 +23,95 @@ class ReActAgent:
         
     def repair_playlist(self, playlist: Playlist, profile: UserProfile) -> Playlist:
         """
-        Execute ReAct loop to repair valid playlist.
+        Build and repair a playlist.
+        Supports Incremental Phase (Growth) and Optimization Phase (Refinement).
         """
         history = []
         best_playlist = playlist
         best_score = playlist.scores.total
         stall_count = 0
         
+        # Thresholds from config
+        ambitious_thresh = config.get("ambitious_threshold", 0.88)
+        accept_thresh = config.get("accept_threshold", 0.80)
+        
+        # Phase detection
+        target_duration = config.duration_target_s
+        is_growth_phase = len(playlist.track_ids) < 8 or playlist.total_duration_s < (target_duration * 0.7)
+        
+        current_threshold = accept_thresh if is_growth_phase else ambitious_thresh
+        
+        self.escalated = True # Use smart model for construction
+
         for i in range(self.max_iters):
             # 1. Validate constraints
             violations = self._validate_constraints(playlist, profile)
             playlist.violations = violations
             
-            # Check acceptance (No violations + high score + sufficient length)
-            # Spec says: loop until valid OR max iters.
-            # We add a check for length < 10 to allow the agent to fix short playlists
+            # Update Phase
+            is_growth_phase = playlist.total_duration_s < (target_duration * 0.85)
+            
+            # Check acceptance 
             is_valid = not violations
-            score_good = playlist.scores.total >= config.get("accept_threshold", 0.70)
-            length_good = len(playlist.track_ids) >= 10
+            score_good = playlist.scores.total >= current_threshold
+            duration_good = not is_growth_phase # If we are out of growth phase, duration is good
             
-            if is_valid and score_good and length_good:
-                logger.info("Playlist accepted.")
+            if is_valid and score_good and duration_good:
+                logger.info(f"Playlist accepted! Score: {playlist.scores.total:.2f}, Duration: {playlist.total_duration_s}s")
                 return playlist
-            elif is_valid and not length_good:
-                logger.info("Playlist valid but too short. Continuing to agent...")
-                
-            # Track stalling
-            # If we are fixing violations, do not stall based on score
-            if len(violations) < len(playlist.violations):
-                 # We made progress on violations (not perfect check but okay for now)
-                 stall_count = 0
-            elif not violations:
-                # No violations, check score
-                if playlist.scores.total > best_score:
-                    best_score = playlist.scores.total
-                    best_playlist = playlist
-                    stall_count = 0
-                else:
-                    stall_count += 1
-            else:
-                 # Still have violations and count didn't naturally decrease?
-                 # (Start of loop violations vs current are same object reference in code above, so this logic is tricky)
-                 # Simpler: If violations exist, we don't care about score stalling yet.
-                 # But we must ensure we aren't looping forever doing nothing.
-                 if violations:
-                     stall_count = 0 # Assume we are trying to fix them.
-                 else:
-                     stall_count += 1
-                
-            if stall_count >= self.stall_iters:
-                if not self.escalated:
-                    # Escalate to smarter model before giving up
-                    self.escalated = True
-                    stall_count = 0
-                    logger.info(f"Agent stalled. Escalating to {self.model_smart}.")
-                    continue
-                else:
-                    logger.warning("Agent stalled even with smart model. Stopping.")
-                    break
-
-            # 2. Plan (Thought)
-            # Construct prompt with state
-            prompt = self._construct_prompt(playlist, violations, profile, history)
             
-            # Call LLM for Action
-            # Expected format: {"action": "tool_name", "params": {...}}
-            current_model = self.model_smart if self.escalated else self.model_fast
+            # 2. Plan (Thought)
+            phase_msg = "GROWTH PHASE: Focus on finding and adding relevant tracks to meet duration target." if is_growth_phase else "REFINEMENT PHASE: Optimize flow and fit to reach high score."
+            prompt = self._construct_prompt(playlist, violations, profile, history, phase_msg)
+            
             try:
-                response = self.llm.json([{"role": "user", "content": prompt}], model=current_model)
+                response = self.llm.json([{"role": "user", "content": prompt}], model=self.model_smart)
                 action = response.get("action")
                 params = response.get("params", {})
                 reasoning = response.get("reasoning", "")
                 
                 history.append(f"Iter {i}: Thought: {reasoning} -> Action: {action}")
                 
-                # 3. Act (Tool Execution)
+                # 3. Act
                 if action == "swap_track":
                     self._tool_swap(playlist, params, profile)
                 elif action == "remove_track":
-                     self._tool_remove(playlist, params, profile)
+                    self._tool_remove(playlist, params, profile)
                 elif action == "add_track":
-                     self._tool_add_track(playlist, params, profile)
+                    self._tool_add_track(playlist, params, profile)
                 elif action == "search_library":
-                     results = self._tool_search_library(params, profile)
-                     history.append(f"Search Results: {results}")
-                     stall_count = 0 # Interaction shouldn't count as stalling
+                    results = self._tool_search_library(params, profile)
+                    history.append(f"Search Results: {results}")
                 elif action == "consult_user":
-                     answer = self._tool_consult_user(params)
-                     history.append(f"User Answer: {answer}")
-                     stall_count = 0 # Interaction shouldn't count as stalling
+                    answer = self._tool_consult_user(params)
+                    history.append(f"User Answer: {answer}")
                 elif action == "finalize":
-                    return playlist
+                    if is_valid and duration_good: return playlist
+                    else: history.append(f"Finalize rejected: valid={is_valid}, dur_good={duration_good}")
+                
+                # Resequence and update stats
+                generator.optimize_flow(playlist, profile)
+                
+                # Track best
+                if not violations and playlist.scores.total > best_score:
+                    best_score = playlist.scores.total
+                    best_playlist = copy.deepcopy(playlist)
+                    stall_count = 0
                 else:
-                    logger.warning(f"Unknown action: {action}")
+                    stall_count += 1
                     
+                if stall_count >= self.stall_iters:
+                    if current_threshold > ambitious_thresh: # If we were aiming high, lower it
+                        current_threshold = accept_thresh
+                        stall_count = 0
+                    else:
+                        break
+
             except Exception as e:
-                logger.error(f"Agent error: {e}")
+                logger.error(f"ReAct error: {e}")
                 break
                 
-            # 4. Resequence & Score
-            generator.optimize_flow(playlist, profile)
-            # Scoring happens inside optimize_flow
-            
-        return best_playlist if not violations else playlist # Return valid if possible
+        return best_playlist if not best_playlist.violations else playlist
 
     def _validate_constraints(self, playlist: Playlist, profile: UserProfile) -> List[str]:
         violations = []
@@ -137,8 +122,16 @@ class ReActAgent:
         # Artist Limit (Max 2)
         artist_counts = {}
         exclude_artists_lower = [a.lower() for a in profile.exclude_artists]
+        exclude_genres_lower = [g.lower() for g in profile.exclude_genres]
+        exclude_descriptors_lower = [d.lower() for d in profile.exclude_descriptors]
+        exclude_track_ids = set(profile.exclude_track_ids)
+        
+        present_ids = set(playlist.track_ids)
         
         for tid in playlist.track_ids:
+            if tid in exclude_track_ids:
+                violations.append(f"Forbidden Track ID: {tid}")
+                
             t = library.get_track(tid)
             if t:
                 # Check Excluded Artist
@@ -146,11 +139,18 @@ class ReActAgent:
                     violations.append(f"Forbidden Artist: {t.artist}")
                 
                 # Check Excluded Genres
-                if profile.exclude_genres:
+                if exclude_genres_lower:
                     genres = set(t.rym_data.primary_genres + t.rym_data.subgenres)
-                    for eg in profile.exclude_genres:
-                        if eg.lower() in [g.lower() for g in genres]:
+                    for eg in exclude_genres_lower:
+                        if eg in [g.lower() for g in genres]:
                             violations.append(f"Forbidden Genre '{eg}' on {t.title}")
+
+                # Check Excluded Descriptors
+                if exclude_descriptors_lower:
+                    descriptors = [d.lower() for d in t.rym_data.descriptors]
+                    for ed in exclude_descriptors_lower:
+                        if ed in descriptors:
+                            violations.append(f"Forbidden Descriptor '{ed}' on {t.title}")
 
                 # Artist concentration
                 artist_counts[t.artist] = artist_counts.get(t.artist, 0) + 1
@@ -161,6 +161,12 @@ class ReActAgent:
             for ma in profile.must_include_artists:
                 if ma.lower() not in present_artists:
                     violations.append(f"Missing Must-Include Artist: {ma}")
+        
+        # Check Must-Include Track IDs
+        if profile.must_include_track_ids:
+            for mit in profile.must_include_track_ids:
+                if mit not in present_ids:
+                    violations.append(f"Missing Must-Include Track: {mit}")
         
         for artist, count in artist_counts.items():
             if count > config.max_tracks_per_artist:
@@ -177,7 +183,7 @@ class ReActAgent:
                 total_s += t.duration_s
         playlist.total_duration_s = total_s
 
-    def _construct_prompt(self, playlist: Playlist, violations: List[str], profile: UserProfile, history: List[str]) -> str:
+    def _construct_prompt(self, playlist: Playlist, violations: List[str], profile: UserProfile, history: List[str], phase_msg: str) -> str:
         # Simplified prompt construction
 
         # Helper to group tracks by artist for prompt context
@@ -196,31 +202,36 @@ class ReActAgent:
             "score": playlist.scores.total,
             "violations": violations,
             "track_count": len(playlist.track_ids),
-            "artist_map": artist_map
+            "artist_map": artist_map,
+            "phase": phase_msg
         }
         return f"""
-        You are a playlist curator agent. Fix the current playlist.
+        You are a Mixtape Curator and A&R agent. Your goal is to build a cohesive musical journey.
+        We are not just matching genres; we are creating a VIBE (like an expert human curator).
+        
         State: {json.dumps(state)}
         Violations: {violations}
         History: {history[-10:]}
         
         Available Tools:
-        - swap_track(old_id, new_id): Replace a track. 
-        - remove_track(track_id): Remove a track (useful for duration/artist count).
-        - add_track(track_ids): Add one or more tracks (list of IDs).
-        - consult_user(question): Ask the user for input/decision.
-        - search_library(query, limit=5): Search for tracks. Returns list of IDs and Titles.
-        - finalize(): If valid and good score.
+        - swap_track(old_id, new_id, reasoning): Replace a track. Provide "reasoning" for why the NEW track fits the vibe/journey.
+        - remove_track(track_id): Remove a track.
+        - add_track(track_ids, reasonings): Add one or more tracks. Provide a dictionary "reasonings" mapping track_id to a short "Why it fits" string.
+        - consult_user(question): Ask the user for input.
+        - search_library(query, limit=5): Search for tracks.
+        - finalize(): If valid and you've provided reasoning for all tracks.
         
-        Respond JSON: {{ "reasoning": "...", "action": "...", "params": {{...}} }}
+        Respond JSON: {{ "reasoning": "thought process", "action": "...", "params": {{...}} }}
         """
 
     def _tool_swap(self, playlist: Playlist, params: Dict, profile: UserProfile):
         old_id = params.get("old_id")
         new_id = params.get("new_id")
+        reasoning = params.get("reasoning", "Fits the curated journey.")
         if old_id in playlist.track_ids:
             idx = playlist.track_ids.index(old_id)
             playlist.track_ids[idx] = new_id
+            playlist.track_notes[new_id] = reasoning
             self._update_playlist_stats(playlist)
             
     def _tool_remove(self, playlist: Playlist, params: Dict, profile: UserProfile):
@@ -235,12 +246,14 @@ class ReActAgent:
 
     def _tool_add_track(self, playlist: Playlist, params: Dict, profile: UserProfile):
         tids = params.get("track_ids", [])
+        reasonings = params.get("reasonings", {})
         if not tids and "track_id" in params:
             tids = [params["track_id"]]
             
         for tid in tids:
             if tid not in playlist.track_ids:
                 playlist.track_ids.append(tid)
+                playlist.track_notes[tid] = reasonings.get(tid, reasoning if (reasoning := params.get("reasoning")) else "Carefully selected for this mix.")
         self._update_playlist_stats(playlist)
 
     def _tool_consult_user(self, params: Dict) -> str:
@@ -280,12 +293,12 @@ class ReActAgent:
             if len(found_matches) == 0:
                  found_matches = broad_matches.head(limit)
             else:
-                 # We have some artist matches, but need more to fill limit
-                 # Append broad matches that aren't already included
-                 needed = limit - len(found_matches)
-                 current_ids = set(found_matches['id'])
-                 new_matches = broad_matches[~broad_matches['id'].isin(current_ids)].head(needed)
-                 if not new_matches.empty:
+                # We have some artist matches, but need more to fill limit
+                # Append broad matches that aren't already included
+                needed = limit - len(found_matches)
+                current_ids = set(found_matches['id'])
+                new_matches = broad_matches[~broad_matches['id'].isin(current_ids)].head(needed)
+                if not new_matches.empty:
                     found_matches = pd.concat([found_matches, new_matches])
         
         if found_matches.empty:
@@ -293,7 +306,10 @@ class ReActAgent:
             
         results = []
         for _, row in found_matches.iterrows():
-            results.append(f"{row['id']}: {row['title']} by {row['artist']}")
+            genres = ", ".join(row['rym_data_primary_genres'][:2])
+            descriptors = ", ".join(row['rym_data_descriptors'][:3])
+            results.append(
+                f"{row['id']}: {row['title']} by {row['artist']} [{genres}] [{descriptors}] ({row['duration_s']}s)"
+            )
             
         return results_msg + "\n".join(results)
-

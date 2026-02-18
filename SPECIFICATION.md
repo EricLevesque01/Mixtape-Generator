@@ -1,16 +1,16 @@
 # ReAct Mixtape Curator — AI Implementation Specification
 
-**Version:** v2.1.1 (Semantic & Cohesion Upgrade — Implementation Freeze)
+**Version:** v2.2.0 (Curator Persona & Incremental Growth)
 
 This specification is intended for direct consumption by an AI coding agent.
 
-All required system behaviors, schemas, constraints, and execution rules are explicitly defined. This version incorporates semantic genre modeling, uniformity-aware scoring, and deterministic ReAct repair behavior. All ambiguity from prior versions has been resolved.
+All required system behaviors, schemas, constraints, and execution rules are explicitly defined. This version incorporates the "A&R Curator" persona, incremental "Seed -> Growth -> Refinement" generation, and reasoning transparency.
 
 ---
 
 ## 0. System Summary
 
-ReAct Mixtape Curator is a conversational AI application that generates curated playlists (“mixtapes”) from a user’s personal music library.
+ReAct Mixtape Curator is a conversational AI application that acts as a **professional Mixtape Curator / Creative Director**. It generates curated playlists (“mixtapes”) from a user’s personal music library with a focus on cohesive journeys, specific vibes, and clear artistic reasoning.
 
 The system is intentionally modeled after physical mixtape media:
 
@@ -19,17 +19,16 @@ The system is intentionally modeled after physical mixtape media:
 
 ### Execution Flow
 
-1.  Dynamically interview the user to gather intent, constraints, genres, and desired cohesion.
-2.  Convert responses into a structured JSON preference profile.
-3.  Filter candidate tracks from a local, RYM-enriched metadata store (`data/library.json`).
-4.  Construct a draft playlist satisfying all hard constraints.
-5.  Optimize sequencing and flow.
-6.  Validate and repair playlist via an LLM-driven ReAct loop.
-7.  Produce two viable candidates (A/B) via Base-and-Branch strategy.
-8.  Present choices (A, B, or Neither) and execute capped retry loop.
-9.  Store feedback for future tuning.
-10. Output finalized playlist via local exports or optional Spotify sync.
-11. Support batch evaluation of multiple LLM models using simulated users.
+1.  **Curator Interview**: Dynamically interview the user with an "A&R" persona to gather the "DNA" of the project (Mission Statement, Anchor Artist, Texture, Length).
+2.  **Profile Extraction**: Convert responses into a structured JSON preference profile.
+3.  **Phase 1: Seed**: Create an initial draft containing *only* the user's "must-have" tracks and artists.
+4.  **Phase 2: Growth**: The ReAct agent actively searches the library for tracks that fit the vibe and expands the playlist to near the target duration.
+5.  **Phase 3: Refinement**: The agent optimizes sequencing and flow, swapping tracks to maximize the score (target > 0.80).
+6.  **Reasoning**: Every track decision (add/swap) must include a "Why it fits" reasoning string.
+7.  **Production**: Produce two viable candidates (A/B).
+8.  **Presentation**: Present choices (A, B, or Neither) with a rich table display showing curator notes.
+9.  **Feedback Loop**: If "Neither" is selected, intelligently refine the profile based on specific feedback (e.g., "too slow", "more funk") and regenerate.
+10. **Output**: Finalize playlist via local exports (TXT, M3U8) or optional Spotify sync.
 
 **Goal:** Playlists should feel intentionally curated with deep semantic and sonic awareness.
 
@@ -46,7 +45,8 @@ max_tracks_per_artist: 2
 
 max_questions: 10
 conf_thresh: 0.7
-accept_threshold: 0.70
+ambitious_threshold: 0.88
+accept_threshold: 0.80
 max_repair_iters: 8
 eps: 0.01
 stall_iters: 2
@@ -160,13 +160,15 @@ Uniformity = 1 aims for maximal genre homogeneity.
 
 ## 4. Conversational Interview Framework
 
+### Persona
+The agent adopts the persona of a **Creative Director / A&R**. It uses sophisticated language ("Texture", "DNA", "Anchor Artist") and seeks to build a "Journey".
+
 ### Interview Stages
 
-1.  Intake (recipient, must-includes, exclusions, context).
-2.  Genre & descriptor calibration.
-3.  Cohesion calibration (uniform vs eclectic).
-4.  Energy & mood calibration.
-5.  Confirmation.
+1.  **Mission Statement**: Determine mood, context, and recipient.
+2.  **Anchor & Texture**: Identify key artists/songs and the sonic aesthetic.
+3.  **Journey Length**: confirm approximate duration (CD-R vs EP).
+4.  **Grounding**: Check for specific exclusions or must-haves.
 
 ### Confidence Aggregation
 
@@ -207,7 +209,7 @@ Offline enrichment requirements:
 
 Sequencing uses Greedy Multi-Start:
 
-1.  Choose seed track.
+1.  Choose seed track (prioritizing "Opener" candidates if available, e.g. track 1/2 of an album).
 2.  Iteratively append best transition.
 3.  Repeat across seeds.
 4.  Keep best scoring ordering.
@@ -216,7 +218,12 @@ Sequencing uses Greedy Multi-Start:
 
 ## 8. Agentic ReAct Repair Loop
 
-Process:
+### Phases
+
+1.  **Growth Phase**: If playlist is short (< 8 tracks) or short on duration (< 70% target), focus on `search_library` and `add_track` to build volume.
+2.  **Refinement Phase**: Once sufficient length is reached, switch to `swap_track` and `remove_track` to optimize Score and Flow.
+
+### Process
 
 Draft → sequence → score → validate.
 
@@ -246,13 +253,16 @@ Resequence and minimally repair.
 
 ## 10. "Neither" Retry Loop
 
-Collect feedback, update profile, regenerate A/B playlists until retry cap reached.
+If "Neither" is selected:
+1.  Ask user for specific feedback (e.g., "Too slow", "Remove Artist X").
+2.  **Refine Profile**: Update `UserProfile` based on feedback.
+3.  Regenerate A/B playlists until retry cap reached.
 
 ---
 
 ## 11. Exports
 
-Local: console, TXT, CSV, M3U8.
+Local: console (Table format), TXT (with reasoning), M3U8.
 
 Spotify: OAuth → create playlist → add tracks → report failures.
 
@@ -262,10 +272,12 @@ Spotify: OAuth → create playlist → add tracks → report failures.
 
 Agent may call only:
 
--   search_library(filters)
--   swap_track(state, old_id, new_id)
--   consult_user(reason, prompt)
--   finalize()
+-   `search_library(query, limit)`: Returns tracks with Genre/Descriptor metadata.
+-   `swap_track(old_id, new_id, reasoning)`: Replace a track. **Must provide reasoning.**
+-   `add_track(track_ids, reasonings)`: Add tracks. **Must provide reasoning dict.**
+-   `remove_track(track_id)`: Remove a track.
+-   `consult_user(question)`: Ask the user.
+-   `finalize()`: Finish the loop.
 
 ---
 
@@ -318,6 +330,18 @@ Agent may call only:
     "familiarity": 0.0
   },
   "context_notes": null
+}
+```
+
+### Playlist State
+
+```json
+{
+  "track_ids": [],
+  "total_duration_s": 0,
+  "scores": {},
+  "violations": [],
+  "track_notes": { "track_id": "Reasoning string" }
 }
 ```
 

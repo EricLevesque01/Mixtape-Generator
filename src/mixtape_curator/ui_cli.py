@@ -1,13 +1,13 @@
 import sys
 import cmd
-from .interview import Interviewer
-from .generator import generator
-from .agent import ReActAgent, MockLLM
-from .ab_test import ab_tester
-from .library import library
-from .exporter import exporter
-from .spotify_export import spotify_exporter
-from .config import config
+from mixtape_curator.generator import generator
+from mixtape_curator.agent import ReActAgent
+from mixtape_curator.ab_test import ab_tester
+from mixtape_curator.library import library
+from mixtape_curator.exporter import exporter
+from mixtape_curator.spotify_export import spotify_exporter
+from mixtape_curator.config import config
+from mixtape_curator.llm.providers.local import MockLLM
 
 class MixtapeCLI(cmd.Cmd):
     intro = 'Welcome to the ReAct Mixtape Curator. Type "start" to begin.'
@@ -15,7 +15,7 @@ class MixtapeCLI(cmd.Cmd):
 
     def do_start(self, arg):
         """Start the interview process with the new Agentic Interviewer."""
-        from .interview_agent import InterviewAgent
+        from mixtape_curator.interview_agent import InterviewAgent
         
         # Transparency callback
         def show_thought(thought: str):
@@ -44,13 +44,13 @@ class MixtapeCLI(cmd.Cmd):
 
         while retry_count < max_retries:
             print(f"\n--- Round {retry_count + 1} / {max_retries + 1} ---")
-            print("Drafting playlist...")
-            # 1. Draft
-            draft = generator.create_draft(profile)
-            print(f"Draft Initialized: {len(draft.track_ids)} tracks, {draft.total_duration_s}s duration.")
+            print("Seeding playlist with must-haves...")
+            # 1. Draft (Seed Phase)
+            draft = generator.create_draft(profile, incremental=True)
+            print(f"Seed Created: {len(draft.track_ids)} tracks.")
             
-            # 2. Sequence
-            print("Optimizing Flow...")
+            # 2. Sequence (Initial)
+            print("Optimizing Initial Flow...")
             sequenced = generator.optimize_flow(draft, profile)
             
             # 3. Agent Repair
@@ -61,8 +61,13 @@ class MixtapeCLI(cmd.Cmd):
                 print(f"\n[Agent Question]: {question}")
                 return input("> ")
     
-            # TODO: wire real LLM here later
-            agent = ReActAgent(llm=MockLLM(), user_callback=ask_user)
+            # Use real LLM provider if key is available
+            llm_provider = MockLLM()
+            if hasattr(config, "openai_api_key") and config.openai_api_key:
+                from mixtape_curator.llm.providers.openai import OpenAIProvider
+                llm_provider = OpenAIProvider()
+            
+            agent = ReActAgent(llm=llm_provider, user_callback=ask_user)
             playlist_a = agent.repair_playlist(sequenced, profile)
             
             print(f"Playlist A Finalized: {len(playlist_a.track_ids)} tracks.")
@@ -72,22 +77,26 @@ class MixtapeCLI(cmd.Cmd):
             playlist_b = ab_tester.generate_b_side(playlist_a, profile)
             
             print("\n=== GENERATION COMPLETE ===")
-            print(f"Playlist A: {len(playlist_a.track_ids)} tracks ({playlist_a.total_duration_s}s) (Score: {playlist_a.scores.total:.2f})")
-            # print specific tracks with new audio features
-            for tid in playlist_a.track_ids:
-                t = library.get_track(tid)
-                if t:
-                    key = getattr(t, 'key_full', 'Unknown Key')
-                    energy = getattr(t, 'energy', 0.0)
-                    print(f"  - {t.title} ({t.artist}) [{key}] [E:{energy:.2f}]")
+            headers = f"{'Track':<5} | {'Artist':<20} | {'Song Title':<30} | {'Vibe / Why it fits'}"
+            separator = "-" * len(headers)
             
-            print(f"\nPlaylist B: {len(playlist_b.track_ids)} tracks ({playlist_b.total_duration_s}s) (Score: {playlist_b.scores.total:.2f})")
-            for tid in playlist_b.track_ids:
+            print(f"\n### Playlist A (Score: {playlist_a.scores.total:.2f})")
+            print(headers)
+            print(separator)
+            for i, tid in enumerate(playlist_a.track_ids):
                 t = library.get_track(tid)
                 if t:
-                    key = getattr(t, 'key_full', 'Unknown Key')
-                    energy = getattr(t, 'energy', 0.0)
-                    print(f"  - {t.title} ({t.artist}) [{key}] [E:{energy:.2f}]")
+                    note = playlist_a.track_notes.get(tid, "Fits the curated journey.")
+                    print(f"{i+1:<5} | {t.artist[:20]:<20} | {t.title[:30]:<30} | {note}")
+            
+            print(f"\n### Playlist B (Score: {playlist_b.scores.total:.2f})")
+            print(headers)
+            print(separator)
+            for i, tid in enumerate(playlist_b.track_ids):
+                t = library.get_track(tid)
+                if t:
+                    note = playlist_b.track_notes.get(tid, "Fits the curated journey.")
+                    print(f"{i+1:<5} | {t.artist[:20]:<20} | {t.title[:30]:<30} | {note}")
             
             # 5. Selection Loop
             print(f"\n(Export features coming in next phase)")
@@ -100,7 +109,6 @@ class MixtapeCLI(cmd.Cmd):
             elif choice == 'B':
                 print(f"\nSelected Playlist B!")
                 self._export(playlist_b, profile, "B")
-                return
                 return
             elif choice == 'NEITHER':
                 retry_count += 1

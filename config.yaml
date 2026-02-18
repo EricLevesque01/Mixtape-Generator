@@ -14,10 +14,15 @@ max_questions: 10
 conf_thresh: 0.7
 
 # Repair loop
-accept_threshold: 0.70
-max_repair_iters: 8
+ambitious_threshold: 0.88     # Aim high first
+accept_threshold: 0.80        # Fallback floor
+max_repair_iters: 12          # Increase iterations for deeper optimization
 eps: 0.01
-stall_iters: 2
+stall_iters: 3
+
+# Model Tiering (v2.1.1)
+fast_llm_model: "gpt-4o-mini"
+smart_llm_model: "gpt-4o"
 
 # Guardrails
 off_topic_max: 3

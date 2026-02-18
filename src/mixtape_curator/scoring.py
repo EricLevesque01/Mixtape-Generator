@@ -2,8 +2,8 @@ import math
 import numpy as np
 from typing import List, Dict
 from collections import Counter
-from .models import Track, UserProfile, PlaylistScores
-from .config import config
+from mixtape_curator.models import Track, UserProfile, PlaylistScores
+from mixtape_curator.config import config
 
 class Scorer:
     def __init__(self):
@@ -131,9 +131,21 @@ class Scorer:
         flow = self.compute_flow_score(tracks)
         variety = self.compute_variety_score(tracks, profile)
         
-        # Placeholders for access/quality (v1 logic)
-        access = 0.8 # TODO: Implement actual logic
-        quality = 0.8 # TODO: Implement actual logic
+        # Accessibility Score (Proximity to target)
+        # Spec v2.1.1: 1 - abs(measured - ideal)
+        measured_access = np.mean([t.accessibility for t in tracks])
+        access = 1.0 - abs(measured_access - profile.targets.accessibility)
+        
+        # Quality Score 
+        # Weighted blend of rym_rating (normalized) and recommendability
+        # RYM Rating is 0-5.0, recommendability is 0-1.0
+        quality_scores = []
+        for t in tracks:
+             # Normalize rating to 0-1
+             norm_rating = t.rating / 5.0 if t.rating else 0.5 # Default to average if missing
+             q = (norm_rating * 0.5) + (t.recommendability * 0.5)
+             quality_scores.append(q)
+        quality = float(np.mean(quality_scores))
         
         total = (
             self.weights["fit"] * fit +
@@ -144,12 +156,12 @@ class Scorer:
         )
         
         return PlaylistScores(
-            fit=round(fit, 2),
-            flow=round(flow, 2),
-            variety=round(variety, 2),
-            accessibility=round(access, 2),
-            quality=round(quality, 2),
-            total=round(total, 2)
+            fit=round(float(fit), 4),
+            flow=round(float(flow), 4),
+            variety=round(float(variety), 4),
+            accessibility=round(float(access), 4),
+            quality=round(float(quality), 4),
+            total=round(float(total), 4)
         )
 
 scorer = Scorer()
