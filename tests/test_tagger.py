@@ -7,18 +7,27 @@ import pandas as pd
 
 class TestTagger(unittest.TestCase):
     def setUp(self):
+        # Save original df so we don't corrupt the real library
+        self._original_df = library.df.copy() if not library.df.empty else library.df
+        
         # Mock dataframe
         self.df = pd.DataFrame([
             {'id': 't1', 'title': 'One', 'artist': 'A', 'release_year': None, 'energy': 0.1},
             {'id': 't2', 'title': 'Two', 'artist': 'B', 'release_year': 1999, 'energy': 0.5}
         ])
         library.df = self.df
+    
+    def tearDown(self):
+        # Restore original df
+        library.df = self._original_df
         
     def test_fill_missing_year(self):
         tagger = MetadataTagger()
         
         # Simulating one input '2000' then 'q' to quit
-        with patch('builtins.input', side_effect=['2000', 'q']):
+        # Patch library.save to prevent writing mock data to disk
+        with patch('builtins.input', side_effect=['2000', 'q']), \
+             patch.object(library, 'save'):
             try:
                 tagger.do_fill_years("")
             except Exception as e:
@@ -33,7 +42,8 @@ class TestTagger(unittest.TestCase):
         tagger = MetadataTagger()
         
         # User sets Energy=0.9 for first track, keeps Valence same (skip)
-        with patch('builtins.input', side_effect=['0.9', '', 'q']):
+        with patch('builtins.input', side_effect=['0.9', '', 'q']), \
+             patch.object(library, 'save'):
             try:
                 tagger.do_rate_vibe("")
             except: pass

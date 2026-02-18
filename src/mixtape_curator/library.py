@@ -169,69 +169,84 @@ class Library:
         """Helper to convert DF row to Pydantic model."""
         import math
         
-        def _sf(val, default=0.0):
-            """Safe float: coerce NaN/None to default."""
+        gaps = []  # Track which fields were missing/defaulted
+        
+        def _sf(field_name, val, default=0.0):
+            """Safe float: coerce NaN/None to default, record gap."""
             if val is None:
+                gaps.append(field_name)
                 return default
             try:
                 f = float(val)
-                return default if math.isnan(f) else f
+                if math.isnan(f):
+                    gaps.append(field_name)
+                    return default
+                return f
             except (ValueError, TypeError):
+                gaps.append(field_name)
                 return default
         
-        def _si(val, default=None):
-            """Safe int: coerce NaN/None to default."""
+        def _si(field_name, val, default=None):
+            """Safe int: coerce NaN/None to default, record gap."""
             if val is None:
+                gaps.append(field_name)
                 return default
             try:
                 f = float(val)
-                return default if math.isnan(f) else int(f)
+                if math.isnan(f):
+                    gaps.append(field_name)
+                    return default
+                return int(f)
             except (ValueError, TypeError):
+                gaps.append(field_name)
                 return default
         
-        # Reconstruct rym_data, ensuring lists not NaN
-        def _sl(val):
-            """Safe list: ensure we get a list, not NaN."""
+        def _sl(field_name, val):
+            """Safe list: ensure we get a list, not NaN, record gap."""
             if isinstance(val, list):
+                if not val:
+                    gaps.append(field_name)
                 return val
+            gaps.append(field_name)
             return []
         
         rym = RYMData(
-            primary_genres=_sl(row.get('rym_data_primary_genres', [])),
-            subgenres=_sl(row.get('rym_data_subgenres', [])),
-            descriptors=_sl(row.get('rym_data_descriptors', []))
+            primary_genres=_sl('primary_genres', row.get('rym_data_primary_genres', [])),
+            subgenres=_sl('subgenres', row.get('rym_data_subgenres', [])),
+            descriptors=_sl('descriptors', row.get('rym_data_descriptors', []))
         )
         
         return Track(
             id=row['id'],
             title=row.get('title', 'Unknown Title') or 'Unknown Title',
             artist=row.get('artist', 'Unknown Artist') or 'Unknown Artist',
-            duration_s=_si(row.get('duration_s', 0), 0),
-            energy=_sf(row.get('energy'), 0.5),
-            valence=_sf(row.get('valence'), 0.5),
-            intensity=_sf(row.get('intensity'), 0.5),
-            tempo=_sf(row.get('tempo'), 120.0),
-            danceability=_sf(row.get('danceability'), 0.5),
-            key=_si(row.get('key'), 0),
-            mode=_si(row.get('mode'), 1),
+            duration_s=_si('duration_s', row.get('duration_s', 0), 0),
+            energy=_sf('energy', row.get('energy'), 0.5),
+            valence=_sf('valence', row.get('valence'), 0.5),
+            intensity=_sf('intensity', row.get('intensity'), 0.5),
+            tempo=_sf('tempo', row.get('tempo'), 120.0),
+            danceability=_sf('danceability', row.get('danceability'), 0.5),
+            key=_si('key', row.get('key'), 0),
+            mode=_si('mode', row.get('mode'), 1),
             key_full=row.get('key_full', "Unknown") or "Unknown",
-            acousticness=_sf(row.get('acousticness'), 0.0),
-            instrumentalness=_sf(row.get('instrumentalness'), 0.0),
-            speechiness=_sf(row.get('speechiness'), 0.0),
-            liveness=_sf(row.get('liveness'), 0.0),
-            brightness=_sf(row.get('brightness'), 0.0),
-            flatness=_sf(row.get('flatness'), 0.0),
-            entropy=_sf(row.get('entropy'), 0.0),
-            dynamic_range=_sf(row.get('dynamic_range'), 0.0),
-            accessibility=_sf(row.get('accessibility'), 0.6),
-            familiarity=_sf(row.get('familiarity'), 0.5),
-            rating=_sf(row.get('rating'), 0.0),
-            recommendability=_sf(row.get('recommendability'), 0.5),
+            acousticness=_sf('acousticness', row.get('acousticness'), 0.0),
+            instrumentalness=_sf('instrumentalness', row.get('instrumentalness'), 0.0),
+            speechiness=_sf('speechiness', row.get('speechiness'), 0.0),
+            liveness=_sf('liveness', row.get('liveness'), 0.0),
+            brightness=_sf('brightness', row.get('brightness'), 0.0),
+            flatness=_sf('flatness', row.get('flatness'), 0.0),
+            entropy=_sf('entropy', row.get('entropy'), 0.0),
+            dynamic_range=_sf('dynamic_range', row.get('dynamic_range'), 0.0),
+            accessibility=_sf('accessibility', row.get('accessibility'), 0.6),
+            familiarity=_sf('familiarity', row.get('familiarity'), 0.5),
+            rating=_sf('rating', row.get('rating'), 0.0),
+            recommendability=_sf('recommendability', row.get('recommendability'), 0.5),
             rym_data=rym,
             file_path=row.get('file_path'),
             spotify_uri=row.get('spotify_uri'),
             enrichment_source=row.get('enrichment_source'),
-            release_year=_si(row.get('release_year'))
+            release_year=_si('release_year', row.get('release_year')),
+            enrichment_gaps=gaps
         )
 
     def filter_candidates(self, profile: UserProfile) -> List[Track]:

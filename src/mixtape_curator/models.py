@@ -44,6 +44,7 @@ class Track(BaseModel):
     spotify_uri: Optional[str] = None
     enrichment_source: Optional[str] = None
     release_year: Optional[int] = None
+    enrichment_gaps: List[str] = Field(default_factory=list)  # Fields that were missing/defaulted
     
     @property
     def normalized_artist(self) -> str:
