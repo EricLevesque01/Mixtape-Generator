@@ -31,12 +31,38 @@ class Generator:
         
         # Add specific track IDs first (must-includes bypass duration filter)
         all_candidates_unfiltered = library.filter_candidates(profile)
+        
+        # 2a. Must-Include Track IDs
         for t in all_candidates_unfiltered:
             if t.id in must_have_ids:
                 draft_tracks.append(t)
                 
-        # TODO: Add logic for must_include_artists
-        
+        # 2b. Must-Include Artists
+        # We need to pick a track for each must-include artist, respecting constraints if possible
+        # but prioritizing inclusion.
+        if profile.must_include_artists:
+            for artist in profile.must_include_artists:
+                # Check if already included via Track IDs
+                if any(t.artist == artist for t in draft_tracks):
+                    continue
+                
+                # Find best track by this artist
+                artist_tracks = [t for t in all_candidates_unfiltered if t.artist == artist]
+                if not artist_tracks:
+                    continue # Artist not found in library (or filtered out by other constraints?)
+                
+                # Sort by fit
+                artist_tracks_scored = [(scorer.compute_fit_score([t], profile), t) for t in artist_tracks]
+                artist_tracks_scored.sort(key=lambda x: x[0], reverse=True)
+                
+                # Pick top track
+                best_track = artist_tracks_scored[0][1]
+                draft_tracks.append(best_track)
+                
+                # Lock this track so agent/AB don't remove it
+                if best_track.id not in profile.must_include_track_ids:
+                    profile.must_include_track_ids.append(best_track.id)
+
         # Remove already added from pool
         current_ids = {t.id for t in draft_tracks}
         pool = [t for t in candidates if t.id not in current_ids]
@@ -113,15 +139,15 @@ class Generator:
         best_flow_score = scorer.compute_flow_score(tracks)
         
         # Multi-start: Try starting with different tracks
-        # Limit starts to avoid N^2 on large lists
-        num_starts = min(len(tracks), 10) 
+        # Limit starts to avoid N^2 on large lists. Spec implies checking various start points.
+        # We'll pick 5 random start points to try different flows.
+        num_starts = min(len(tracks), 5)
+        start_indices = self.rng.sample(range(len(tracks)), num_starts)
         
-        for i in range(num_starts):
-            # Pick a seed (rotate through first 10 high-fit tracks maybe? or random?)
-            # Spec says "Iteratively append best transition"
-            
+        for i in start_indices:
+            # Pick a seed
             remaining = tracks.copy()
-            # Try starting with track i
+            # Try starting with track at index i
             current_seq = [remaining.pop(i)]
             
             while remaining:
@@ -132,11 +158,15 @@ class Generator:
                 
                 for idx, candidate in enumerate(remaining):
                     # Distance metric from spec flow score logic
+                    # We minimize the distance (energy, valence, intensity)
                     d = (
                         (last_track.energy - candidate.energy)**2 +
                         (last_track.valence - candidate.valence)**2 +
                         (last_track.intensity - candidate.intensity)**2
                     )
+                    
+                    # Tie-breaker: Genre match? (Not in refined spec flow score, but helpful)
+                    # For now just pure sonic flow.
                     if d < min_dist:
                         min_dist = d
                         best_next_idx = idx

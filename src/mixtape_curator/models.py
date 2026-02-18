@@ -19,16 +19,35 @@ class Track(BaseModel):
     energy: float = 0.0
     valence: float = 0.0
     intensity: float = 0.0
+    tempo: float = 120.0
+    danceability: float = 0.5
+    key: int = 0
+    mode: int = 1
+    key_full: str = "Unknown"
+    acousticness: float = 0.0
+    instrumentalness: float = 0.0
+    speechiness: float = 0.0
+    liveness: float = 0.0
+    brightness: float = 0.0
+    flatness: float = 0.0
+    entropy: float = 0.0
+    dynamic_range: float = 0.0
     
     # Metadata features
-    accessibility: float = 0.0
-    familiarity: float = 0.0
+    accessibility: float = 0.6
+    familiarity: float = 0.5
     rating: float = 0.0
-    recommendability: float = 0.0
+    recommendability: float = 0.5
     
     # System fields
     file_path: Optional[str] = None
     spotify_uri: Optional[str] = None
+    enrichment_source: Optional[str] = None
+    release_year: Optional[int] = None
+    
+    @property
+    def normalized_artist(self) -> str:
+        return self.artist.lower().strip()
 
 class FeedbackTargets(BaseModel):
     uniformity: float = 0.5  # 0.0 = Eclectic, 1.0 = Uniform

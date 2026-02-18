@@ -79,6 +79,10 @@ class AppConfig:
     @property
     def anthropic_api_key(self) -> str:
         return os.getenv("ANTHROPIC_API_KEY", "")
+        
+    @property
+    def spotify_redirect_uri(self) -> str:
+        return os.getenv("SPOTIFY_REDIRECT_URI", "http://localhost:8888/callback")
 
 # Global instance
 config = AppConfig()

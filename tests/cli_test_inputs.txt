@@ -1,11 +1,10 @@
 start
-Magdalena Bay
-Studying
-None
-Synthpop
-Bright
+My friend Sean
+Chilly afternoon
+Exclude Taylor Swift
+Indie Folk
+Mellow
 Uniform
 Low
-yes
 yes
 quit

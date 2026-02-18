@@ -1,6 +1,7 @@
 import logging
 import json
 from typing import List, Dict, Any, Optional
+import pandas as pd
 from .models import Playlist, UserProfile
 from .library import library
 from .scoring import scorer
@@ -17,6 +18,9 @@ class ReActAgent:
         self.max_iters = config.get("max_repair_iters", 8)
         self.stall_iters = config.get("stall_iters", 2)
         self.user_callback = user_callback if user_callback else (lambda q: input(f"AGENT: {q}\n> "))
+        self.model_fast = config.get("fast_llm_model", "gpt-4o-mini")
+        self.model_smart = config.get("smart_llm_model", "gpt-4o")
+        self.escalated = False
         
     def repair_playlist(self, playlist: Playlist, profile: UserProfile) -> Playlist:
         """
@@ -69,8 +73,15 @@ class ReActAgent:
                      stall_count += 1
                 
             if stall_count >= self.stall_iters:
-                logger.warning("Agent stalled. detailed logic TODO: consult user or force diversity.")
-                break
+                if not self.escalated:
+                    # Escalate to smarter model before giving up
+                    self.escalated = True
+                    stall_count = 0
+                    logger.info(f"Agent stalled. Escalating to {self.model_smart}.")
+                    continue
+                else:
+                    logger.warning("Agent stalled even with smart model. Stopping.")
+                    break
 
             # 2. Plan (Thought)
             # Construct prompt with state
@@ -78,8 +89,9 @@ class ReActAgent:
             
             # Call LLM for Action
             # Expected format: {"action": "tool_name", "params": {...}}
+            current_model = self.model_smart if self.escalated else self.model_fast
             try:
-                response = self.llm.json([{"role": "user", "content": prompt}], model=config.get("default_llm_model", "gpt-4o"))
+                response = self.llm.json([{"role": "user", "content": prompt}], model=current_model)
                 action = response.get("action")
                 params = response.get("params", {})
                 reasoning = response.get("reasoning", "")
@@ -142,6 +154,13 @@ class ReActAgent:
 
                 # Artist concentration
                 artist_counts[t.artist] = artist_counts.get(t.artist, 0) + 1
+        
+        # Check Must-Include Artists
+        if profile.must_include_artists:
+            present_artists = set(a.lower() for a in artist_counts.keys())
+            for ma in profile.must_include_artists:
+                if ma.lower() not in present_artists:
+                    violations.append(f"Missing Must-Include Artist: {ma}")
         
         for artist, count in artist_counts.items():
             if count > config.max_tracks_per_artist:
@@ -231,26 +250,50 @@ class ReActAgent:
     def _tool_search_library(self, params: Dict, profile: UserProfile) -> str:
         query = params.get("query", "")
         limit = params.get("limit", 5)
-        # Simple implementation: delegate to library search (needs impl there or here)
-        # For now, let's just do a naive title/artist/genre filter on the loaded df
-        df = library.df
         
-        # Filter exclusions first
-        # (Simplified: ignoring complex exclusion logic here for brevity, assume agent handles broadly)
+        # 1. Fuzzy Artist Search (Grounding)
+        artist_match = library.search_artist(query)
         
-        # Search
-        mask = df.apply(lambda row: 
-            query.lower() in row['title'].lower() or 
-            query.lower() in row['artist'].lower() or
-            any(query.lower() in g.lower() for g in row['rym_data_primary_genres']), axis=1)
+        results_msg = ""
+        found_matches = []
+        
+        # If artist match found, prioritize those tracks
+        if artist_match:
+            results_msg = f"Found fuzzy match for artist '{artist_match}'. "
+            # Exact lookup on normalized name
+            artist_tracks = library.df[library.df['artist'] == artist_match]
+            if not artist_tracks.empty:
+                # Take top N
+                found_matches = artist_tracks.head(limit)
+        
+        # If no fuzzy match or not enough, do broad search
+        if len(found_matches) < limit:
+             # Broad filter: Title OR Artist OR Genre
+            mask = library.df.apply(lambda row: 
+                query.lower() in row['title'].lower() or 
+                query.lower() in row['artist'].lower() or
+                any(query.lower() in g.lower() for g in row['rym_data_primary_genres']), axis=1)
             
-        matches = df[mask].head(limit)
-        if matches.empty:
+            broad_matches = library.df[mask]
+            
+            # If we had no artist matches, just take the broad ones
+            if len(found_matches) == 0:
+                 found_matches = broad_matches.head(limit)
+            else:
+                 # We have some artist matches, but need more to fill limit
+                 # Append broad matches that aren't already included
+                 needed = limit - len(found_matches)
+                 current_ids = set(found_matches['id'])
+                 new_matches = broad_matches[~broad_matches['id'].isin(current_ids)].head(needed)
+                 if not new_matches.empty:
+                    found_matches = pd.concat([found_matches, new_matches])
+        
+        if found_matches.empty:
             return "No matches found."
             
         results = []
-        for _, row in matches.iterrows():
-            results.append(f"{row['id']}: {row['title']} ({row['artist']})")
+        for _, row in found_matches.iterrows():
+            results.append(f"{row['id']}: {row['title']} by {row['artist']}")
             
-        return "\n".join(results)
+        return results_msg + "\n".join(results)
 
