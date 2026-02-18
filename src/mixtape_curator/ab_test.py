@@ -48,10 +48,13 @@ class ABTester:
         indices_to_swap = [x[1] for x in track_scores[:swap_count]]
         
         # 4. Find Replacements
-        # Get candidates excluding current playlist
+        # Get candidates excluding current playlist, applying same duration filter as generator
+        min_dur = config.get("track_min_duration_s", 60)
+        max_dur = config.get("track_max_duration_s", 600)
         current_b_ids = set(playlist_b.track_ids)
         candidates = library.filter_candidates(profile)
-        pool = [t for t in candidates if t.id not in current_b_ids]
+        pool = [t for t in candidates if t.id not in current_b_ids
+                and min_dur <= t.duration_s <= max_dur]
         
         # Sort pool by fit score descending
         pool_with_scores = [(scorer.compute_fit_score([t], profile), t) for t in pool]
