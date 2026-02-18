@@ -45,6 +45,8 @@ class Interviewer:
         if q_count == 1:
             # Naive parsing for demo
             self.profile.target_genres = [g.strip() for g in user_input.split(',')]
+            # Raise genre strictness since user explicitly named genres
+            self.profile.genre_strictness = 0.65
             # Next: Stage 3 Cohesion Calibration (Uniform vs Eclectic)
             reply = "Understood. Should this mix feel consistent and uniform, or more eclectic and varied?"
             self._log_reply(reply)

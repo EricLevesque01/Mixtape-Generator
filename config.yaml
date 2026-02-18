@@ -31,8 +31,8 @@ w_access: 0.15
 w_quality: 0.10
 
 # Base-and-Branch behavior
-branch_swap_min: 2
-branch_swap_max: 5
+branch_swap_min: 3
+branch_swap_max: 8
 branch_variety_boost: 0.2
 
 # RNG (deterministic in testing)
