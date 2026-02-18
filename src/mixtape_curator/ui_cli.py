@@ -59,14 +59,14 @@ class MixtapeCLI(cmd.Cmd):
         playlist_b = ab_tester.generate_b_side(playlist_a, profile)
         
         print("\n=== GENERATION COMPLETE ===")
-        print(f"Playlist A: {len(playlist_a.track_ids)} tracks (Score: {playlist_a.scores.total})")
+        print(f"Playlist A: {len(playlist_a.track_ids)} tracks ({playlist_a.total_duration_s}s) (Score: {playlist_a.scores.total})")
         # print specific tracks
         for tid in playlist_a.track_ids:
             t = library.get_track(tid)
             if t:
                 print(f"  - {t.title} ({t.artist})")
         
-        print(f"\nPlaylist B: {len(playlist_b.track_ids)} tracks (Score: {playlist_b.scores.total})")
+        print(f"\nPlaylist B: {len(playlist_b.track_ids)} tracks ({playlist_b.total_duration_s}s) (Score: {playlist_b.scores.total})")
         for tid in playlist_b.track_ids:
             t = library.get_track(tid)
             if t:

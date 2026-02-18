@@ -51,13 +51,36 @@ class Generator:
         target = config.duration_target_s
         cap = config.duration_cap_s
         
+        # 2-Pass Selection to prioritize diversity
+        # Pass 1: Add best track from each artist (max 1 per artist)
+        draft_artists = {t.artist: 1 for t in draft_tracks}
+        
         for score, t in pool_with_scores:
-            if current_duration + t.duration_s <= cap:
-                draft_tracks.append(t)
-                current_duration += t.duration_s
-                
             if current_duration >= target:
                 break
+                
+            if current_duration + t.duration_s <= cap:
+                # Check artist count
+                count = draft_artists.get(t.artist, 0)
+                if count < 1:
+                    draft_tracks.append(t)
+                    current_duration += t.duration_s
+                    draft_artists[t.artist] = count + 1
+
+        # Pass 2: Fill remaining space up to max_tracks_per_artist (2)
+        if current_duration < target:
+            limit = config.max_tracks_per_artist
+            for score, t in pool_with_scores:
+                if current_duration >= target:
+                    break
+                    
+                if t.id not in [x.id for x in draft_tracks]: # Avoid duplicates
+                     if current_duration + t.duration_s <= cap:
+                        count = draft_artists.get(t.artist, 0)
+                        if count < limit:
+                            draft_tracks.append(t)
+                            current_duration += t.duration_s
+                            draft_artists[t.artist] = count + 1
                 
         # 4. Create Playlist Object
         # Note: Order is currently just "Must Haves" + "Best Fit Descending"

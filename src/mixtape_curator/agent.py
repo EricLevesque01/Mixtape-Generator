@@ -302,15 +302,47 @@ class MockLLM(LLMProvider):
                      "reasoning": "User approved search. Looking for Pop."
                  }
              elif "add_track" not in history_part:
-                 # Add some fake results or existing ones
-                 # We need valid IDs. Let's just pick 5 random ones from t0-t100 if they exist, 
-                 # or reliance on the search tool's output requires us to see it.
-                 # MockLLM is stateless so this is hard.
-                 # Let's just add "t10", "t11", "t12" blindly for the test
+                 # Extract real IDs from Search Results in history
+                 import re
+                 # Find the last occurrence of Search Results
+                 # History chunk: "... Search Results: id1: Title... id2: Title..."
+                 # We simply look for strings matching the ID format from library search output
+                 # Output format: "{id}: {title} ({artist})"
+                 
+                 valid_ids = []
+                 if "Search Results:" in history_part:
+                     last_search = history_part.rsplit("Search Results:", 1)[1]
+                     # Extract IDs (look for string before the first colon of a line/segment)
+                     # Regex: (whitespace or start)(identifier): (anything)
+                     # IDs can be UUIDs or simple strings.
+                     # Let's try to match the pattern from _tool_search_library
+                     matches = re.findall(r"(?<=[\n\s'\"\\])([a-zA-Z0-9\-_]+): ", last_search)
+                     # Filter out common reserved words just in case
+                     matches = [m for m in matches if m not in ["Iter", "Thought", "Action", "Search", "User", "Violations", "State"]]
+                     valid_ids = matches
+
+                 reasoning = "Adding tracks found in search."
+                 
+                 # Fallback: if parsing failed, grab from library directly (Mock cheating to ensure valid IDs)
+                 if not valid_ids:
+                     from .library import library
+                     if not library.df.empty:
+                         # Try to find Pop tracks to match our fake query
+                         mask = library.df['rym_data_primary_genres'].apply(lambda x: any('Pop' in g for g in x))
+                         pop_tracks = library.df[mask]
+                         if pop_tracks.empty:
+                             pop_tracks = library.df
+                         
+                         valid_ids = pop_tracks.head(5)['id'].tolist()
+                         reasoning = "Adding tracks from library (fallback)."
+                 
+                 # Ensure we have a list
+                 to_add = valid_ids[:5] if valid_ids else []
+                 
                  return {
                      "action": "add_track",
-                     "params": {"track_ids": ["t10", "t11", "t12", "t13", "t14"]},
-                     "reasoning": "Adding tracks found in search."
+                     "params": {"track_ids": to_add},
+                     "reasoning": reasoning
                  }
         
         return {"action": "finalize", "params": {}, "reasoning": "Looks good."}

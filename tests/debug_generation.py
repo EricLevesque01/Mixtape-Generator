@@ -34,12 +34,22 @@ def run_debug():
     print("Creating draft...")
     draft = generator.create_draft(profile)
     print(f"Draft Initialized: {len(draft.track_ids)} tracks, {draft.total_duration_s}s duration.")
-
+    
+    # Verify Artist Counts
+    from collections import Counter
+    artists = []
+    for tid in draft.track_ids:
+        t = library.get_track(tid)
+        if t: artists.append(t.artist)
+    print(f"Draft Artist Distribution: {Counter(artists)}")
+    
     # 2. Sequence
     print("Optimizing Flow...")
     sequenced = generator.optimize_flow(draft, profile)
     print("Flow optimized.")
 
+    # 3. Agent Repair
+    print("Agent Reviewing Constraints...")
     # 3. Agent Repair
     print("Agent Reviewing Constraints...")
     agent = ReActAgent(llm=MockLLM())
