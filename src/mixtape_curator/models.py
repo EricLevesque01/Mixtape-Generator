@@ -54,7 +54,7 @@ class Track(BaseModel):
         return self.artist.lower().strip()
 
 class FeedbackTargets(BaseModel):
-    uniformity: float = 0.5  # 0.0 = Eclectic, 1.0 = Uniform
+    uniformity: float = 0.35  # 0.0 = Eclectic, 1.0 = Uniform. Default 0.35 favors "Segmented/Eclectic".
     energy: float = 0.5
     valence: float = 0.5
     intensity: float = 0.5

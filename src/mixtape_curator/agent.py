@@ -37,7 +37,8 @@ class ReActAgent:
         
         # Phase detection
         target_duration = config.duration_target_s
-        is_growth_phase = len(playlist.track_ids) < 8 or playlist.total_duration_s < (target_duration * 0.7)
+        target_count = config.get("target_track_count", 12)
+        is_growth_phase = len(playlist.track_ids) < target_count or playlist.total_duration_s < (target_duration * 0.7)
         
         current_threshold = accept_thresh if is_growth_phase else ambitious_thresh
         
@@ -203,7 +204,8 @@ class ReActAgent:
             "violations": violations,
             "track_count": len(playlist.track_ids),
             "artist_map": artist_map,
-            "phase": phase_msg
+            "phase": phase_msg,
+            "genres": profile.target_genres
         }
         return f"""
         You are a Mixtape Curator and A&R agent. Your goal is to build a cohesive musical journey.

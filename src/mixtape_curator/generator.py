@@ -1,4 +1,5 @@
 import random
+import random
 import uuid
 import numpy as np
 import copy
@@ -45,7 +46,9 @@ class Generator:
 
         if not incremental:
             # Check for Segmented Generation Trigger (Eclectic + Multiple Genres)
-            if profile.targets.uniformity < 0.6 and len(profile.target_genres) > 1:
+            is_segmented = profile.targets.uniformity < 0.6 and len(profile.target_genres) > 1
+            
+            if is_segmented:
                  # "Eco-Modular" Strategy
                  draft_tracks = self._create_segmented_draft(draft_tracks, profile)
             else:
@@ -125,19 +128,35 @@ class Generator:
                 # Sort by fit (prioritizing the genre match subset)
                 segment_candidates.sort(key=lambda t: scorer.compute_fit_score([t], profile), reverse=True)
             
-            # Fill segment
-            segment_fill = 0
+            # Fill segment - Two Pass Approach
+            
+            # Pass 1: Strict Unique Artists (Max 1 per artist)
             for t in segment_candidates:
                 if segment_fill >= time_per_segment: break
                 if current_duration >= target: break
                 
                 if current_duration + t.duration_s <= cap:
-                    if draft_artists.get(t.artist, 0) < config.max_tracks_per_artist:
+                    if draft_artists.get(t.artist, 0) < 1: # Strict limit 1
                         draft_tracks.append(t)
                         current_ids.add(t.id)
                         current_duration += t.duration_s
                         segment_fill += t.duration_s
                         draft_artists[t.artist] = draft_artists.get(t.artist, 0) + 1
+
+            # Pass 2: Relaxed Limit (Fill up to max_tracks_per_artist) if segment not full
+            if segment_fill < time_per_segment:
+                for t in segment_candidates:
+                    if segment_fill >= time_per_segment: break
+                    if current_duration >= target: break
+                    if t.id in current_ids: continue # Skip already added
+                    
+                    if current_duration + t.duration_s <= cap:
+                        if draft_artists.get(t.artist, 0) < config.max_tracks_per_artist:
+                            draft_tracks.append(t)
+                            current_ids.add(t.id)
+                            current_duration += t.duration_s
+                            segment_fill += t.duration_s
+                            draft_artists[t.artist] = draft_artists.get(t.artist, 0) + 1
                         
         return draft_tracks
 
@@ -171,20 +190,31 @@ class Generator:
             if current_duration + t.duration_s <= cap:
                 if draft_artists.get(t.artist, 0) < 1:
                     draft_tracks.append(t)
+                    current_ids.add(t.id)
                     current_duration += t.duration_s
                     draft_artists[t.artist] = draft_artists.get(t.artist, 0) + 1
 
-        # Pass 2: Fill remaining space up to max_tracks_per_artist (2)
+        # Pass 2: Fill remaining space up to max_tracks_per_artist
         if current_duration < target:
             limit = config.max_tracks_per_artist
+            
             for score, t in pool_with_scores:
                 if current_duration >= target: break
-                if t.id not in [x.id for x in draft_tracks]:
-                     if current_duration + t.duration_s <= cap:
-                        if draft_artists.get(t.artist, 0) < limit:
-                            draft_tracks.append(t)
-                            current_duration += t.duration_s
-                            draft_artists[t.artist] = draft_artists.get(t.artist, 0) + 1
+                if t.id in current_ids: continue # Use set for O(1) check
+                
+                if current_duration + t.duration_s <= cap:
+                    count = draft_artists.get(t.artist, 0)
+                    is_under_limit = count < limit
+                    # print(f"[DEBUG] Checking {t.artist}: count={count}, limit={limit}, type(limit)={type(limit)}, {count} < {limit} is {is_under_limit}")
+                    
+                    if count < limit:
+                        draft_tracks.append(t)
+                        current_ids.add(t.id)
+                        current_duration += t.duration_s
+                        draft_artists[t.artist] = count + 1
+                    else:
+                        pass 
+                        # print(f"[DEBUG] Rejected {t.artist}. Reason: Limit Reached.")
         return draft_tracks
 
     def optimize_flow(self, playlist: Playlist, profile: UserProfile) -> Playlist:

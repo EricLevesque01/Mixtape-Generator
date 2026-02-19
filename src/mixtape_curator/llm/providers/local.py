@@ -1,7 +1,10 @@
 from typing import List, Dict, Any, Optional
 import json
 import re
+import re
+import random
 from ..interface import LLMProvider
+from mixtape_curator.library import library
 
 class MockLLM(LLMProvider):
     """
@@ -81,30 +84,83 @@ class MockLLM(LLMProvider):
         phase = state.get("phase", "")
 
         # 1. Growth Phase Priority
-        if "GROWTH" in phase or track_count < 8:
-            # Need to build. Check if we've searched.
-            if "search" not in str(prompt).lower():
-                return {
-                    "action": "search_library",
-                    "params": {"query": "Rock", "limit": 10}, 
-                    "reasoning": "Building playlist from seed. Searching for candidates."
-                }
+        target_count = 12
+        if "GROWTH" in phase or track_count < target_count:
+            # Try to parse genres from state if available
+            genres = state.get("genres", [])
+            target_genre = genres[0] if genres else "Pop"
+            
+            # Use library to find relevant tracks
+            # If complex query, we might want to split it. For now, use primary.
+            artists = library.search_artists_by_genre(target_genre, limit=20)
+            
+            candidates = []
+            if artists:
+                for artist in artists:
+                    tracks = library.get_artist_tracks(artist) # returns (id, title)
+                    candidates.extend(tracks)
+            else:
+                # Fallback to general filtered candidates if no specific genre match
+                # This simulates "I don't know that genre, here's some good stuff"
+                # For mock purposes, just pick some randoms from library if empty
+                 pass
+
+            if not candidates:
+                 # Last resort fallback if library search failed (e.g. "Modern Indie" might not match "Indie")
+                 # Try searching for "Indie" or "Rock" as fallback
+                 for fallback in ["Indie", "Rock", "Pop", "Alternative"]:
+                     artists = library.search_artists_by_genre(fallback, limit=10)
+                     if artists:
+                         for artist in artists:
+                             candidates.extend(library.get_artist_tracks(artist))
+                         if candidates: break
+            
+            # Shuffle and pick target_count unique artists if possible
+            random.shuffle(candidates)
+            
+            # Filter for unique artists
+            selected_tracks = []
+            seen_artists = set()
+            
+            for tid, title in candidates:
+                t = library.get_track(tid)
+                if not t: continue
+                if t.artist in seen_artists: continue
+                
+                selected_tracks.append(t)
+                seen_artists.add(t.artist)
+                if len(selected_tracks) >= target_count: break
+            
+            # If still need more, allow repeats
+            if len(selected_tracks) < target_count:
+                remaining_needed = target_count - len(selected_tracks)
+                others = [t for tid, t_title in candidates if tid not in [x.id for x in selected_tracks]]
+                for i in range(min(len(others), remaining_needed)):
+                    t = library.get_track(others[i][0])
+                    if t: selected_tracks.append(t)
+
+            track_ids = [t.id for t in selected_tracks]
+            reasonings = {}
+            for t in selected_tracks:
+                # Dynamic Logic for "Unique but True"
+                vibe_parts = []
+                if t.energy > 0.8: vibe_parts.append("high-energy")
+                elif t.energy < 0.4: vibe_parts.append("mellow")
+                else: vibe_parts.append("mid-tempo")
+                
+                if t.valence > 0.6: vibe_parts.append("uplifting")
+                elif t.valence < 0.4: vibe_parts.append("moody")
+                
+                desc = " ".join(vibe_parts)
+                reasonings[t.id] = f"A {desc} track that aligns with the {target_genre} vibe."
+
             return {
                 "action": "add_track",
                 "params": {
-                    "track_ids": ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8"],
-                    "reasonings": {
-                        "t1": "A perfect opener for the vibe.",
-                        "t2": "Bridges the gap to the next section.",
-                        "t3": "Adds a nice experimental texture.",
-                        "t4": "The emotional centerpiece.",
-                        "t5": "Keep the energy high here.",
-                        "t6": "A deep cut for variety.",
-                        "t7": "A dreamy transition.",
-                        "t8": "The ultimate finale track."
-                    }
+                    "track_ids": track_ids,
+                    "reasonings": reasonings
                 },
-                "reasoning": "Adding discovered tracks to reach duration target and build the journey."
+                "reasoning": f"Adding {len(track_ids)} tracks matching the {target_genre} vibe."
             }
 
         # 2. Refinement Phase (Standard Repair)

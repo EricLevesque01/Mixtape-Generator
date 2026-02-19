@@ -1,9 +1,0 @@
-start
-friend
-workout
-pop
-fast
-yes
-A
-n
-quit

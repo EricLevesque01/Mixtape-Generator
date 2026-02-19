@@ -16,9 +16,9 @@ conf_thresh: 0.7
 # Repair loop
 ambitious_threshold: 0.88     # Aim high first
 accept_threshold: 0.80        # Fallback floor
-max_repair_iters: 12          # Increase iterations for deeper optimization
+max_repair_iters: 15          # Increase iterations for deeper optimization
 eps: 0.01
-stall_iters: 3
+stall_iters: 4
 
 # Model Tiering (v2.1.1)
 fast_llm_model: "gpt-4o-mini"
@@ -31,9 +31,9 @@ off_topic_max: 3
 max_ab_rounds: 3
 
 # Scoring weights (v2.1.1)
-w_fit: 0.35
+w_fit: 0.30
 w_flow: 0.25
-w_variety: 0.15
+w_variety: 0.20
 w_access: 0.15
 w_quality: 0.10
 

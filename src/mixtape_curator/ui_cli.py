@@ -1,34 +1,57 @@
 import sys
 import cmd
-from mixtape_curator.generator import generator
-from mixtape_curator.agent import ReActAgent
-from mixtape_curator.ab_test import ab_tester
-from mixtape_curator.library import library
-from mixtape_curator.exporter import exporter
-from mixtape_curator.spotify_export import spotify_exporter
-from mixtape_curator.config import config
-from mixtape_curator.llm.providers.local import MockLLM
+from .generator import generator
+from .agent import ReActAgent
+from .ab_test import ab_tester
+from .library import library
+from .exporter import exporter
+from .spotify_export import spotify_exporter
+from .config import config
+from .llm.providers.local import MockLLM
+import time
+import mixtape_curator
+print(f"DEBUG: Loaded mixtape_curator from {mixtape_curator.__file__}")
+
+def typewriter_print(text: str, delay: float = 0.01):
+    """Prints text one character at a time for better UX."""
+    print("AI: ", end="", flush=True)
+    # Split by lines to preserve structure nicely
+    lines = text.split('\n')
+    for i, line in enumerate(lines):
+        line_content = line.strip()
+        if not line_content and i > 0: continue # Skip empty lines inside
+        
+        for char in line:
+            print(char, end="", flush=True)
+            time.sleep(delay)
+        if i < len(lines) - 1:
+            print('\n    ', end="", flush=True) # Indent wrapped lines slightly
+    print("\n")
 
 class MixtapeCLI(cmd.Cmd):
-    intro = 'Welcome to the ReAct Mixtape Curator. Type "start" to begin.'
     prompt = '(mixtape) '
+
+    def __init__(self):
+        super().__init__()
+        self.intro = 'Welcome to the ReAct Mixtape Curator. Type "start" to begin.'
 
     def do_start(self, arg):
         """Start the interview process with the new Agentic Interviewer."""
-        from mixtape_curator.interview_agent import InterviewAgent
+        from .interview_agent import InterviewAgent
         
         # Transparency callback
         def show_thought(thought: str):
             print(f"\n{thought}")
             
         agent = InterviewAgent() # New conversational agent
-        print(agent.start())
+        print(f"AI: {agent.start()}\n")
         
         while not agent.completed:
             try:
                 user_input = input("> ")
                 response, done = agent.process_input(user_input, user_callback=show_thought)
-                print(f"\nAI: {response}\n")
+                print() # Space after user input
+                typewriter_print(response)
                 if done:
                     break
             except EOFError:
@@ -39,7 +62,7 @@ class MixtapeCLI(cmd.Cmd):
 
     def _run_generation(self, interviewer):
         profile = interviewer.profile
-        retry_count = 0
+        retry_count: int = 0
         max_retries = 3
 
         while retry_count < max_retries:
@@ -70,7 +93,7 @@ class MixtapeCLI(cmd.Cmd):
             # Use real LLM provider if key is available
             llm_provider = MockLLM()
             if hasattr(config, "openai_api_key") and config.openai_api_key:
-                from mixtape_curator.llm.providers.openai import OpenAIProvider
+                from .llm.providers.openai import OpenAIProvider
                 llm_provider = OpenAIProvider()
             
             agent = ReActAgent(llm=llm_provider, user_callback=ask_user)
@@ -117,7 +140,7 @@ class MixtapeCLI(cmd.Cmd):
                 self._export(playlist_b, profile, "B")
                 return
             elif choice == 'NEITHER':
-                retry_count += 1
+                retry_count = int(retry_count) + 1
                 if retry_count < max_retries:
                    feedback = input("What would you like to change? (e.g., 'too slow', 'too eclectic', 'exclude Taylor Swift'): ")
                    interviewer.refine_profile(feedback)

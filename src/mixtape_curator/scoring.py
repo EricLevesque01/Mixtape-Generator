@@ -122,8 +122,18 @@ class Scorer:
         # Spec: ideal_diversity = 1 - targets.uniformity
         ideal_diversity = 1.0 - profile.targets.uniformity
         
-        # Variety score = proximity to ideal
-        variety_score = 1.0 - abs(measured_diversity - ideal_diversity)
+        # Genre Variety score = proximity to ideal
+        genre_variety = 1.0 - abs(measured_diversity - ideal_diversity)
+        
+        # Artist Variety (Penalty for duplicates)
+        artists = [t.artist for t in tracks]
+        unique_artists = len(set(artists))
+        total_tracks = len(tracks)
+        artist_variety = unique_artists / total_tracks if total_tracks > 0 else 1.0
+        
+        # Final Variety = 70% Genre + 30% Artist
+        variety_score = (0.7 * genre_variety) + (0.3 * artist_variety)
+        
         return float(variety_score)
 
     def score_playlist(self, tracks: List[Track], profile: UserProfile) -> PlaylistScores:
