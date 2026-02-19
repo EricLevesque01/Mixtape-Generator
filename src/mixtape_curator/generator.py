@@ -3,7 +3,7 @@ import uuid
 import numpy as np
 import copy
 import math
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 from mixtape_curator.models import Track, UserProfile, Playlist, PlaylistScores
 from mixtape_curator.library import library
 from mixtape_curator.scoring import scorer
@@ -44,8 +44,13 @@ class Generator:
                         profile.must_include_track_ids.append(best_track.id)
 
         if not incremental:
-            # Fill remaining space
-            draft_tracks = self._fill_remaining(draft_tracks, profile)
+            # Check for Segmented Generation Trigger (Eclectic + Multiple Genres)
+            if profile.targets.uniformity < 0.6 and len(profile.target_genres) > 1:
+                 # "Eco-Modular" Strategy
+                 draft_tracks = self._create_segmented_draft(draft_tracks, profile)
+            else:
+                 # Standard Greedy Fill
+                 draft_tracks = self._fill_remaining(draft_tracks, profile)
 
         current_duration = sum(t.duration_s for t in draft_tracks)
         
@@ -56,6 +61,85 @@ class Generator:
             scores=scorer.score_playlist(draft_tracks, profile)
         )
         return pl
+
+    def _create_segmented_draft(self, draft_tracks: List[Track], profile: UserProfile) -> List[Track]:
+        """
+        Eco-Modular Generation:
+        Builds the playlist in distinct blocks based on the order of `profile.target_genres`.
+        Used for "Eclectic" mixes where the user wants a journey (e.g. Rock -> Folk).
+        """
+        import difflib # Import for fuzzy matching
+        
+        target = config.duration_target_s
+        cap = config.duration_cap_s
+        current_duration = sum(t.duration_s for t in draft_tracks)
+        
+        # 1. Determine Segments
+        # If user provided ordered genres ["Rock", "Folk"], we follow that.
+        genres = profile.target_genres
+        num_segments = len(genres)
+        if num_segments == 0: return self._fill_remaining(draft_tracks, profile)
+        
+        # Calculate time remaining and split per segment
+        remaining_time = max(0, target - current_duration)
+        time_per_segment = remaining_time / num_segments
+        
+        current_ids = {t.id for t in draft_tracks}
+        draft_artists = {}
+        for t in draft_tracks:
+             draft_artists[t.artist] = draft_artists.get(t.artist, 0) + 1
+             
+        # 2. Fill Each Segment
+        for i, genre in enumerate(genres):
+            # Find candidates used for this genre
+            segment_candidates = []
+            
+            # Fuzzy match helper
+            def is_match(g_target, g_candidate):
+                if not g_candidate: return False
+                g_target = g_target.lower()
+                g_candidate = g_candidate.lower()
+                if g_target in g_candidate: return True
+                # Fuzzy ratio
+                return difflib.SequenceMatcher(None, g_target, g_candidate).ratio() > 0.8
+
+            all_candidates = library.filter_candidates(profile)
+            
+            # Try specific genre match first
+            for t in all_candidates:
+                if t.id in current_ids: continue
+                
+                # Check genre match (Primary or Sub)
+                t_genres = t.rym_data.primary_genres + t.rym_data.subgenres
+                if any(is_match(genre, g) for g in t_genres):
+                    segment_candidates.append(t)
+            
+            # Fallback: If no tracks found for this genre, use general fit
+            if not segment_candidates:
+                # print(f"Warning: No tracks found for genre '{genre}'. Using general fit fallback.")
+                pool = [t for t in all_candidates if t.id not in current_ids]
+                # Sort by general fit to profile
+                pool.sort(key=lambda t: scorer.compute_fit_score([t], profile), reverse=True)
+                segment_candidates = pool # Take everything as potential candidates
+            else:
+                # Sort by fit (prioritizing the genre match subset)
+                segment_candidates.sort(key=lambda t: scorer.compute_fit_score([t], profile), reverse=True)
+            
+            # Fill segment
+            segment_fill = 0
+            for t in segment_candidates:
+                if segment_fill >= time_per_segment: break
+                if current_duration >= target: break
+                
+                if current_duration + t.duration_s <= cap:
+                    if draft_artists.get(t.artist, 0) < config.max_tracks_per_artist:
+                        draft_tracks.append(t)
+                        current_ids.add(t.id)
+                        current_duration += t.duration_s
+                        segment_fill += t.duration_s
+                        draft_artists[t.artist] = draft_artists.get(t.artist, 0) + 1
+                        
+        return draft_tracks
 
     def _fill_remaining(self, draft_tracks: List[Track], profile: UserProfile) -> List[Track]:
         """Greedy fill to duration target."""
@@ -106,28 +190,85 @@ class Generator:
     def optimize_flow(self, playlist: Playlist, profile: UserProfile) -> Playlist:
         """
         Reorder tracks using Greedy Multi-Start algorithm to minimize flow error.
-        Now incorporates original album track position as a structural signal.
+        Now incorporates Intra-Segment Optimization for Eclectic mixes.
         """
         tracks = [library.get_track(tid) for tid in playlist.track_ids]
-        tracks = [t for t in tracks if t]
+        tracks_valid = [t for t in tracks if t]
         
-        if len(tracks) < 3:
+        if len(tracks_valid) < 3:
             return playlist
-            
-        # 1. Smarter Seed Selection (Section 7 of Spec)
-        # Prioritize tracks that were original album openers (Track 1 or 2)
-        opener_indices = [i for i, t in enumerate(tracks) if (t.track_number or 99) <= 2]
+
+        # Check for Segmented flag (Uniformity < 0.6 + Multiple Genres)
+        is_segmented = (profile.targets.uniformity < 0.6 and len(profile.target_genres) > 1)
         
-        # Decide which starting points to try
-        num_starts = min(len(tracks), 8)
-        if len(opener_indices) > 0:
-            # Mix of openers and random candidates
-            start_indices = list(set(opener_indices[:4] + self.rng.sample(range(len(tracks)), max(0, num_starts - len(opener_indices[:4])))))
-        else:
-            start_indices = self.rng.sample(range(len(tracks)), num_starts)
+        if is_segmented:
+            return self._optimize_flow_segmented(playlist, tracks_valid, profile)
+        
+        # Standard Global Optimization
+        return self._optimize_flow_global(playlist, tracks_valid, profile)
+
+    def _optimize_flow_segmented(self, playlist: Playlist, tracks: List[Track], profile: UserProfile) -> Playlist:
+        """
+        Optimize flow *within* genre blocks, preserving the macro-structure.
+        """
+        optimized_tracks = []
+        ordered_genres = profile.target_genres
+        
+        # Group tracks by assumed segment (first matching genre in order)
+        # Tracks that match multiple will be assigned to the first one in the list they match
+        segments: Dict[str, List[Track]] = {g: [] for g in ordered_genres}
+        leftover = []
+        
+        for t in tracks:
+            assigned = False
+            t_genres = set(t.rym_data.primary_genres + t.rym_data.subgenres)
+            for g in ordered_genres:
+                if g in t_genres:
+                    segments[g].append(t)
+                    assigned = True
+                    break # Assign to first matching block
+            if not assigned:
+                leftover.append(t)
+                
+        # Optimize each segment independently
+        for g in ordered_genres:
+             seg_tracks = segments[g]
+             if seg_tracks:
+                 # Run mini-optimization on this block
+                 # We simply sort by energy/key or use a mini-greedy
+                 seg_sorted = self._optimize_sequence_greedy(seg_tracks)
+                 optimized_tracks.extend(seg_sorted)
+                 
+        # Append leftovers (maybe at the end or distributed? For now, end)
+        if leftover:
+            optimized_tracks.extend(self._optimize_sequence_greedy(leftover))
             
+        playlist.track_ids = [t.id for t in optimized_tracks]
+        playlist.scores = scorer.score_playlist(optimized_tracks, profile)
+        return playlist
+
+    def _optimize_flow_global(self, playlist: Playlist, tracks: List[Track], profile: UserProfile) -> Playlist:
+        """Wrapper for the original global optimization logic."""
+        best_sequence = self._optimize_sequence_greedy(tracks)
+        playlist.track_ids = [t.id for t in best_sequence]
+        playlist.scores = scorer.score_playlist(best_sequence, profile)
+        return playlist
+        
+    def _optimize_sequence_greedy(self, tracks: List[Track]) -> List[Track]:
+        """Core Greedy Logic extracted for reuse."""
+        if not tracks: return []
+        
+        # 1. Smarter Seed Selection
+        opener_indices = [i for i, t in enumerate(tracks) if (t.track_number or 99) <= 2]
+        num_starts = min(len(tracks), 8)
+        
+        if len(opener_indices) > 0:
+             start_indices = list(set(opener_indices[:4] + self.rng.sample(range(len(tracks)), max(0, num_starts - len(opener_indices[:4])))))
+        else:
+             start_indices = self.rng.sample(range(len(tracks)), num_starts)
+             
         best_sequence = tracks
-        best_flow_score = -1.0 # Initialize to force first run
+        best_flow_score = -1.0
         
         for i in start_indices:
             remaining = tracks.copy()
@@ -138,11 +279,10 @@ class Generator:
                 best_next_idx = -1
                 max_score = -float('inf')
                 
-                # Progress through the playlist (0.0 at start, 1.0 at end)
                 playlist_progress = len(current_seq) / len(tracks)
                 
                 for idx, candidate in enumerate(remaining):
-                    # A. Sonic Distance (Primary Signal)
+                    # A. Sonic Distance
                     d2 = (
                         (last_track.energy - candidate.energy)**2 +
                         (last_track.valence - candidate.valence)**2 +
@@ -150,23 +290,19 @@ class Generator:
                     )
                     sonic_score = 1.0 - math.sqrt(d2 / 3.0)
                     
-                    # B. Structural Alignment (The "Original Intent" Signal)
-                    # Does this track's original album position match its new playlist position?
+                    # B. Structural Alignment
                     struct_score = 0.0
-                    track_pos = candidate.track_number or 5 # assume middle if unknown
+                    track_pos = candidate.track_number or 5
                     total = candidate.total_tracks or 10
                     album_progress = track_pos / total
-                    
-                    # Bonus if album progress aligns with playlist progress
-                    # (e.g. tracks from the end of an album fit better at the end of the mix)
                     alignment = 1.0 - abs(album_progress - playlist_progress)
-                    struct_score = 0.15 * alignment # 15% weight for structural alignment
+                    struct_score = 0.15 * alignment
                     
                     # C. Closer Bonus
-                    if len(remaining) == 1: # This is the final track
+                    if len(remaining) == 1:
                          if (candidate.track_number and candidate.total_tracks and 
                              candidate.track_number >= candidate.total_tracks):
-                             struct_score += 0.2 # Extra 20% boost for true album closers
+                             struct_score += 0.2
                     
                     total_score = sonic_score + struct_score
                     
@@ -176,16 +312,11 @@ class Generator:
                 
                 current_seq.append(remaining.pop(best_next_idx))
             
-            # Score this sequence (using standard flow math for comparability)
             flow_score = scorer.compute_flow_score(current_seq)
             if flow_score > best_flow_score:
                 best_flow_score = flow_score
                 best_sequence = current_seq
                 
-        # Update playlist
-        playlist.track_ids = [t.id for t in best_sequence]
-        playlist.scores = scorer.score_playlist(best_sequence, profile)
-        
-        return playlist
-        
+        return best_sequence
+
 generator = Generator()

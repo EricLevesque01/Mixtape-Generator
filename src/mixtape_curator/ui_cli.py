@@ -46,7 +46,13 @@ class MixtapeCLI(cmd.Cmd):
             print(f"\n--- Round {retry_count + 1} / {max_retries + 1} ---")
             print("Seeding playlist with must-haves...")
             # 1. Draft (Seed Phase)
-            draft = generator.create_draft(profile, incremental=True)
+            # Use segmented generation if eclectic + multi-genre (disable incremental)
+            use_incremental = True
+            if profile.targets.uniformity < 0.6 and len(profile.target_genres) > 1:
+                 use_incremental = False
+                 print(f"Triggering Eco-Modular Generation for {len(profile.target_genres)} segments...")
+            
+            draft = generator.create_draft(profile, incremental=use_incremental)
             print(f"Seed Created: {len(draft.track_ids)} tracks.")
             
             # 2. Sequence (Initial)

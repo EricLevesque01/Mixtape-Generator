@@ -13,3 +13,5 @@ dist/
 build/
 .vscode/
 .idea/
+/data/
+*.txt

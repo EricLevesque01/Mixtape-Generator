@@ -31,7 +31,7 @@ Always respond with valid JSON:
     "extracted": {
         "recipient": "who (or null)",
         "context": "occasion (or null)",
-        "genres": ["genres"],
+        "genres": ["ordered list of genres for progression"],
         "artists_include": ["artists"],
         "artists_exclude": ["artists"],
         "tracks_include": ["titles"],
@@ -44,6 +44,8 @@ Always respond with valid JSON:
         "user_wants_to_proceed": false
     }
 }
+
+If the user requests a specific progression (e.g., "Start with Rock then go into Folk"), ensure the "genres" list reflects that order: ["Rock", "Folk"]. This order will be used to structure the mixtape segments.
 
 Set "is_sufficient" to true only when you have a strong vision for the mix.
 Set "user_wants_to_proceed" to true ONLY if the user explicitly says they are ready to generate.
