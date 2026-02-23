@@ -1,5 +1,5 @@
 from mixtape_curator.exporter import exporter
-from mixtape_curator.models import Playlist, PlaylistScores, UserProfile, Track
+from mixtape_curator.models import Playlist, PlaylistScores
 from mixtape_curator.library import library
 from pathlib import Path
 import pandas as pd

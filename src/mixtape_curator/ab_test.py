@@ -1,6 +1,5 @@
 import copy
-from typing import List, Tuple
-from .models import Track, Playlist, UserProfile
+from .models import Playlist, UserProfile
 from .library import library
 from .scoring import scorer
 from .generator import generator
@@ -18,7 +17,7 @@ class ABTester:
         """
         # 1. Clone A
         playlist_b = copy.deepcopy(playlist_a)
-        original_ids = set(playlist_a.track_ids)
+        set(playlist_a.track_ids)
         must_haves = set(profile.must_include_track_ids)
         
         # 2. Determine swap count

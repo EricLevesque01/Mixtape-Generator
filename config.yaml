@@ -1,6 +1,7 @@
 # duration behavior
 duration_target_s: 4620       # Target ≈ 77 minutes (CD-length mixtape)
 duration_cap_s: 7200          # Absolute max ≈ 120 minutes
+target_track_count: 16        # Target length (approx 16 tracks)
 track_min_duration_s: 60      # Skip tracks shorter than 1 minute
 track_max_duration_s: 600     # Skip tracks longer than 10 minutes
 
@@ -16,9 +17,9 @@ conf_thresh: 0.7
 # Repair loop
 ambitious_threshold: 0.88     # Aim high first
 accept_threshold: 0.80        # Fallback floor
-max_repair_iters: 15          # Increase iterations for deeper optimization
+max_repair_iters: 8
 eps: 0.01
-stall_iters: 4
+stall_iters: 2
 
 # Model Tiering (v2.1.1)
 fast_llm_model: "gpt-4o-mini"
@@ -31,15 +32,15 @@ off_topic_max: 3
 max_ab_rounds: 3
 
 # Scoring weights (v2.1.1)
-w_fit: 0.30
+w_fit: 0.35
 w_flow: 0.25
-w_variety: 0.20
+w_variety: 0.15
 w_access: 0.15
 w_quality: 0.10
 
 # Base-and-Branch behavior
-branch_swap_min: 3
-branch_swap_max: 8
+branch_swap_min: 2
+branch_swap_max: 5
 branch_variety_boost: 0.2
 
 # RNG (deterministic in testing)

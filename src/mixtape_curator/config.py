@@ -1,15 +1,10 @@
 import yaml
 import os
 from pathlib import Path
-from typing import Any, Dict, List
-import os
+from typing import Any, Dict
 from dotenv import load_dotenv
 
-load_dotenv() # Load constraints from .env file
-
-from dotenv import load_dotenv
-
-load_dotenv() # Load constraints from .env file
+load_dotenv()  # Load constraints from .env file
 
 
 class AppConfig:

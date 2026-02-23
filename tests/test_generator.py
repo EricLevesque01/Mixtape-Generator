@@ -1,20 +1,19 @@
 import pytest
-from src.mixtape_curator.generator import generator
-from src.mixtape_curator.models import UserProfile, Track, RYMData
-from src.mixtape_curator.library import library
-from src.mixtape_curator.config import config
+from mixtape_curator.generator import generator
+from mixtape_curator.models import UserProfile, Playlist, PlaylistScores
+from mixtape_curator.library import library
 import pandas as pd
 
 # Mock Data Injection for Tests
 @pytest.fixture(autouse=True)
 def mock_library_data():
-    # Create 10 fake tracks
+    # Create 10 fake tracks with diverse artists to avoid max_tracks_per_artist limit
     tracks = []
     for i in range(10):
         tracks.append({
             "id": f"t{i}",
             "title": f"Track {i}",
-            "artist": "Artist A" if i < 5 else "Artist B",
+            "artist": f"Artist {chr(65 + i)}",  # Artist A through J (unique artists)
             "duration_s": 300, # 5 mins
             "energy": 0.1 * i,
             "valence": 0.1 * i,
@@ -27,44 +26,35 @@ def mock_library_data():
 
 def test_draft_constraints():
     profile = UserProfile()
-    # Exclude Artist A
+    # Exclude Artist A (only t0)
     profile.exclude_artists = ["Artist A"]
     
     pl = generator.create_draft(profile)
     
-    # Check exclusion
-    # Artist A was t0-t4. Artist B was t5-t9.
+    # Check exclusion - t0 has "Artist A", all others are different
     for tid in pl.track_ids:
-        # We need to map back to artist to verify, but simple ID check works for this mock:
-        assert int(tid[1:]) >= 5 # Should only have tracks 5-9
+        assert tid != "t0"
 
 def test_draft_duration_target():
     profile = UserProfile()
     # Config target is 4620s. 
-    # Mock tracks are 300s.
-    # It should fit ~15 tracks. We only have 10.
-    # So it should take all 10.
+    # Mock tracks are 300s each, all unique artists.
+    # It should take all 10 (3000s < 4620s target).
     pl = generator.create_draft(profile)
     assert len(pl.track_ids) == 10
     assert pl.total_duration_s == 3000
 
 def test_sequencing_improvement():
     profile = UserProfile()
-    # Create a playlist with jagged energy: 0.0, 0.9, 0.1, 0.8...
-    # The optimizer should smooth this.
     
-    # Manually forcing ids for the test
-    # t0 (0.0), t9 (0.9), t1 (0.1), t8 (0.8)
-    
-    from src.mixtape_curator.models import Playlist, PlaylistScores
     pl = Playlist(
         id="test",
         track_ids=["t0", "t9", "t1", "t8"],
-        track_scores=PlaylistScores()
+        scores=PlaylistScores()
     )
     
     # Score before
-    from src.mixtape_curator.scoring import scorer
+    from mixtape_curator.scoring import scorer
     tracks_before = [library.get_track(tid) for tid in pl.track_ids]
     score_before = scorer.compute_flow_score(tracks_before)
     
@@ -75,6 +65,5 @@ def test_sequencing_improvement():
     tracks_after = [library.get_track(tid) for tid in pl_opt.track_ids]
     score_after = scorer.compute_flow_score(tracks_after)
     
-    # Flow score should be higher (impliying lower distance/error)
-    # Note depending on the greedy start, it might find 0->1 or 9->8 pairs.
+    # Flow score should be higher (implying lower distance/error)
     assert score_after >= score_before

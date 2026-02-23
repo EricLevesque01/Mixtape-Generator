@@ -58,7 +58,7 @@ def run_debug():
 
     # 4. A/B Generation
     print("Generating B-Side Variation...")
-    playlist_b = ab_tester.generate_b_side(playlist_a, profile)
+    ab_tester.generate_b_side(playlist_a, profile)
     print("B-Side generated.")
 
     print("Done.")

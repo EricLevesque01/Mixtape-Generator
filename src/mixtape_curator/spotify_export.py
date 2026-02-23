@@ -2,7 +2,7 @@
 import logging
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from typing import List, Optional
+from typing import Optional
 from .models import Playlist, Track
 from .library import library
 from .config import config

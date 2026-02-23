@@ -1,14 +1,12 @@
 import logging
+logger = logging.getLogger("mixtape_curator.agent")
 import json
 import copy
-from typing import List, Dict, Any, Optional
-import pandas as pd
+from typing import List, Dict
 from mixtape_curator.models import Playlist, UserProfile
 from mixtape_curator.library import library
-from mixtape_curator.scoring import scorer
 from mixtape_curator.generator import generator
 from mixtape_curator.llm.interface import LLMProvider
-from mixtape_curator.llm.providers.local import MockLLM
 from mixtape_curator.config import config
 
 class ReActAgent:
@@ -102,10 +100,12 @@ class ReActAgent:
                     stall_count += 1
                     
                 if stall_count >= self.stall_iters:
-                    if current_threshold > ambitious_thresh: # If we were aiming high, lower it
+                    if current_threshold > accept_thresh: # If we are above the floor, lower it
                         current_threshold = accept_thresh
                         stall_count = 0
+                        logger.info(f"Stalled ({self.stall_iters} iters). Lowering threshold to {accept_thresh}.")
                     else:
+                        logger.info("Stalled at floor threshold. Exiting.")
                         break
 
             except Exception as e:
@@ -266,52 +266,71 @@ class ReActAgent:
         query = params.get("query", "")
         limit = params.get("limit", 5)
         
-        # 1. Fuzzy Artist Search (Grounding)
-        artist_match = library.search_artist(query)
-        
         results_msg = ""
-        found_matches = []
+        found_ids: List[str] = []
         
-        # If artist match found, prioritize those tracks
+        # 1. Fuzzy Artist Search (Grounding) — fastest path
+        artist_match = library.search_artist(query)
         if artist_match:
             results_msg = f"Found fuzzy match for artist '{artist_match}'. "
-            # Exact lookup on normalized name
             artist_tracks = library.df[library.df['artist'] == artist_match]
             if not artist_tracks.empty:
-                # Take top N
-                found_matches = artist_tracks.head(limit)
+                found_ids = artist_tracks['id'].head(limit).tolist()
         
-        # If no fuzzy match or not enough, do broad search
-        if len(found_matches) < limit:
-             # Broad filter: Title OR Artist OR Genre
-            mask = library.df.apply(lambda row: 
-                query.lower() in row['title'].lower() or 
-                query.lower() in row['artist'].lower() or
-                any(query.lower() in g.lower() for g in row['rym_data_primary_genres']), axis=1)
-            
-            broad_matches = library.df[mask]
-            
-            # If we had no artist matches, just take the broad ones
-            if len(found_matches) == 0:
-                 found_matches = broad_matches.head(limit)
-            else:
-                # We have some artist matches, but need more to fill limit
-                # Append broad matches that aren't already included
-                needed = limit - len(found_matches)
-                current_ids = set(found_matches['id'])
-                new_matches = broad_matches[~broad_matches['id'].isin(current_ids)].head(needed)
-                if not new_matches.empty:
-                    found_matches = pd.concat([found_matches, new_matches])
+        # 2. Tag-based index lookup (O(1) per tag)
+        if len(found_ids) < limit:
+            remaining = limit - len(found_ids)
+            tag_ids = library.search_by_tags(
+                genres=[query] + profile.target_genres,
+                descriptors=[query],
+                limit=remaining + 10  # over-fetch to filter dupes
+            )
+            for tid in tag_ids:
+                if tid not in found_ids:
+                    found_ids.append(tid)
+                    if len(found_ids) >= limit:
+                        break
         
-        if found_matches.empty:
+        # 3. Title substring fallback
+        if len(found_ids) < limit:
+            q_lower = query.lower()
+            title_matches = library.df[library.df['title'].str.lower().str.contains(q_lower, na=False)]
+            for _, row in title_matches.iterrows():
+                if row['id'] not in found_ids:
+                    found_ids.append(row['id'])
+                    if len(found_ids) >= limit:
+                        break
+        
+        if not found_ids:
             return "No matches found."
-            
+        
+        # Format results with rich metadata
         results = []
-        for _, row in found_matches.iterrows():
-            genres = ", ".join(row['rym_data_primary_genres'][:2])
-            descriptors = ", ".join(row['rym_data_descriptors'][:3])
+        for tid in found_ids:
+            row = library.df[library.df['id'] == tid]
+            if row.empty:
+                continue
+            row = row.iloc[0]
+            genres_list = row.get('rym_data_primary_genres', []) if 'rym_data_primary_genres' in row.index else []
+            subgenres_list = row.get('rym_data_subgenres', []) if 'rym_data_subgenres' in row.index else []
+            descriptors_list = row.get('rym_data_descriptors', []) if 'rym_data_descriptors' in row.index else []
+            if not isinstance(genres_list, list): genres_list = []
+            if not isinstance(subgenres_list, list): subgenres_list = []
+            if not isinstance(descriptors_list, list): descriptors_list = []
+            
+            genre_str = ", ".join(genres_list[:2])
+            sub_str = ", ".join(subgenres_list[:2])
+            desc_str = ", ".join(descriptors_list[:3])
+            
+            tag_line = f"[{genre_str}]"
+            if sub_str:
+                tag_line += f" [{sub_str}]"
+            if desc_str:
+                tag_line += f" ({desc_str})"
+            
             results.append(
-                f"{row['id']}: {row['title']} by {row['artist']} [{genres}] [{descriptors}] ({row['duration_s']}s)"
+                f"{row['id']}: {row['title']} by {row['artist']} {tag_line} ({row['duration_s']}s)"
             )
             
         return results_msg + "\n".join(results)
+

@@ -1,8 +1,7 @@
 import logging
-import json
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple
 from enum import Enum, auto
-from .models import UserProfile, FeedbackTargets
+from .models import UserProfile
 from .config import config
 
 logger = logging.getLogger("mixtape_curator")

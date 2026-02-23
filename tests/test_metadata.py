@@ -1,10 +1,9 @@
 
 import unittest
-import unittest
 import pandas as pd
 from unittest.mock import MagicMock
 from mixtape_curator.models import Track, UserProfile
-from mixtape_curator.library import Library, library
+from mixtape_curator.library import library
 from mixtape_curator.agent import ReActAgent
 
 class TestMetadata(unittest.TestCase):
@@ -46,10 +45,12 @@ class TestMetadata(unittest.TestCase):
         
     def test_agent_search_grounding(self):
         """Verify agent uses library grounding."""
-        # Setup mock
+        # Setup mock with all required columns
         data = [
-            {"id": "t1", "title": "Back in Black", "artist": "AC/DC", "rym_data_primary_genres": ["Rock"]},
-            {"id": "t2", "title": "Yesterday", "artist": "The Beatles", "rym_data_primary_genres": ["Pop"]}
+            {"id": "t1", "title": "Back in Black", "artist": "AC/DC", "duration_s": 300,
+             "rym_data_primary_genres": ["Rock"], "rym_data_subgenres": [], "rym_data_descriptors": []},
+            {"id": "t2", "title": "Yesterday", "artist": "The Beatles", "duration_s": 200,
+             "rym_data_primary_genres": ["Pop"], "rym_data_subgenres": [], "rym_data_descriptors": []}
         ]
         library.df = pd.DataFrame(data)
         

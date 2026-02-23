@@ -1,14 +1,19 @@
 import pandas as pd
 import json
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Set, Dict
+from collections import defaultdict
 from pathlib import Path
 import difflib
 from .models import Track, RYMData, UserProfile
-from .config import config
 
 class Library:
     _instance = None
     df: pd.DataFrame = pd.DataFrame()
+    # Inverted indexes for O(1) genre/descriptor lookups
+    genre_index: Dict[str, Set[str]] = {}      # genre_lower -> set(track_ids)
+    subgenre_index: Dict[str, Set[str]] = {}   # subgenre_lower -> set(track_ids)
+    descriptor_index: Dict[str, Set[str]] = {}  # descriptor_lower -> set(track_ids)
+    artist_genre_index: Dict[str, Set[str]] = {} # genre_lower -> set(artist_names)
 
     def __new__(cls):
         if cls._instance is None:
@@ -33,10 +38,60 @@ class Library:
         # Convert to DataFrame
         self.df = pd.json_normalize(data, sep='_')
         
-        # Rename normalized columns back to structure if needed, or just keep flat
-        # Structure is rym_data.primary_genres -> rym_data_primary_genres
+        # Build inverted indexes for fast genre/descriptor lookups
+        self._build_indexes()
         
         print(f"Loaded {len(self.df)} tracks.")
+
+    def _build_indexes(self):
+        """Build inverted indexes from the DataFrame for O(1) tag lookups."""
+        self.genre_index = defaultdict(set)
+        self.subgenre_index = defaultdict(set)
+        self.descriptor_index = defaultdict(set)
+        self.artist_genre_index = defaultdict(set)
+        
+        for _, row in self.df.iterrows():
+            tid = row['id']
+            artist = row.get('artist', '')
+            
+            genres = row.get('rym_data_primary_genres', [])
+            if isinstance(genres, list):
+                for g in genres:
+                    g_lower = g.lower()
+                    self.genre_index[g_lower].add(tid)
+                    self.artist_genre_index[g_lower].add(artist)
+            
+            subs = row.get('rym_data_subgenres', [])
+            if isinstance(subs, list):
+                for s in subs:
+                    s_lower = s.lower()
+                    self.subgenre_index[s_lower].add(tid)
+                    self.artist_genre_index[s_lower].add(artist)
+            
+            descs = row.get('rym_data_descriptors', [])
+            if isinstance(descs, list):
+                for d in descs:
+                    self.descriptor_index[d.lower()].add(tid)
+
+    def search_by_tags(self, genres: List[str] = None, descriptors: List[str] = None,
+                       limit: int = 20) -> List[str]:
+        """Find track IDs matching any of the given genres/descriptors using the inverted index.
+        Returns up to `limit` track IDs sorted by number of matching tags (most relevant first)."""
+        from collections import Counter
+        tag_hits: Counter = Counter()
+        
+        for g in (genres or []):
+            g_lower = g.lower()
+            # Check primary genres
+            tag_hits.update(self.genre_index.get(g_lower, set()))
+            # Check subgenres
+            tag_hits.update(self.subgenre_index.get(g_lower, set()))
+        
+        for d in (descriptors or []):
+            tag_hits.update(self.descriptor_index.get(d.lower(), set()))
+        
+        # Return track IDs sorted by hit count (most matching tags first)
+        return [tid for tid, _ in tag_hits.most_common(limit)]
 
     def save(self, data_path: str = "data/library.json"):
         """Save current DataFrame back to JSON file."""
@@ -123,27 +178,24 @@ class Library:
         return None
 
     def search_artists_by_genre(self, genre: str, limit: int = 5) -> List[str]:
-        """Find artists in the library that match a genre (primary or sub). Uses substring matching."""
+        """Find artists matching a genre using the inverted index. O(1) lookup."""
         if self.df.empty:
             return []
         
         genre_lower = genre.lower().strip()
+        artists = self.artist_genre_index.get(genre_lower, set())
         
-        def has_genre(row):
-            primary = [g.lower() for g in row.get('rym_data_primary_genres', [])]
-            sub = [g.lower() for g in row.get('rym_data_subgenres', [])]
-            all_genres = primary + sub
-            # Substring match: 'grunge' matches 'Grunge Pop', 'Post-Grunge', etc.
-            return any(genre_lower in g or g in genre_lower for g in all_genres)
+        if not artists:
+            # Substring fallback for partial matches (e.g. 'indie' matches 'indie folk')
+            for key, artist_set in self.artist_genre_index.items():
+                if genre_lower in key or key in genre_lower:
+                    artists = artists | artist_set
         
-        mask = self.df.apply(has_genre, axis=1)
-        matched = self.df[mask]
-        
-        if matched.empty:
+        if not artists:
             return []
         
-        # Return unique artists, sorted by frequency (most tracks first)
-        artist_counts = matched['artist'].value_counts()
+        # Sort by track count (most tracks first)
+        artist_counts = self.df[self.df['artist'].isin(artists)]['artist'].value_counts()
         return artist_counts.head(limit).index.tolist()
 
     def get_artist_tracks(self, artist: str) -> List[Tuple[str, str]]:

@@ -1,4 +1,3 @@
-import sys
 import cmd
 from .generator import generator
 from .agent import ReActAgent
@@ -9,8 +8,10 @@ from .spotify_export import spotify_exporter
 from .config import config
 from .llm.providers.local import MockLLM
 import time
-import mixtape_curator
-print(f"DEBUG: Loaded mixtape_curator from {mixtape_curator.__file__}")
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
 
 def typewriter_print(text: str, delay: float = 0.01):
     """Prints text one character at a time for better UX."""
@@ -35,6 +36,49 @@ class MixtapeCLI(cmd.Cmd):
         super().__init__()
         self.intro = 'Welcome to the ReAct Mixtape Curator. Type "start" to begin.'
 
+    def _display_playlist(self, playlist, label: str):
+        """Display a playlist using Rich styled tables."""
+        score = playlist.scores.total
+        # Color the score: green if >= 0.80, yellow if >= 0.60, red otherwise
+        if score >= 0.80:
+            score_style = "bold green"
+        elif score >= 0.60:
+            score_style = "bold yellow"
+        else:
+            score_style = "bold red"
+        
+        table = Table(
+            title=f"Playlist {label}",
+            title_style="bold cyan",
+            caption=f"Score: [{score_style}]{score:.2f}[/{score_style}] | "
+                    f"{len(playlist.track_ids)} tracks | "
+                    f"{playlist.total_duration_s // 60}m {playlist.total_duration_s % 60}s",
+            show_lines=False,
+            pad_edge=True,
+        )
+        
+        table.add_column("#", style="dim", width=3, justify="right")
+        table.add_column("Artist", style="cyan", max_width=22)
+        table.add_column("Title", max_width=30)
+        table.add_column("Dur", style="dim", width=5, justify="right")
+        table.add_column("Why it fits", style="italic", max_width=50)
+        
+        for i, tid in enumerate(playlist.track_ids):
+            t = library.get_track(tid)
+            if t:
+                dur_str = f"{t.duration_s // 60}:{t.duration_s % 60:02d}"
+                note = playlist.track_notes.get(tid, "Fits the curated journey.")
+                table.add_row(
+                    str(i + 1),
+                    t.artist[:22],
+                    t.title[:30],
+                    dur_str,
+                    note[:50]
+                )
+        
+        console.print()
+        console.print(table)
+
     def do_start(self, arg):
         """Start the interview process with the new Agentic Interviewer."""
         from .interview_agent import InterviewAgent
@@ -43,14 +87,14 @@ class MixtapeCLI(cmd.Cmd):
         def show_thought(thought: str):
             print(f"\n{thought}")
             
-        agent = InterviewAgent() # New conversational agent
+        agent = InterviewAgent()  # New conversational agent
         print(f"AI: {agent.start()}\n")
         
         while not agent.completed:
             try:
                 user_input = input("> ")
                 response, done = agent.process_input(user_input, user_callback=show_thought)
-                print() # Space after user input
+                print()  # Space after user input
                 typewriter_print(response)
                 if done:
                     break
@@ -59,6 +103,7 @@ class MixtapeCLI(cmd.Cmd):
             
         if agent.completed:
             self._run_generation(agent)
+
 
     def _run_generation(self, interviewer):
         profile = interviewer.profile
@@ -105,42 +150,26 @@ class MixtapeCLI(cmd.Cmd):
             print("Generating B-Side Variation...")
             playlist_b = ab_tester.generate_b_side(playlist_a, profile)
             
-            print("\n=== GENERATION COMPLETE ===")
-            headers = f"{'Track':<5} | {'Artist':<20} | {'Song Title':<30} | {'Vibe / Why it fits'}"
-            separator = "-" * len(headers)
+            console.print("\n[bold green]=== GENERATION COMPLETE ===[/bold green]")
             
-            print(f"\n### Playlist A (Score: {playlist_a.scores.total:.2f})")
-            print(headers)
-            print(separator)
-            for i, tid in enumerate(playlist_a.track_ids):
-                t = library.get_track(tid)
-                if t:
-                    note = playlist_a.track_notes.get(tid, "Fits the curated journey.")
-                    print(f"{i+1:<5} | {t.artist[:20]:<20} | {t.title[:30]:<30} | {note}")
-            
-            print(f"\n### Playlist B (Score: {playlist_b.scores.total:.2f})")
-            print(headers)
-            print(separator)
-            for i, tid in enumerate(playlist_b.track_ids):
-                t = library.get_track(tid)
-                if t:
-                    note = playlist_b.track_notes.get(tid, "Fits the curated journey.")
-                    print(f"{i+1:<5} | {t.artist[:20]:<20} | {t.title[:30]:<30} | {note}")
+            self._display_playlist(playlist_a, "A")
+            self._display_playlist(playlist_b, "B")
+
             
             # 5. Selection Loop
-            print(f"\n(Export features coming in next phase)")
+            print("\n(Export features coming in next phase)")
             choice = input("\nWhich mix do you prefer? [A / B / Neither]: ").strip().upper()
             
             if choice == 'A':
-                print(f"\nSelected Playlist A!")
+                print("\nSelected Playlist A!")
                 self._export(playlist_a, profile, "A")
                 return
             elif choice == 'B':
-                print(f"\nSelected Playlist B!")
+                print("\nSelected Playlist B!")
                 self._export(playlist_b, profile, "B")
                 return
             elif choice == 'NEITHER':
-                retry_count = int(retry_count) + 1
+                retry_count += 1
                 if retry_count < max_retries:
                    feedback = input("What would you like to change? (e.g., 'too slow', 'too eclectic', 'exclude Taylor Swift'): ")
                    interviewer.refine_profile(feedback)

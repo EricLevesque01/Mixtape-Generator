@@ -1,10 +1,8 @@
 """Analyze the latest mixtape_for_me exports against spec requirements."""
-import sys, os
+import sys
 sys.path.insert(0, 'src')
 
 from mixtape_curator.library import library
-from mixtape_curator.models import UserProfile, FeedbackTargets
-from mixtape_curator.scoring import scorer
 from mixtape_curator.config import config
 from collections import Counter
 
@@ -30,11 +28,11 @@ for title in titles_a:
         if t:
             tracks.append(t)
 
-print(f"=== PLAYLIST A ANALYSIS ===")
+print("=== PLAYLIST A ANALYSIS ===")
 print(f"Tracks resolved: {len(tracks)}/21")
 print(f"Total duration: 4846s ({4846//60}m {4846%60}s)")
 print(f"Target duration: {config.duration_target_s}s ({config.duration_target_s//60}m)")
-print(f"Score: 0.71")
+print("Score: 0.71")
 print()
 
 # Genre breakdown

@@ -1,6 +1,5 @@
 
 import cmd
-import sys
 from .library import library
 
 class MetadataTagger(cmd.Cmd):

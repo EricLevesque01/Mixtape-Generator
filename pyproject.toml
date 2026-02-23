@@ -1,3 +1,29 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mixtape-curator"
+version = "2.2.0"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas",
+    "numpy",
+    "pydantic",
+    "pyyaml",
+    "python-dotenv",
+    "rich",
+    "spotipy",
+    "openai",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+anthropic = ["anthropic"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.ruff]
 line-length = 88
 target-version = "py310"

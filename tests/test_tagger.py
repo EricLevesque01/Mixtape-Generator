@@ -1,6 +1,6 @@
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from mixtape_curator.library import library
 from mixtape_curator.metadata_tagger import MetadataTagger
 import pandas as pd
@@ -30,7 +30,7 @@ class TestTagger(unittest.TestCase):
              patch.object(library, 'save'):
             try:
                 tagger.do_fill_years("")
-            except Exception as e:
+            except Exception:
                 pass
                 
         # Verify first row updated

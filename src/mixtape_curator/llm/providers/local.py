@@ -1,10 +1,9 @@
 from typing import List, Dict, Any, Optional
 import json
-import re
-import re
 import random
 from ..interface import LLMProvider
 from mixtape_curator.library import library
+from mixtape_curator.config import config
 
 class MockLLM(LLMProvider):
     """
@@ -83,6 +82,16 @@ class MockLLM(LLMProvider):
         track_count = state.get("track_count", 0)
         phase = state.get("phase", "")
 
+        # 0. Fix violations FIRST (Duration, Artist limit)
+        if violations:
+             if "Duration" in str(violations) or "duration" in str(violations) or "exceeds cap" in str(violations):
+                  # Find a track to remove (prefer non-locked)
+                  for artist, tids in artist_map.items():
+                      if isinstance(tids, list) and tids:
+                          return {"action": "remove_track", "params": {"track_ids": [tids[0]]}, "reasoning": "Removing to fix duration violation."}
+                  return {"action": "remove_track", "params": {"track_ids": ["t0"]}, "reasoning": "Removing t0 to fix duration."}
+             return {"action": "remove_track", "params": {"track_ids": ["t1"]}, "reasoning": "Fixing violation."}
+
         # 1. Growth Phase Priority
         target_count = 12
         if "GROWTH" in phase or track_count < target_count:
@@ -115,8 +124,9 @@ class MockLLM(LLMProvider):
                              candidates.extend(library.get_artist_tracks(artist))
                          if candidates: break
             
-            # Shuffle and pick target_count unique artists if possible
-            random.shuffle(candidates)
+            # Use seeded RNG for deterministic results
+            rng = random.Random(config.get("rng_seed", 12345))
+            rng.shuffle(candidates)
             
             # Filter for unique artists
             selected_tracks = []

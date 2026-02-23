@@ -1,8 +1,5 @@
-import sys
 from mixtape_curator.ui_cli import MixtapeCLI
 from mixtape_curator.library import library
-from io import StringIO
-import time
 
 # Simulate user inputs
 inputs = [

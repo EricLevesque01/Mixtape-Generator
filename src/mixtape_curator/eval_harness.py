@@ -1,13 +1,12 @@
 import json
 import logging
 import time
-from typing import List, Dict, Any
-from .models import UserProfile, Playlist
+from typing import Dict, Any
+from .models import UserProfile
 from .generator import generator
-from .agent import ReActAgent, MockLLM
-from .scoring import scorer
+from .agent import ReActAgent
+from .llm.providers.local import MockLLM
 from .library import library
-from .config import config
 
 logger = logging.getLogger("mixtape_curator")
 

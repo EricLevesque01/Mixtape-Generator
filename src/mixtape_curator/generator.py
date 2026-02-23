@@ -1,11 +1,8 @@
 import random
-import random
 import uuid
-import numpy as np
-import copy
 import math
-from typing import List, Optional, Tuple, Dict
-from mixtape_curator.models import Track, UserProfile, Playlist, PlaylistScores
+from typing import List, Dict
+from mixtape_curator.models import Track, UserProfile, Playlist
 from mixtape_curator.library import library
 from mixtape_curator.scoring import scorer
 from mixtape_curator.config import config
@@ -21,6 +18,7 @@ class Generator:
         """
         # 1. Start with must-includes
         draft_tracks: List[Track] = []
+        track_notes: Dict[str, str] = {}
         must_have_ids = set(profile.must_include_track_ids)
         all_candidates_unfiltered = library.filter_candidates(profile)
         
@@ -28,6 +26,7 @@ class Generator:
         for t in all_candidates_unfiltered:
             if t.id in must_have_ids:
                 draft_tracks.append(t)
+                track_notes[t.id] = "Must-include: requested by the curator."
                 
         # Must-Include Artists
         if profile.must_include_artists:
@@ -41,6 +40,7 @@ class Generator:
                     artist_tracks_scored.sort(key=lambda x: x[0], reverse=True)
                     best_track = artist_tracks_scored[0][1]
                     draft_tracks.append(best_track)
+                    track_notes[best_track.id] = f"Anchor artist pick — {artist} sets the DNA for this mix."
                     if best_track.id not in profile.must_include_track_ids:
                         profile.must_include_track_ids.append(best_track.id)
 
@@ -55,15 +55,59 @@ class Generator:
                  # Standard Greedy Fill
                  draft_tracks = self._fill_remaining(draft_tracks, profile)
 
+        # Auto-generate reasoning for any tracks that don't have notes yet
+        target_genres = profile.target_genres
+        for t in draft_tracks:
+            if t.id not in track_notes:
+                track_notes[t.id] = self._generate_track_reasoning(t, target_genres)
+
         current_duration = sum(t.duration_s for t in draft_tracks)
         
         pl = Playlist(
             id=str(uuid.uuid4()),
             track_ids=[t.id for t in draft_tracks],
             total_duration_s=current_duration,
-            scores=scorer.score_playlist(draft_tracks, profile)
+            scores=scorer.score_playlist(draft_tracks, profile),
+            track_notes=track_notes
         )
         return pl
+
+
+    def _generate_track_reasoning(self, track: Track, target_genres: List[str]) -> str:
+        """Generate a 'Why it fits' reasoning string for a track based on its attributes."""
+        parts = []
+        
+        # Sonic description
+        if track.energy > 0.7:
+            parts.append("high-energy")
+        elif track.energy < 0.35:
+            parts.append("mellow")
+        else:
+            parts.append("mid-tempo")
+        
+        if track.valence > 0.65:
+            parts.append("uplifting")
+        elif track.valence < 0.35:
+            parts.append("moody")
+        
+        if track.intensity > 0.7:
+            parts.append("intense")
+        
+        # Genre match
+        t_genres = track.rym_data.primary_genres + track.rym_data.subgenres
+        matched = [g for g in t_genres if g in target_genres]
+        if matched:
+            parts.append(f"{matched[0]} fit")
+        elif t_genres:
+            parts.append(f"{t_genres[0]} texture")
+        
+        # Descriptor flavor
+        if track.rym_data.descriptors:
+            top_desc = track.rym_data.descriptors[:2]
+            parts.append(", ".join(top_desc))
+        
+        desc = ", ".join(parts) if parts else "solid sonic match"
+        return f"Brings {desc} to the journey."
 
     def _create_segmented_draft(self, draft_tracks: List[Track], profile: UserProfile) -> List[Track]:
         """
@@ -129,6 +173,7 @@ class Generator:
                 segment_candidates.sort(key=lambda t: scorer.compute_fit_score([t], profile), reverse=True)
             
             # Fill segment - Two Pass Approach
+            segment_fill = 0  # Track duration added in this segment
             
             # Pass 1: Strict Unique Artists (Max 1 per artist)
             for t in segment_candidates:
@@ -204,7 +249,6 @@ class Generator:
                 
                 if current_duration + t.duration_s <= cap:
                     count = draft_artists.get(t.artist, 0)
-                    is_under_limit = count < limit
                     # print(f"[DEBUG] Checking {t.artist}: count={count}, limit={limit}, type(limit)={type(limit)}, {count} < {limit} is {is_under_limit}")
                     
                     if count < limit:

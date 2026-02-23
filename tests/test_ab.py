@@ -1,7 +1,7 @@
 import pytest
-from src.mixtape_curator.ab_test import ab_tester
-from src.mixtape_curator.models import UserProfile, Playlist, PlaylistScores
-from src.mixtape_curator.library import library
+from mixtape_curator.ab_test import ab_tester
+from mixtape_curator.models import UserProfile, Playlist, PlaylistScores
+from mixtape_curator.library import library
 import pandas as pd
 
 # Reuse mock data setup
@@ -12,7 +12,7 @@ def mock_library_data():
         tracks.append({
             "id": f"t{i}",
             "title": f"Track {i}",
-            "artist": "Artist A",
+            "artist": f"Artist {chr(65 + i % 10)}",  # 10 different artists (A-J)
             "duration_s": 300,
             "energy": 0.5,
             "valence": 0.5,

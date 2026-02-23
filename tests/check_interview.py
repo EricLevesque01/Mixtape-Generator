@@ -1,10 +1,7 @@
 from mixtape_curator.interview import Interviewer
-from mixtape_curator.models import UserProfile
 from mixtape_curator.generator import generator
 from mixtape_curator.library import library
-from mixtape_curator.config import config
 import pandas as pd
-from unittest.mock import Mock
 
 def test_interview_flow():
     # Setup mock data 

@@ -1,6 +1,5 @@
 
 from typing import List, Dict, Optional, Tuple, Callable
-import json
 import logging
 from .models import UserProfile
 from .config import config
@@ -11,9 +10,19 @@ from .library import library
 logger = logging.getLogger(__name__)
 
 # System prompt for the Interview Agent
-SYSTEM_PROMPT = """You are a professional Mixtape Curator. 
+SYSTEM_PROMPT = """You are a professional Mixtape Curator / Investigative A&R.
 
-MISSION: Efficiently extract Recipient, Context, Genres, and 3-4 FOUND Artists.
+MISSION: You must extract the "DNA" of the mixtape by driving the conversation. Do NOT be a passive listener.
+
+INTERVIEW STRATEGY (STRICT ORDER):
+1. PHASE 1: MOTIVE.
+   - Immediate Goal: Find out "Who is this for?" and "What is the occasion/vibe?"
+   - If the user is vague, ask specifically: "Is this for a workout, a dinner party, or just deep focus?"
+   
+2. PHASE 2: CONTENT (ANCHORS).
+   - Once Motive is known (or if user skips it), IMMEDIATE PIVOT TO CONTENT.
+   - Ask: "To start building the sound, give me 3 specific artists or songs to anchor this mix."
+   - Do NOT say "I'm listening" or "Tell me more about the vibe" without asking for specific artists/tracks.
 
 STRICT GROUNDING RULES:
 - Only mention artists or tracks explicitly marked as "FOUND" in the LIBRARY SNAPSHOT.
@@ -28,11 +37,23 @@ ARTIST LIST HANDLING:
 
 OUTPUT FORMAT (JSON ONLY):
 {
-        "user_wants_to_proceed": bool
-    }
+    "extracted": {
+        "recipient": "string | null",
+        "context_notes": "string | null",
+        "artists_include": ["list", "of", "strings"],
+        "artists_exclude": ["list", "of", "strings"],
+        "genres": ["list", "of", "strings"],
+        "descriptors": ["list", "of", "strings"],
+        "user_wants_to_proceed": bool,
+        "is_sufficient": bool
+    },
+    "response": "Your conversational response here. Be direct and inquisitive."
 }
 
-Set "is_sufficient" to true only if you have the 4 pillars + confirmed library matches for artists.
+Set "is_sufficient" to true ONLY IF you have:
+1. Recipient/Context (Motive)
+2. At least 2-3 specific Artists or Tracks (Content)
+
 Set "user_wants_to_proceed" to true ONLY if the user says "Go", "Yes", or "Generate".
 """
 
@@ -156,9 +177,9 @@ class InterviewAgent:
         if missing:
             self._log_thought(f"[Thought] Still need: {', '.join(missing)}")
         elif is_sufficient and not user_wants_proceed:
-            self._log_thought(f"[Thought] Vision complete. Waiting for user to say go.")
+            self._log_thought("[Thought] Vision complete. Waiting for user to say go.")
         elif user_wants_proceed:
-             self._log_thought(f"[Thought] User confirmed readiness. Proceeding.")
+             self._log_thought("[Thought] User confirmed readiness. Proceeding.")
 
         # Finalize if user is ready
         if user_wants_proceed:
@@ -218,7 +239,6 @@ class InterviewAgent:
             missing.append(f"'{entity}' NOT in library.")
             
         # Genre check & Suggestions
-        suggestions = []
         for genre in self.profile.target_genres[-3:]:
             # Get some valid artists for these genres to give the AI a palette
             artists = library.search_artists_by_genre(genre, limit=5)
@@ -559,7 +579,7 @@ class InterviewAgent:
             self._apply_refinement(ext)
             
             if user_callback:
-                user_callback(f"[Thought] Profile updated based on feedback.")
+                user_callback("[Thought] Profile updated based on feedback.")
                 
         except Exception as e:
             logger.error(f"Refinement LLM call failed: {e}")
@@ -613,14 +633,16 @@ class InterviewAgent:
     # ─── Shared Logic ────────────────────────────────────────────────
     def _is_sufficient(self) -> bool:
         """Check if we have enough info to generate a draft."""
-        # We need at least:
-        # 1. Recipient or Context
-        # 2. Some musical direction (Genres OR Artists OR Energy/Valence)
+        # STRICTER REQUIREMENTS:
+        # 1. Recipient or Context (Motive)
+        # 2. At least 2 specific Artists or Tracks (Content) - Genres alone are NOT enough.
         
         has_context = bool(self.profile.recipient and self.profile.recipient != "self") or bool(self.profile.context_notes)
-        has_music = bool(self.profile.target_genres or self.profile.must_include_artists or self.profile.targets.energy != 0.5)
         
-        return has_context and has_music
+        # Must have actual anchors (Artists or Tracks)
+        total_anchors = len(self.profile.must_include_artists) + len(self.profile.must_include_track_ids)
+        
+        return has_context and (total_anchors >= 2)
 
     def _check_missing_fields(self) -> List[str]:
         """Return list of fields that need more info."""
@@ -631,12 +653,11 @@ class InterviewAgent:
             if not self.profile.context_notes:
                 missing.append("Recipient/Context")
             
-        has_content = (self.profile.target_genres or 
-                       self.profile.must_include_artists or 
-                       self.profile.targets.energy != 0.5)
-                        
-        if not has_content:
-            missing.append("Musical Direction (Genre/Vibe)")
+        # has_content used to be enough, now we want explicit anchors
+        total_anchors = len(self.profile.must_include_artists) + len(self.profile.must_include_track_ids)
+        
+        if total_anchors < 2:
+            missing.append("Specific Artists/Tracks (Anchors)")
             
         return missing
 

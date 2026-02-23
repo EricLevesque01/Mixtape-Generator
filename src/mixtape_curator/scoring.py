@@ -1,7 +1,6 @@
 import math
 import numpy as np
 from typing import List, Dict
-from collections import Counter
 from mixtape_curator.models import Track, UserProfile, PlaylistScores
 from mixtape_curator.config import config
 
@@ -13,6 +12,7 @@ class Scorer:
         """
         Compute Fit Score using Gaussian decay for sonic features
         and strict/loose blending for genre features.
+        Spec §3.1: Descriptors contribute lower-weight additive alignment.
         """
         if not tracks:
             return 0.0
@@ -26,30 +26,40 @@ class Scorer:
             "intensity": profile.targets.intensity
         }
         
-        target_genres = set(profile.target_genres)
+        target_genres = set(g.lower() for g in profile.target_genres)
+        target_descriptors = set(d.lower() for d in profile.target_descriptors)
         
         for t in tracks:
             # 1. Sonic Fit (Gaussian Decay)
-            # Distance squared
             d2 = (
                 (t.energy - target_sonic["energy"])**2 +
                 (t.valence - target_sonic["valence"])**2 +
                 (t.intensity - target_sonic["intensity"])**2
             )
-            tolerance = 0.25 # From Spec v2.1.1
+            tolerance = 0.25  # From Spec v2.1.1
             sonic_fit = math.exp(-d2 / (2 * tolerance**2))
             
             # 2. Genre Fit
             # Full credit if primary or subgenre matches any target
-            t_genres = set(t.rym_data.primary_genres + t.rym_data.subgenres)
+            t_genres = set(g.lower() for g in (t.rym_data.primary_genres + t.rym_data.subgenres))
             if not target_genres:
-                genre_fit = 1.0 # No preference expressed
+                genre_fit = 1.0  # No preference expressed
             else:
                 genre_fit = 1.0 if not t_genres.isdisjoint(target_genres) else 0.0
+            
+            # 3. Descriptor additive alignment (§3.1)
+            # Lower-weight bonus for descriptor overlap
+            descriptor_bonus = 0.0
+            if target_descriptors and t.rym_data.descriptors:
+                t_descs = set(d.lower() for d in t.rym_data.descriptors)
+                overlap = len(t_descs & target_descriptors)
+                if overlap > 0:
+                    descriptor_bonus = min(0.15, overlap * 0.05)  # Cap at 0.15
                 
             # Blend based on strictness
             strictness = profile.genre_strictness
-            final_fit = (sonic_fit * (1 - strictness)) + (genre_fit * strictness)
+            final_fit = (sonic_fit * (1 - strictness)) + (genre_fit * strictness) + descriptor_bonus
+            final_fit = min(1.0, final_fit)  # Clamp to [0, 1]
             scores.append(final_fit)
             
         return float(np.mean(scores))
@@ -83,43 +93,58 @@ class Scorer:
     def compute_variety_score(self, tracks: List[Track], profile: UserProfile) -> float:
         """
         Compute Variety Score via Entropy alignment to Uniformity target.
+        
+        Spec §3.3: Per-track tokens are normalized to sum to 1.0 ensuring equal 
+        contribution. Playlist distribution is the average of per-track distributions.
         """
         if not tracks:
             return 0.0
-            
-        # Collect all tokens
-        tokens = []
-        for t in tracks:
-            # Weighted tokens per track
-            # This is a simplified implementation of the "per-track distribution" 
-            # described in spec. We aggregate all tokens and weight them.
-            for g in t.rym_data.primary_genres:
-                tokens.extend([g] * 10) # weight 1.0 -> 10 counts
-            for s in t.rym_data.subgenres:
-                tokens.extend([s] * 7)  # weight 0.7 -> 7 counts
-            for d in t.rym_data.descriptors[:5]:
-                tokens.extend([d] * 3)  # weight 0.3 -> 3 counts
-                
-        if not tokens:
-            return 0.0
-            
-        # Calculate Entropy
-        counts = Counter(tokens)
-        total_tokens = sum(counts.values())
-        probs = [c / total_tokens for c in counts.values()]
         
-        # Shannon Entropy H
+        # Step 1: Build per-track normalized distributions
+        all_tokens = set()
+        track_distributions = []
+        
+        for t in tracks:
+            # Construct weighted token counts for this track
+            token_weights: Dict[str, float] = {}
+            for g in t.rym_data.primary_genres:
+                token_weights[g] = token_weights.get(g, 0.0) + 1.0
+            for s in t.rym_data.subgenres:
+                token_weights[s] = token_weights.get(s, 0.0) + 0.7
+            for d in t.rym_data.descriptors[:5]:
+                token_weights[d] = token_weights.get(d, 0.0) + 0.3
+            
+            # Normalize to sum = 1.0 (per-track)
+            total_weight = sum(token_weights.values())
+            if total_weight > 0:
+                normalized = {k: v / total_weight for k, v in token_weights.items()}
+            else:
+                normalized = {}
+            
+            track_distributions.append(normalized)
+            all_tokens.update(normalized.keys())
+        
+        if not all_tokens:
+            return 0.0
+        
+        # Step 2: Average per-track distributions to get playlist distribution
+        token_list = sorted(all_tokens)
+        playlist_dist = {}
+        for token in token_list:
+            avg_prob = sum(td.get(token, 0.0) for td in track_distributions) / len(tracks)
+            playlist_dist[token] = avg_prob
+        
+        # Step 3: Entropy computation
+        probs = [p for p in playlist_dist.values() if p > 0]
         H = -sum(p * math.log(p) for p in probs)
         
-        # Max Possible Entropy (log K)
-        K = len(counts)
+        K = len(probs)
         if K <= 1:
             measured_diversity = 0.0
         else:
             measured_diversity = H / math.log(K)
             
         # Uniformity Mapping
-        # Spec: ideal_diversity = 1 - targets.uniformity
         ideal_diversity = 1.0 - profile.targets.uniformity
         
         # Genre Variety score = proximity to ideal
@@ -152,7 +177,7 @@ class Scorer:
         quality_scores = []
         for t in tracks:
              # Normalize rating to 0-1
-             norm_rating = t.rating / 5.0 if t.rating else 0.5 # Default to average if missing
+             norm_rating = t.rating / 5.0 if t.rating else 0.5  # Default to average if missing
              q = (norm_rating * 0.5) + (t.recommendability * 0.5)
              quality_scores.append(q)
         quality = float(np.mean(quality_scores))

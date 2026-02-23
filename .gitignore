@@ -1,17 +1,40 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+*.egg
+build/
+.eggs/
+
+# Environment
 .env
-.env.*
-.DS_Store
-.pytest_cache/
+!.env.example
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Generated / ephemeral
+eval_results*.jsonl
+exports/
 *.bak
 *.log
 logs/
-exports/
-*.egg-info/
-dist/
-build/
-.vscode/
-.idea/
-/data/
-*.txt
+
+# Node / Frontend
+web/node_modules/
+web/dist/
+
+# Caches
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db

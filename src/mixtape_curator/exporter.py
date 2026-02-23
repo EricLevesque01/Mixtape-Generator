@@ -1,9 +1,7 @@
-import os
 from pathlib import Path
 from typing import List
 from mixtape_curator.models import Playlist, Track
 from mixtape_curator.library import library
-from mixtape_curator.config import config
 
 class Exporter:
     def __init__(self, export_dir: str = "exports"):

@@ -1,9 +1,8 @@
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from mixtape_curator.ui_cli import MixtapeCLI
 from mixtape_curator.models import UserProfile, Playlist, PlaylistScores
-from mixtape_curator.config import config
 
 class TestSpotifyMock(unittest.TestCase):
     def test_spotify_export_call(self):

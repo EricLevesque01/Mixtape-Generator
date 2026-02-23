@@ -1,6 +1,5 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from pydantic import BaseModel, Field
-from datetime import datetime
 
 class RYMData(BaseModel):
     primary_genres: List[str] = Field(default_factory=list)
