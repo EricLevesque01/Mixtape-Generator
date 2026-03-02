@@ -80,6 +80,8 @@ class PersonaInterviewer:
         self.history = []
         self.state = PersonaState.OCCASION
         opening = (
+            "Hey — I'll ask you a few quick questions to get a sense of who you are, "
+            "then build you a mixtape from your library.\n\n"
             "What's the occasion? What are you doing while you listen?"
         )
         self._log_reply(opening)
