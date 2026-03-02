@@ -442,15 +442,19 @@ class ArcOptimizer:
         tracks: List[Track],
         cap: int,
     ) -> Tuple[ArcDraft, List[Track]]:
-        """Remove tracks from the end until total_duration_s <= cap."""
-        while tracks and sum(t.duration_s for t in tracks) > cap:
+        """Remove tracks from the end until total_duration_s <= cap.
+
+        O(n) — uses a running total instead of recomputing sum on each iteration.
+        """
+        total = sum(t.duration_s for t in tracks)  # one-time O(n) setup
+        while tracks and total > cap:
             removed = tracks.pop()
+            total -= removed.duration_s
             draft.global_order = [tid for tid in draft.global_order if tid != removed.id]
-            # Remove from tracks_per_segment
             for sid in list(draft.tracks_per_segment):
                 if removed.id in draft.tracks_per_segment[sid]:
                     draft.tracks_per_segment[sid].remove(removed.id)
-        draft.total_duration_s = sum(t.duration_s for t in tracks)
+        draft.total_duration_s = total
         return draft, tracks
 
     # ------------------------------------------------------------------ combo enumeration

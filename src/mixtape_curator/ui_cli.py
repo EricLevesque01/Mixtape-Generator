@@ -138,27 +138,30 @@ class MixtapeCLI(cmd.Cmd):
             llm_provider = self._get_llm_provider()
             bp_gen = build_blueprint_generator(llm_provider)
             persona_obj = persona or profile
-            blueprint = bp_gen.generate(
-                persona           = persona_obj if hasattr(persona_obj, 'confidence') else _FakePersona(profile),
-                duration_target_s = duration_s,
-            )
 
-            # ----------------------------------------------------------------
-            # PHASE C — Segment Trellis (Deterministic Algorithm)
-            # ----------------------------------------------------------------
-            trellis = build_trellis(blueprint, profile)
+            with console.status("[dim]Curating your mixtape...[/dim]", spinner="dots") as status:
 
-            # ----------------------------------------------------------------
-            # PHASE D — Arc Optimization (A/B Dual Draft)
-            # ----------------------------------------------------------------
-            optimizer = ArcOptimizer(profile=profile)
-            draft_a, draft_b = optimizer.optimize(
-                trellis            = trellis,
-                blueprint_segments = blueprint.segments,
-                duration_target_s  = duration_s,
-            )
+                # Phase B: Blueprint
+                status.update("[dim]Designing the arc...[/dim]")
+                blueprint = bp_gen.generate(
+                    persona           = persona_obj if hasattr(persona_obj, 'confidence') else _FakePersona(profile),
+                    duration_target_s = duration_s,
+                )
 
-            # Handle failure modes (§10)
+                # Phase C: Trellis
+                status.update("[dim]Matching tracks to each moment...[/dim]")
+                trellis = build_trellis(blueprint, profile)
+
+                # Phase D: Arc optimization
+                status.update("[dim]Shaping the sequence (A/B)...[/dim]")
+                optimizer = ArcOptimizer(profile=profile)
+                draft_a, draft_b = optimizer.optimize(
+                    trellis            = trellis,
+                    blueprint_segments = blueprint.segments,
+                    duration_target_s  = duration_s,
+                )
+
+            # Handle failure modes outside spinner so user sees prompts cleanly
             if not draft_a.global_order:
                 codes = draft_a.diagnostic_codes + draft_b.diagnostic_codes
                 menu  = RelaxationMenu.from_codes([str(c) for c in codes])
@@ -170,19 +173,17 @@ class MixtapeCLI(cmd.Cmd):
                 retry_count += 1
                 continue
 
-            # Convert to Playlist for ReActAgent refinement
             playlist_a = arc_draft_to_playlist(draft_a)
             playlist_b = arc_draft_to_playlist(draft_b)
 
-            # ----------------------------------------------------------------
-            # PHASE E — Refinement (LLM, bounded tools)
-            # ----------------------------------------------------------------
-            def ask_user(question):
-                print(f"\n{question}")
-                return input("> ")
+            # Phase E: Refinement
+            with console.status("[dim]Fine-tuning the mix...[/dim]", spinner="dots"):
+                def ask_user(question):
+                    print(f"\n{question}")
+                    return input("> ")
 
-            react_agent = ReActAgent(llm=llm_provider, user_callback=ask_user)
-            playlist_a  = react_agent.repair_playlist(playlist_a, profile)
+                react_agent = ReActAgent(llm=llm_provider, user_callback=ask_user)
+                playlist_a  = react_agent.repair_playlist(playlist_a, profile)
 
             # ----------------------------------------------------------------
             # Display
@@ -192,6 +193,7 @@ class MixtapeCLI(cmd.Cmd):
 
             if playlist_a.rationale:
                 console.print(f"\n[italic dim]{playlist_a.rationale}[/italic dim]")
+
 
             # ----------------------------------------------------------------
             # Selection loop
