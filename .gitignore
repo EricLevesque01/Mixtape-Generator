@@ -38,3 +38,14 @@ web/dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Large data files (generated locally, not versioned)
+data/library.json
+data/similarity_graph.json
+
+# Spotify OAuth token cache
+.spotify_token_cache
+
+# Temp / debug scripts
+_check_imports.py
+_test_results.txt

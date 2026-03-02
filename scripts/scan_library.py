@@ -36,15 +36,13 @@ def scan_library(limit=None):
     
     paths_to_scan = [
         "C:\\Users\\ericl\\Music",
-        "C:\\Users\\ericl\\Downloads\\zips"
+        "C:\\Users\\ericl\\Downloads\\zips",
+        "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music\\Geese\\Getting Killed"
     ]
     
-    exclude_paths = [
-        "C:\\Users\\ericl\\Music\\tPod V3"
-    ]
+    exclude_paths = []
     
-    print(f"Scanning paths: {paths_to_scan}", flush=True)
-    print(f"Excluding paths: {exclude_paths}", flush=True)
+    print(f"Scanning paths: {paths_to_scan}\n", flush=True)
     
     # Load existing library if it exists to append?
     # User said "we already added the songs". So we should load existing.

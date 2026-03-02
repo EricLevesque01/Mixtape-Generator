@@ -63,6 +63,10 @@ class Generator:
 
         current_duration = sum(t.duration_s for t in draft_tracks)
         
+        # Use profile duration if set, else config default
+        target_s = profile.duration_target_s or config.duration_target_s
+        cap_s = min(config.duration_cap_s, max(target_s + 1800, config.duration_cap_s))
+        
         pl = Playlist(
             id=str(uuid.uuid4()),
             track_ids=[t.id for t in draft_tracks],
@@ -169,8 +173,8 @@ class Generator:
                 pool.sort(key=lambda t: scorer.compute_fit_score([t], profile), reverse=True)
                 segment_candidates = pool # Take everything as potential candidates
             else:
-                # Sort by fit (prioritizing the genre match subset)
-                segment_candidates.sort(key=lambda t: scorer.compute_fit_score([t], profile), reverse=True)
+                # Sort by fit + RYM rating (heavily weighted)
+                segment_candidates.sort(key=lambda t: scorer.compute_fit_score([t], profile) * 0.6 + t.rating * 0.4, reverse=True)
             
             # Fill segment - Two Pass Approach
             segment_fill = 0  # Track duration added in this segment
@@ -206,59 +210,55 @@ class Generator:
         return draft_tracks
 
     def _fill_remaining(self, draft_tracks: List[Track], profile: UserProfile) -> List[Track]:
-        """Greedy fill to duration target."""
+        """Greedy fill to duration target, anchor-artists first."""
         candidates = library.filter_candidates(profile)
         min_dur = config.get("track_min_duration_s", 60)
         max_dur = config.get("track_max_duration_s", 600)
         candidates = [t for t in candidates if min_dur <= t.duration_s <= max_dur]
         
         current_ids = {t.id for t in draft_tracks}
-        pool = [t for t in candidates if t.id not in current_ids]
-        
-        pool_with_scores = []
-        for t in pool:
-            score = scorer.compute_fit_score([t], profile)
-            pool_with_scores.append((score, t))
-        pool_with_scores.sort(key=lambda x: x[0], reverse=True)
-        
-        current_duration = sum(t.duration_s for t in draft_tracks)
-        target = config.duration_target_s
-        cap = config.duration_cap_s
-        
-        draft_artists = {}
+        draft_artists: dict = {}
         for t in draft_tracks:
-             draft_artists[t.artist] = draft_artists.get(t.artist, 0) + 1
-        
-        # Pass 1: Max 1 per artist
-        for score, t in pool_with_scores:
-            if current_duration >= target: break
-            if current_duration + t.duration_s <= cap:
-                if draft_artists.get(t.artist, 0) < 1:
+            draft_artists[t.artist] = draft_artists.get(t.artist, 0) + 1
+
+        # Use profile duration target if set, else config default
+        target = profile.duration_target_s or config.duration_target_s
+        cap = config.duration_cap_s
+        current_duration = sum(t.duration_s for t in draft_tracks)
+        limit = config.max_tracks_per_artist
+
+        # Score all candidates (heavily weighted by RYM rating)
+        pool = [t for t in candidates if t.id not in current_ids]
+        pool_with_scores = [(scorer.compute_fit_score([t], profile) * 0.6 + t.rating * 0.4, t) for t in pool]
+        pool_with_scores.sort(key=lambda x: x[0], reverse=True)
+
+        # --- Anchor Pass: prefer tracks from must_include_artists ---
+        anchor_artists = set(a.lower() for a in profile.must_include_artists)
+        anchor_pool = [(s, t) for s, t in pool_with_scores if t.artist.lower() in anchor_artists]
+        general_pool = [(s, t) for s, t in pool_with_scores if t.artist.lower() not in anchor_artists]
+        ordered_pool = anchor_pool + general_pool
+
+        def try_fill(pool_subset, max_per_artist):
+            nonlocal current_duration
+            for score, t in pool_subset:
+                if current_duration >= target:
+                    break
+                if t.id in current_ids:
+                    continue
+                if current_duration + t.duration_s > cap:
+                    continue
+                if draft_artists.get(t.artist, 0) < max_per_artist:
                     draft_tracks.append(t)
                     current_ids.add(t.id)
                     current_duration += t.duration_s
                     draft_artists[t.artist] = draft_artists.get(t.artist, 0) + 1
 
-        # Pass 2: Fill remaining space up to max_tracks_per_artist
+        # Pass 1: Max 1 per artist (diversity first)
+        try_fill(ordered_pool, 1)
+        # Pass 2: Allow up to max_tracks_per_artist if still under target
         if current_duration < target:
-            limit = config.max_tracks_per_artist
-            
-            for score, t in pool_with_scores:
-                if current_duration >= target: break
-                if t.id in current_ids: continue # Use set for O(1) check
-                
-                if current_duration + t.duration_s <= cap:
-                    count = draft_artists.get(t.artist, 0)
-                    # print(f"[DEBUG] Checking {t.artist}: count={count}, limit={limit}, type(limit)={type(limit)}, {count} < {limit} is {is_under_limit}")
-                    
-                    if count < limit:
-                        draft_tracks.append(t)
-                        current_ids.add(t.id)
-                        current_duration += t.duration_s
-                        draft_artists[t.artist] = count + 1
-                    else:
-                        pass 
-                        # print(f"[DEBUG] Rejected {t.artist}. Reason: Limit Reached.")
+            try_fill(ordered_pool, limit)
+
         return draft_tracks
 
     def optimize_flow(self, playlist: Playlist, profile: UserProfile) -> Playlist:

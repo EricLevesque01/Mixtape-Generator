@@ -10,51 +10,54 @@ from .library import library
 logger = logging.getLogger(__name__)
 
 # System prompt for the Interview Agent
-SYSTEM_PROMPT = """You are a professional Mixtape Curator / Investigative A&R.
+SYSTEM_PROMPT = """You are a music curator with deep taste and real opinions — think of yourself as the friend who actually knows what they're talking about when it comes to building a mix. You help people create mixtapes from a specific music library.
 
-MISSION: You must extract the "DNA" of the mixtape by driving the conversation. Do NOT be a passive listener.
+YOUR PERSONALITY:
+- Direct and confident, but warm. You don't waffle.
+- You have opinions. If someone says "something chill," you push back gently: "Chill can mean a lot of things — are we talking late-night Portishead, or more Sunday morning bedroom pop?"
+- You pick up on context clues. "For a long drive" tells you something different than "for a dinner party."
+- You naturally weave in what's actually in the library rather than guessing. If you spot their artist in the library, say so. If it's missing, tell them honestly and suggest something similar from what you have.
 
-INTERVIEW STRATEGY (STRICT ORDER):
-1. PHASE 1: MOTIVE.
-   - Immediate Goal: Find out "Who is this for?" and "What is the occasion/vibe?"
-   - If the user is vague, ask specifically: "Is this for a workout, a dinner party, or just deep focus?"
-   
-2. PHASE 2: CONTENT (ANCHORS).
-   - Once Motive is known (or if user skips it), IMMEDIATE PIVOT TO CONTENT.
-   - Ask: "To start building the sound, give me 3 specific artists or songs to anchor this mix."
-   - Do NOT say "I'm listening" or "Tell me more about the vibe" without asking for specific artists/tracks.
+HOW YOU WORK:
+1. Figure out the *purpose* first — who is this for, and what's the vibe? Don't just ask mechanically; read what they tell you and respond to it.
+2. Get at least 2-3 anchor artists or tracks. These are the DNA of the mix. Without them, you're guessing.
+3. Once you have enough to work with and the user is ready, get started. Don't drag it out.
 
-STRICT GROUNDING RULES:
-- Only mention artists or tracks explicitly marked as "FOUND" in the LIBRARY SNAPSHOT.
-- If a user mentions a friend's name (e.g. "Tracy"), do NOT treat it as an artist unless it matches a library artist perfectly.
-- Artist Limit: Do NOT suggest more than 2 songs per artist.
-- NO HALLUCINATIONS. If you don't see it in the snapshot, don't pretend it's there.
+USE THE LIBRARY SNAPSHOT (when provided):
+- If an artist shows as FOUND: mention it naturally, maybe note how many tracks you have from them.
+- If an artist shows as NOT in library: be honest, tell them, and offer a genuine alternative from what you have.
+- Never make up artists or tracks that aren't in the snapshot. You're working from a real catalog.
 
-ARTIST LIST HANDLING:
-- Differentiate clearly between "Must Include" (artists the user LOVES) and "Exclude" (artists they HATE).
-- If the user provides a long list of artists (e.g. 5+), simply add them to 'artists_include'. Do NOT ask them to cut the list down yourself; the system will handle that.
-- If the user provides a list mixed with "except" or "but not", parse carefully into 'artists_include' and 'artists_exclude'.
+DURATION:
+- If a user mentions a length ("60 minutes", "an hour or so", "CD length", "two hours"), note it and set duration_target_s accordingly.
+- CD length ≈ 4620s (77 min), 1 hour = 3600s, 90 min = 5400s, 2 hours = 7200s.
 
-OUTPUT FORMAT (JSON ONLY):
+WHEN TO STOP AND GENERATE:
+- You have a recipient/context AND at least 2 anchor artists → you have enough.
+- The user says something like "go ahead", "let's do it", "generate", "that's it" → respect that immediately.
+- Don't keep asking questions once you have what you need.
+
+OUTPUT FORMAT — respond ONLY with this JSON (no markdown, no extra text):
 {
     "extracted": {
         "recipient": "string | null",
         "context_notes": "string | null",
-        "artists_include": ["list", "of", "strings"],
-        "artists_exclude": ["list", "of", "strings"],
-        "genres": ["list", "of", "strings"],
-        "descriptors": ["list", "of", "strings"],
-        "user_wants_to_proceed": bool,
-        "is_sufficient": bool
+        "artists_include": ["list of artist names"],
+        "artists_exclude": ["list of artist names"],
+        "genres": ["list of genre strings"],
+        "descriptors": ["vibe words like moody, energetic, nostalgic"],
+        "duration_target_s": null,
+        "user_wants_to_proceed": false,
+        "is_sufficient": false
     },
-    "response": "Your conversational response here. Be direct and inquisitive."
+    "response": "Your natural, conversational response to the user."
 }
 
-Set "is_sufficient" to true ONLY IF you have:
-1. Recipient/Context (Motive)
-2. At least 2-3 specific Artists or Tracks (Content)
+For "duration_target_s": convert to integer seconds if the user mentions a duration. Leave null if not mentioned.
+Set "is_sufficient" to true when you have recipient/context AND at least 2 anchor artists/tracks.
+Set "user_wants_to_proceed" to true only when the user explicitly says to go, generate, or start.
 
-Set "user_wants_to_proceed" to true ONLY if the user says "Go", "Yes", or "Generate".
+RESPONSE LENGTH: Keep your "response" text to 2-3 sentences max. Be punchy and direct, not wordy. You're a curator, not writing an essay.
 """
 
 
@@ -169,30 +172,33 @@ class InterviewAgent:
         # Update profile with extraction
         self._apply_extraction(extracted)
         
-        # Check efficiency (escalation trigger)
-        missing = self._check_missing_fields()
         is_sufficient = extracted.get("is_sufficient", False)
         user_wants_proceed = extracted.get("user_wants_to_proceed", False)
+        missing = self._check_missing_fields()
 
         if missing:
             self._log_thought(f"[Thought] Still need: {', '.join(missing)}")
         elif is_sufficient and not user_wants_proceed:
             self._log_thought("[Thought] Vision complete. Waiting for user to say go.")
         elif user_wants_proceed:
-             self._log_thought("[Thought] User confirmed readiness. Proceeding.")
+            self._log_thought("[Thought] User confirmed readiness. Proceeding.")
 
-        # Finalize if user is ready
-        if user_wants_proceed:
-             summary = self._generate_summary()
-             self.completed = True
-             self.history.append({"role": "assistant", "content": response_text})
-             return f"{response_text}\n\n(Starting generation...)", True
+        # Finalize when user is ready AND we have enough info
+        if user_wants_proceed and not missing:
+            self.completed = True
+            self.history.append({"role": "assistant", "content": response_text})
+            return f"{response_text}\n\n(Starting generation...)", True
+        
+        # Also finalize if LLM says sufficient + user wants to proceed (even with minor gaps)
+        if user_wants_proceed and is_sufficient:
+            self.completed = True
+            self.history.append({"role": "assistant", "content": response_text})
+            return f"{response_text}\n\n(Starting generation...)", True
              
         # If we hit max turns, force wrap-up
         if self.turn_count >= MAX_INTERVIEW_TURNS:
-            summary = self._generate_summary()
             self.completed = True
-            msg = f"I've got quite a bit of info now! Let's get started on the music.\n\n{summary}"
+            msg = f"I've got what I need — let's build this mix!"
             self.history.append({"role": "assistant", "content": msg})
             return msg, True
 
@@ -202,17 +208,40 @@ class InterviewAgent:
     def _get_library_snapshot(self, user_input: str, user_callback: Optional[Callable[[str], None]] = None) -> Optional[str]:
         """Quickly search the library for artists/tracks mentioned today or in profile."""
         import re
-        # Find entities in current turn
-        entities = re.findall(r'"([^"]+)"', user_input) or re.findall(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', user_input)
-        entities = set(entities)
-        
-        # If no entities in turn, check some from the profile to keep them in focus
-        if not entities:
-            entities = set(self.profile.must_include_artists[:3])
-            
+        # Always include profile artists already collected
+        entities = set(self.profile.must_include_artists[:5])
+
+        # Extract quoted strings (e.g. "Radiohead")
+        quoted = re.findall(r'"([^"]+)"', user_input)
+        entities.update(quoted)
+
+        # Also check every meaningful word/phrase from the user's input
+        # Split on commas, "and", "or", punctuation — covers "Radiohead, Portishead"
+        raw_tokens = re.split(r'[,\n]|\band\b|\bor\b', user_input)
+        for token in raw_tokens:
+            token = token.strip().strip('"\'')
+            if len(token) >= 3:  # skip very short words
+                entities.add(token)
+            # Also check individual words (catches "Geese" from "I like Geese")
+            for word in token.split():
+                word = word.strip().strip('"\'.,!?')
+                if len(word) >= 3 and word[0].isupper():
+                    # Skip common English words that happen to be capitalized
+                    skip = {'The', 'This', 'That', 'What', 'When', 'Where', 'How',
+                            'Can', 'Could', 'Would', 'Should', 'Have', 'Has', 'Had',
+                            'For', 'But', 'Not', 'You', 'All', 'Any', 'Her', 'His',
+                            'Our', 'Some', 'Want', 'Like', 'Make', 'Just', 'Know',
+                            'Take', 'Come', 'Give', 'Get', 'Got', 'Let', 'Hey',
+                            'Really', 'Think', 'Something', 'Anything', 'Maybe',
+                            'Also', 'More', 'Very', 'Much', 'Mix', 'Mixtape', 'Music',
+                            'Song', 'Songs', 'Track', 'Tracks', 'Album', 'Artist',
+                            'Vibe', 'Mood', 'Feel', 'Sound', 'Please', 'Thanks'}
+                    if word not in skip:
+                        entities.add(word)
+
         if not entities and not self.profile.target_genres:
             return None
-            
+
         found = []
         missing = []
         
@@ -250,8 +279,12 @@ class InterviewAgent:
         if not found and not missing:
             return None
             
-        snapshot = "LIBRARY SNAPSHOT:\n" + "\n".join(set(found + missing))
-        snapshot += "\nSTRICT RULE: Do NOT invent tracklists. Do NOT mention artists marked 'NOT in library'. Use the 'FOUND' artists or 'Genre artists' listed above."
+        snapshot = "CATALOG CHECK (your internal notes — draw on this naturally):\n"
+        if found:
+            snapshot += "\n".join(found) + "\n"
+        if missing:
+            snapshot += "Not in catalog: " + ", ".join(missing) + "\n"
+        snapshot += "\nYou're working from a real catalog — only recommend what's confirmed above. If something's missing, say so naturally and offer a genuine alternative."
         self._log_thought(f"[Thought] Library Check: {len(found)} available, {len(missing)} missing.")
         return snapshot
 
@@ -325,6 +358,12 @@ class InterviewAgent:
             for g in extraction["genres"]:
                 if g not in self.profile.target_genres:
                     self.profile.target_genres.append(g)
+
+        # Duration target (convert from seconds if provided)
+        raw_dur = extraction.get("duration_target_s")
+        if raw_dur and isinstance(raw_dur, (int, float)) and raw_dur > 0:
+            self.profile.duration_target_s = int(raw_dur)
+            self._log_thought(f"[Thought] Duration target set: {int(raw_dur)}s ({int(raw_dur)//60}min)")
 
         # Proceed flag
         if extraction.get("user_wants_to_proceed"):

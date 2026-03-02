@@ -1,4 +1,0 @@
-{"case_id": "case_01", "description": "80s Pop Workout", "profile_genres": ["Pop", "New Wave"], "playlist_duration_s": 1011, "track_count": 4, "final_score": 0.56, "processing_time_ms": 16.031265258789062, "violations": []}
-{"case_id": "case_02", "description": "Chill Sunday", "profile_genres": ["Ambient", "Jazz"], "playlist_duration_s": 1011, "track_count": 4, "final_score": 0.56, "processing_time_ms": 3.512144088745117, "violations": []}
-{"case_id": "case_03", "description": "Party Mix", "profile_genres": ["Dance-Pop", "House"], "playlist_duration_s": 1011, "track_count": 4, "final_score": 0.53, "processing_time_ms": 3.0155181884765625, "violations": []}
-{"case_id": "case_04", "description": "Study Focus", "profile_genres": ["Classical", "Lofi"], "playlist_duration_s": 1011, "track_count": 4, "final_score": 0.49, "processing_time_ms": 3.515481948852539, "violations": []}

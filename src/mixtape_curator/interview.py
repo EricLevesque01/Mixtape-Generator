@@ -1,245 +1,381 @@
+"""
+Persona-based interview module.
+
+Instead of asking about music preferences directly, the PersonaInterviewer
+asks about the USER AS A PERSON — their occasion, personality, mood, aesthetic
+taste, era preference, and a wildcard cultural cue. Those answers are invisibly
+mapped to a UserProfile via PersonaProfile.to_user_profile().
+"""
 import logging
 from typing import List, Dict, Tuple
 from enum import Enum, auto
-from .models import UserProfile
+from .models import PersonaProfile, UserProfile
 from .config import config
 
 logger = logging.getLogger("mixtape_curator")
 
-class InterviewState(Enum):
-    INTAKE_RECIPIENT = auto()
-    INTAKE_CONTEXT = auto()
-    INTAKE_CONSTRAINTS = auto()
-    CALIBRATION_GENRE = auto()
-    CALIBRATION_DESCRIPTOR = auto()
-    CALIBRATION_COHESION = auto()
-    CALIBRATION_ENERGY = auto()
-    CONFIRMATION = auto()
-    COMPLETED = auto()
 
-class Interviewer:
+class PersonaState(Enum):
+    OCCASION      = auto()  # What's the occasion / context?
+    PERSONALITY   = auto()  # 3 words friends would use to describe you
+    MOOD_TODAY    = auto()  # How are you feeling right now?
+    AESTHETIC     = auto()  # Multiple-choice vibe pick
+    ERA_TASTE     = auto()  # Nostalgia vs. discovering new things
+    WILDCARD      = auto()  # Last thing that stuck with you (cultural cue)
+    CONFIRMATION  = auto()  # Summary + "ready?"
+    COMPLETED     = auto()
+
+
+# Canned follow-up for vague answers
+_VAGUE_KEYWORDS = {"idk", "unsure", "whatever", "doesn't matter", "not sure", "dunno", "hmm"}
+
+# Aesthetic option hints shown to the user
+_AESTHETIC_QUESTION = (
+    "Close your eyes for a sec. Which scene fits you tonight?\n"
+    "  A) Dark room with headphones — just you and the sound\n"
+    "  B) Rooftop at sunset — golden hour vibes\n"
+    "  C) Sweaty basement show — packed, loud, alive\n"
+    "(Type A, B, or C — or describe your own)"
+)
+
+_AESTHETIC_CHOICE_MAP: Dict[str, str] = {
+    "a": "dark room with headphones",
+    "b": "rooftop at sunset",
+    "c": "sweaty basement show",
+}
+
+
+class PersonaInterviewer:
+    """
+    Conversational interview agent that learns about the user as a person,
+    then maps their profile onto a UserProfile for the mixtape generator.
+    """
+
     def __init__(self):
         self.history: List[Dict[str, str]] = []
-        self.profile = UserProfile()
+        self.persona = PersonaProfile()
         self.completed = False
-        self.max_questions = config.get("max_questions", 10)
-        self.state = InterviewState.INTAKE_RECIPIENT
-        
-        # Spec v2.1.1 Confidence Axes
+        self.state = PersonaState.OCCASION
+        self._off_topic_count = 0
+        self._off_topic_max = config.get("off_topic_max", 3)
+
+        # Confidence axes (for compatibility with existing UI checks)
         self.confidence = {
-            "constraints": 0.0,
+            "constraints": 1.0,   # no hard constraints in persona mode
             "intent": 0.0,
             "cohesion": 0.0,
-            "energy_mood": 0.0
+            "energy_mood": 0.0,
         }
-        
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    @property
+    def profile(self) -> UserProfile:
+        """Return a UserProfile derived from the current persona answers."""
+        return self.persona.to_user_profile()
+
     def start(self) -> str:
-        """Begin the dynamic interview process."""
         self.history = []
-        self.state = InterviewState.INTAKE_RECIPIENT
-        return "Hi! I'm your AI Mixtape Curator. Who am I making this mix for today? (e.g. 'for me', 'for a road trip')"
+        self.state = PersonaState.OCCASION
+        opening = (
+            "Hey — I'm building a mixtape for you, Eric-style.\n"
+            "No genre talk, no deep music knowledge needed. "
+            "Just tell me a bit about yourself and I'll handle the rest.\n\n"
+            "First up: What's the occasion? What are you doing while you listen?"
+        )
+        self._log_reply(opening)
+        return opening
 
     def process_input(self, user_input: str) -> Tuple[str, bool]:
         """
-        Process user input through Dynamic State Machine.
-        Returns: (next_question_text, is_complete)
+        Process one user turn.
+        Returns (next_question_or_summary, is_complete).
         """
         self.history.append({"role": "user", "content": user_input})
-        
-        # Global Entity Extraction (Run every turn)
-        self._parse_constraints(user_input)
-        
-        # --- STATE MACHINE ---
-        
-        if self.state == InterviewState.INTAKE_RECIPIENT:
-            self.profile.recipient = user_input
-            self.confidence["intent"] += 0.2
-            
-            # Dynamic Skip: If input mentions context ("workout", "party", "study")
-            context_keywords = ["workout", "party", "study", "drive", "focus", "sleep", "gym", "run"]
-            if any(k in user_input.lower() for k in context_keywords):
-                self.profile.context_notes = user_input # Infer context from recipient answer
-                self.confidence["intent"] += 0.3
-                self.state = InterviewState.INTAKE_CONSTRAINTS # Skip Context Question
-                reply = "Got it. Are there any artists or tracks I MUST include? Or any artists/genres I should strictly EXCLUDE?"
-                self._log_reply(reply)
-                return reply, False
-            
-            self.state = InterviewState.INTAKE_CONTEXT
-            reply = "Got it. What's the context or vibe? (e.g. 'late night study', 'high-energy gym', 'chill backyard')"
-            self._log_reply(reply)
-            return reply, False
-            
-        elif self.state == InterviewState.INTAKE_CONTEXT:
-            self.profile.context_notes = user_input
-            self.confidence["intent"] += 0.2
-            self.state = InterviewState.INTAKE_CONSTRAINTS
-            reply = "Are there any artists or tracks I MUST include? Or any artists/genres I should strictly EXCLUDE?"
-            self._log_reply(reply)
-            return reply, False
-            
-        elif self.state == InterviewState.INTAKE_CONSTRAINTS:
-            # Constraints parsed globally now, but we still use this state to advance
-            self.confidence["constraints"] = 0.8
-            self.state = InterviewState.CALIBRATION_GENRE
-            reply = "Which genres should I focus on? (e.g. '80s synthpop', 'classical', 'hip-hop')"
-            self._log_reply(reply)
-            return reply, False
-            
-        elif self.state == InterviewState.CALIBRATION_GENRE:
-            self.profile.target_genres = [g.strip() for g in user_input.split(',')]
-            self.confidence["intent"] += 0.3
-            self.state = InterviewState.CALIBRATION_DESCRIPTOR
-            reply = "And what specific textures or moods (moody, bright, aggressive, neon) are we aiming for?"
-            self._log_reply(reply)
-            return reply, False
-            
-        elif self.state == InterviewState.CALIBRATION_DESCRIPTOR:
-            self.profile.target_descriptors = [d.strip() for d in user_input.split(',')]
-            self.confidence["intent"] = 1.0 
-            self.state = InterviewState.CALIBRATION_COHESION
-            reply = "Should this mix be highly consistent (Uniform) or vary wildly (Eclectic)?"
-            self._log_reply(reply)
-            return reply, False
-            
-        elif self.state == InterviewState.CALIBRATION_COHESION:
-            # Check for vague answer
-            vague_keywords = ["idk", "unsure", "whatever", "doesn't matter", "not sure"]
-            if any(k in user_input.lower() for k in vague_keywords):
-                self.confidence["cohesion"] = 0.2
-                # Stay in this state, ask clarifying question
-                reply = "To clarify: Do you want a smooth flow where songs sound similar (Uniform), or a journey through different styles (Eclectic)?"
-                self._log_reply(reply)
-                return reply, False
+        reply, done = self._dispatch(user_input.strip())
+        self._log_reply(reply)
+        return reply, done
 
-            if "uniform" in user_input.lower() or "consistent" in user_input.lower() or "smooth" in user_input.lower():
-                self.profile.targets.uniformity = 0.9
-            elif "eclectic" in user_input.lower() or "varied" in user_input.lower() or "journey" in user_input.lower():
-                self.profile.targets.uniformity = 0.1
-            self.confidence["cohesion"] = 1.0
-            self.state = InterviewState.CALIBRATION_ENERGY
-            reply = "Finally, what's its desired energy level? (Low/Chill, Moderate, or Absolute Maximum?)"
-            self._log_reply(reply)
-            return reply, False
-            
-        elif self.state == InterviewState.CALIBRATION_ENERGY:
-            if "high" in user_input.lower() or "maximum" in user_input.lower():
-                self.profile.targets.energy = 0.9
-                self.profile.targets.intensity = 0.8
-            elif "chill" in user_input.lower() or "low" in user_input.lower():
-                self.profile.targets.energy = 0.2
-                self.profile.targets.intensity = 0.2
-            else:
-                 # Moderate default
-                 self.profile.targets.energy = 0.5
-                 self.profile.targets.intensity = 0.5
-                 
-            self.confidence["energy_mood"] = 1.0
-            self.state = InterviewState.CONFIRMATION
-            
-            summary = self._generate_summary()
-            reply = f"Calibration complete. Here is the blueprint:\n{summary}\n\nShall I begin the generation? (yes/no)"
-            self._log_reply(reply)
-            return reply, False
+    # Alias so existing call-sites that pass user_callback= still work
+    def process_input_compat(self, user_input: str, user_callback=None) -> Tuple[str, bool]:
+        return self.process_input(user_input)
 
-        elif self.state == InterviewState.CONFIRMATION:
-            if "yes" in user_input.lower():
-                self.completed = True
-                self.state = InterviewState.COMPLETED
-                return "Initializing ReAct Agent for playlist construction...", True
-            elif "no" in user_input.lower():
-                # Loop back logic not fully implemented, just ask what to change
-                reply = "What specific axis (Genres, Cohesion, Energy) should I recalibrate?"
-                self._log_reply(reply)
-                return reply, False
-            else:
-                # Handle recalibration inputs or re-prompt
-                if "energy" in user_input.lower():
-                    self.state = InterviewState.CALIBRATION_ENERGY
-                    return "Okay, let's reset Energy. What is the desired energy level?", False
-                if "genre" in user_input.lower():
-                    self.state = InterviewState.CALIBRATION_GENRE
-                    return "Okay, let's reset Genres. Which genres?", False
-                
-                reply = "Please type 'yes' to start Generation, or 'no' to adjust."
-                self._log_reply(reply)
-                return reply, False
-        
-        return "ERROR: Unknown State", True
+    def refine_profile(self, feedback: str):
+        """
+        Post-generation feedback hook (used by Neither loop in ui_cli).
+        Re-interprets free-text feedback to nudge the persona.
+        """
+        fb = feedback.lower()
+        if any(w in fb for w in ["slow", "boring", "low energy", "faster", "more energy"]):
+            # Boost energy by shifting occasion toward high-energy keyword
+            self.persona.occasion = "workout " + self.persona.occasion
+            self.persona.personality_words.append("energetic")
+            logger.info("Persona refinement: boosting energy signal")
+        if any(w in fb for w in ["too intense", "too loud", "chill", "softer"]):
+            # Reduce energy by shifting occasion toward chill keyword
+            self.persona.occasion = "chill " + self.persona.occasion
+            self.persona.personality_words.append("chill")
+            logger.info("Persona refinement: reducing energy signal")
+        if any(w in fb for w in ["samey", "repetitive", "boring", "more variety"]):
+            self.persona.personality_words.append("adventurous")
+            logger.info("Persona refinement: added 'adventurous' personality word")
+        if any(w in fb for w in ["all over", "too eclectic", "more cohesive", "focus"]):
+            self.persona.personality_words.append("focused")
+            logger.info("Persona refinement: added 'focused' personality word")
 
-    def _parse_constraints(self, user_input: str):
-        """Naive extraction of constraints."""
-        lower_input = user_input.lower()
-        if "exclude" in lower_input or "no " in lower_input or "not " in lower_input:
-            for word in ["exclude", "no ", "not ", "dont want ", "don't want "]:
-                if word in lower_input:
-                    parts = lower_input.split(word)
-                    if len(parts) > 1:
-                        # Split by comma or simple space if just one name
-                        raw = parts[1].split(',')[0].strip()
-                        artist = raw.title() 
-                        if artist:
-                            self.profile.exclude_artists.append(artist)
-                            logger.info(f"Adding {artist} to exclusion list.")
-        
-        if "include" in lower_input or "must have" in lower_input:
-            for word in ["include", "must have", "want "]:
-                if word in lower_input:
-                    parts = lower_input.split(word)
-                    if len(parts) > 1:
-                        raw = parts[1].split(',')[0].strip()
-                        artist = raw.title()
-                        if artist:
-                            self.profile.must_include_artists.append(artist)
+    # ------------------------------------------------------------------
+    # Internal dispatch
+    # ------------------------------------------------------------------
+
+    def _dispatch(self, user_input: str) -> Tuple[str, bool]:
+        if self._is_vague(user_input) and self.state not in (
+            PersonaState.CONFIRMATION, PersonaState.COMPLETED
+        ):
+            self._off_topic_count += 1
+            if self._off_topic_count >= self._off_topic_max:
+                # Move on with defaults, don't stall forever
+                logger.info("Off-topic limit hit — advancing with defaults")
+                return self._advance_with_default()
+            return self._rephrase_current(), False
+
+        self._off_topic_count = 0  # reset on meaningful answer
+
+        if self.state == PersonaState.OCCASION:
+            return self._handle_occasion(user_input)
+        elif self.state == PersonaState.PERSONALITY:
+            return self._handle_personality(user_input)
+        elif self.state == PersonaState.MOOD_TODAY:
+            return self._handle_mood(user_input)
+        elif self.state == PersonaState.AESTHETIC:
+            return self._handle_aesthetic(user_input)
+        elif self.state == PersonaState.ERA_TASTE:
+            return self._handle_era(user_input)
+        elif self.state == PersonaState.WILDCARD:
+            return self._handle_wildcard(user_input)
+        elif self.state == PersonaState.CONFIRMATION:
+            return self._handle_confirmation(user_input)
+
+        return "Something went sideways. Type 'start' to restart.", True
+
+    # ------------------------------------------------------------------
+    # State handlers
+    # ------------------------------------------------------------------
+
+    def _handle_occasion(self, text: str) -> Tuple[str, bool]:
+        self.persona.occasion = text
+        self.confidence["intent"] += 0.25
+        self.state = PersonaState.PERSONALITY
+        reply = (
+            "Nice. Now — picture where you'd be in your element. "
+            "Which fits you more?\n"
+            "  1) You're the one introducing people to artists they've never heard of\n"
+            "  2) You know every word to every song in the room\n"
+            "  3) You like both — depends on the night\n"
+            "(Or just describe yourself in a few words — whatever feels right.)"
+        )
+        return reply, False
+
+    def _handle_personality(self, text: str) -> Tuple[str, bool]:
+        import re
+        text_lower = text.lower()
+        # Map scenario numbers to Big Five signals
+        if text_lower.strip() in ("1", "1)") or "introducing" in text_lower or "never heard" in text_lower:
+            self.persona.personality_words = ["adventurous", "curious", "creative"]
+        elif text_lower.strip() in ("2", "2)") or "every word" in text_lower or "know every" in text_lower:
+            self.persona.personality_words = ["nostalgic", "passionate", "loyal"]
+        elif text_lower.strip() in ("3", "3)") or "both" in text_lower or "depends" in text_lower:
+            self.persona.personality_words = ["open", "balanced", "social"]
+        else:
+            # Free-text: split on commas / 'and' / spaces — grab up to 5 words/phrases
+            words = re.split(r"[,\s]+and\s+|,\s*", text)
+            self.persona.personality_words = [w.strip() for w in words if len(w.strip()) > 1][:5]
+        self.confidence["intent"] += 0.25
+        self.state = PersonaState.MOOD_TODAY
+        reply = "Good. What's your mood or headspace RIGHT NOW — today, in this moment?"
+        return reply, False
+
+    def _handle_mood(self, text: str) -> Tuple[str, bool]:
+        self.persona.mood_today = text
+        self.confidence["energy_mood"] = 1.0
+        self.state = PersonaState.AESTHETIC
+        return _AESTHETIC_QUESTION, False
+
+    def _handle_aesthetic(self, text: str) -> Tuple[str, bool]:
+        text_lower = text.lower().strip()
+        # Check single-letter shortcut first
+        if text_lower in _AESTHETIC_CHOICE_MAP:
+            self.persona.aesthetic_choice = _AESTHETIC_CHOICE_MAP[text_lower]
+        else:
+            # Accept free-text description
+            self.persona.aesthetic_choice = text
+        self.confidence["cohesion"] = 1.0
+        self.state = PersonaState.ERA_TASTE
+        reply = (
+            "Last deep cut question: are you more drawn to nostalgia — things that feel "
+            "familiar and timeless — or are you chasing something you've never heard before?\n"
+            "(Or somewhere in between — that's valid too.)"
+        )
+        return reply, False
+
+    def _handle_era(self, text: str) -> Tuple[str, bool]:
+        self.persona.era_preference = text
+        self.state = PersonaState.WILDCARD
+        reply = (
+            "One more: what's the last thing you watched, read, or experienced that "
+            "genuinely stuck with you? (Movie, show, book, place — anything.)"
+        )
+        return reply, False
+
+    def _handle_wildcard(self, text: str) -> Tuple[str, bool]:
+        self.persona.wildcard = text
+        self.state = PersonaState.CONFIRMATION
+        summary = self._generate_summary()
+        reply = (
+            f"Alright, I've got a pretty clear picture of you. Here's what I'm working with:\n\n"
+            f"{summary}\n\n"
+            "Ready for me to build your tape? [yes / no]"
+        )
+        return reply, False
+
+    def _handle_confirmation(self, text: str) -> Tuple[str, bool]:
+        text_lower = text.lower()
+        if "yes" in text_lower or "yeah" in text_lower or "go" in text_lower or "do it" in text_lower:
+            self.completed = True
+            self.state = PersonaState.COMPLETED
+            return "Let's go. Pulling tracks now...", True
+        elif "no" in text_lower:
+            # Drop back to the beginning
+            self.state = PersonaState.OCCASION
+            return (
+                "No problem — let's start fresh. "
+                "What's the occasion for this tape?"
+            ), False
+        else:
+            return "Type 'yes' to build the tape, or 'no' to start over.", False
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    def _generate_summary(self) -> str:
+        up = self.persona.to_user_profile()
+        e_label = (
+            "High energy" if up.targets.energy >= 0.70
+            else "Low / relaxed" if up.targets.energy <= 0.35
+            else "Moderate energy"
+        )
+        v_label = (
+            "warm and bright" if up.targets.valence >= 0.60
+            else "dark and heavy" if up.targets.valence <= 0.30
+            else "balanced"
+        )
+        u_label = (
+            "cohesive and focused" if up.targets.uniformity >= 0.60
+            else "adventurous and eclectic" if up.targets.uniformity <= 0.25
+            else "mixed"
+        )
+        era_label = (
+            "leaning classic / familiar" if up.targets.familiarity >= 0.65
+            else "leaning new discoveries" if up.targets.familiarity <= 0.35
+            else "a mix of old and new"
+        )
+        desc_str = ", ".join(up.target_descriptors[:6]) if up.target_descriptors else "none yet"
+
+        return (
+            f"  Occasion:    {self.persona.occasion or '—'}\n"
+            f"  Vibe words:  {', '.join(self.persona.personality_words) or '—'}\n"
+            f"  Mood:        {self.persona.mood_today or '—'}\n"
+            f"  Aesthetic:   {self.persona.aesthetic_choice or '—'}\n"
+            f"  Era lean:    {era_label}\n"
+            f"  ─────────────────────────────\n"
+            f"  Energy:      {e_label}  ({up.targets.energy:.0%})\n"
+            f"  Tone:        {v_label}\n"
+            f"  Flow style:  {u_label}\n"
+            f"  Textures:    {desc_str}"
+        )
+
+    def _is_vague(self, text: str) -> bool:
+        # Single-letter A/B/C are valid answers in AESTHETIC state
+        if self.state == PersonaState.AESTHETIC and text.strip().lower() in _AESTHETIC_CHOICE_MAP:
+            return False
+        # Single-digit 1/2/3 are valid answers in PERSONALITY state
+        if self.state == PersonaState.PERSONALITY and text.strip() in ("1", "2", "3"):
+            return False
+        return any(k in text.lower() for k in _VAGUE_KEYWORDS) or len(text.strip()) < 3
+
+    def _rephrase_current(self) -> str:
+        rephrases = {
+            PersonaState.OCCASION:    "No worries — even something like 'just chilling at home' or 'late-night drive' works. What are you up to?",
+            PersonaState.PERSONALITY: "Think of it this way: pick one word you'd use to describe your music taste, and two more about your vibe in general.",
+            PersonaState.MOOD_TODAY:  "Even 'tired but wired' counts. How are you feeling today?",
+            PersonaState.AESTHETIC:   "Just go with A, B, or C — or say whatever feels right.",
+            PersonaState.ERA_TASTE:   "Do you prefer hearing songs you know and love, or finding something totally new?",
+            PersonaState.WILDCARD:    "Anything at all — a film, a trip, a song you heard recently. What's on your mind?",
+        }
+        return rephrases.get(self.state, "Can you say a bit more?")
+
+    def _advance_with_default(self) -> Tuple[str, bool]:
+        """Skip the current state with a sensible default and move on."""
+        defaults = {
+            PersonaState.OCCASION:    ("just listening",      PersonaState.PERSONALITY),
+            PersonaState.PERSONALITY: ("open, balanced",      PersonaState.MOOD_TODAY),
+            PersonaState.MOOD_TODAY:  ("neutral",             PersonaState.AESTHETIC),
+            PersonaState.AESTHETIC:   ("rooftop at sunset",   PersonaState.ERA_TASTE),
+            PersonaState.ERA_TASTE:   ("both",                PersonaState.WILDCARD),
+            PersonaState.WILDCARD:    ("",                    PersonaState.CONFIRMATION),
+        }
+        if self.state not in defaults:
+            return "Alright, let's just go for it. Ready? [yes / no]", False
+
+        default_val, next_state = defaults[self.state]
+        # Apply default to persona
+        if self.state == PersonaState.PERSONALITY:
+            self.persona.personality_words = ["open", "balanced"]
+        elif self.state == PersonaState.OCCASION:
+            self.persona.occasion = default_val
+        elif self.state == PersonaState.MOOD_TODAY:
+            self.persona.mood_today = default_val
+        elif self.state == PersonaState.AESTHETIC:
+            self.persona.aesthetic_choice = default_val
+        elif self.state == PersonaState.ERA_TASTE:
+            self.persona.era_preference = default_val
+        elif self.state == PersonaState.WILDCARD:
+            self.persona.wildcard = default_val
+
+        self.state = next_state
+        self._off_topic_count = 0  # reset so next state isn't immediately skipped
+
+        # Return the next question directly without re-dispatching
+        next_questions = {
+            PersonaState.PERSONALITY: (
+                "Which fits you more?\n"
+                "  1) You introduce people to artists they've never heard\n"
+                "  2) You know every word to every song in the room\n"
+                "  3) Depends on the night\n"
+                "(Or just describe yourself.)"
+            ),
+            PersonaState.MOOD_TODAY:  "What's your mood or headspace right now?",
+            PersonaState.AESTHETIC:   _AESTHETIC_QUESTION,
+            PersonaState.ERA_TASTE:   "Are you more drawn to nostalgia or discovering something new?",
+            PersonaState.WILDCARD:    "Last thing you watched, read, or did that genuinely stuck with you?",
+            PersonaState.CONFIRMATION: self._generate_summary() + "\n\nReady for me to build your tape? [yes / no]",
+        }
+        return next_questions.get(next_state, "Ready? [yes / no]"), False
 
     def _log_reply(self, text: str):
         self.history.append({"role": "assistant", "content": text})
 
-    def _generate_summary(self) -> str:
-        return (
-            f"- For: {self.profile.recipient}\n"
-            f"- Context: {self.profile.context_notes}\n"
-            f"- Genres/Vibes: {', '.join(self.profile.target_genres)}\n"
-            f"- Cohesion: {'Strictly Uniform' if self.profile.targets.uniformity > 0.7 else 'Highly Eclectic' if self.profile.targets.uniformity < 0.3 else 'Balanced'}\n"
-            f"- Energy: {self.profile.targets.energy * 100:.0f}%\n"
-            f"- Confidence: {sum(self.confidence.values())/4 * 100:.0f}%"
-        )
-        
-    def refine_profile(self, feedback: str):
-        """
-        Adjust profile based on user feedback during Neither loop.
-        Simple keyword-based logic for now.
-        """
-        feedback = feedback.lower()
-        
-        # Energy adjustments
-        if any(w in feedback for w in ["slow", "sleepy", "boring", "low energy", "faster"]):
-            self.profile.targets.energy = min(1.0, self.profile.targets.energy + 0.2)
-            logger.info("Increasing target energy.")
-            
-        if any(w in feedback for w in ["fast", "intense", "aggressive", "too hard", "slower"]):
-            self.profile.targets.energy = max(0.0, self.profile.targets.energy - 0.2)
-            logger.info("Decreasing target energy.")
-            
-        # Cohesion adjustments
-        if any(w in feedback for w in ["messy", "random", "all over", "inconsistent", "too eclectic"]):
-            self.profile.targets.uniformity = min(1.0, self.profile.targets.uniformity + 0.2)
-            logger.info("Increasing uniformity.")
-            
-        if any(w in feedback for w in ["samey", "repetitive", "boring", "too similar", "vary"]):
-            self.profile.targets.uniformity = max(0.0, self.profile.targets.uniformity - 0.2)
-            logger.info("Decreasing uniformity.")
-            
-        # Exclusions (Simple "exclude X" parsing)
-        if "exclude" in feedback or "no " in feedback:
-            for word in ["exclude", "no ", "not ", "dont want ", "don't want "]:
-                if word in feedback:
-                    parts = feedback.split(word)
-                    if len(parts) > 1:
-                        # naive: assume rest of string is artist or comma sep
-                        artist_chunk = parts[1].split(',')[0].strip().title()
-                        if artist_chunk and artist_chunk not in self.profile.exclude_artists:
-                            self.profile.exclude_artists.append(artist_chunk)
-                            logger.info(f"Adding '{artist_chunk}' to exclusions.")
-                            
-interviewer = Interviewer()
+
+# ---------------------------------------------------------------------------
+# Legacy shim — keeps old import paths working (interview_agent, tests, etc.)
+# ---------------------------------------------------------------------------
+
+class Interviewer(PersonaInterviewer):
+    """Backward-compatible alias for PersonaInterviewer."""
+    pass
+
+
+# Module-level singleton (used by some test imports)
+interviewer = PersonaInterviewer()

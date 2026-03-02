@@ -2,10 +2,11 @@ import logging
 logger = logging.getLogger("mixtape_curator.agent")
 import json
 import copy
-from typing import List, Dict
+from typing import List, Dict, Optional
 from mixtape_curator.models import Playlist, UserProfile
 from mixtape_curator.library import library
 from mixtape_curator.generator import generator
+from mixtape_curator.scoring import scorer
 from mixtape_curator.llm.interface import LLMProvider
 from mixtape_curator.config import config
 
@@ -24,6 +25,7 @@ class ReActAgent:
         Build and repair a playlist.
         Supports Incremental Phase (Growth) and Optimization Phase (Refinement).
         """
+        self._last_profile = profile  # stored for tool access (§3E finalize_playlist)
         history = []
         best_playlist = playlist
         best_score = playlist.scores.total
@@ -78,15 +80,20 @@ class ReActAgent:
                     self._tool_remove(playlist, params, profile)
                 elif action == "add_track":
                     self._tool_add_track(playlist, params, profile)
+                elif action == "reorder_segment":
+                    self._tool_reorder_segment(playlist, params)
                 elif action == "search_library":
                     results = self._tool_search_library(params, profile)
                     history.append(f"Search Results: {results}")
                 elif action == "consult_user":
                     answer = self._tool_consult_user(params)
                     history.append(f"User Answer: {answer}")
-                elif action == "finalize":
-                    if is_valid and duration_good: return playlist
-                    else: history.append(f"Finalize rejected: valid={is_valid}, dur_good={duration_good}")
+                elif action in ("finalize_playlist", "finalize"):
+                    answer = self._tool_finalize_playlist(playlist, params)
+                    if answer == "accepted":
+                        return playlist
+                    else:
+                        history.append(f"Finalize rejected: {answer}")
                 
                 # Resequence and update stats
                 generator.optimize_flow(playlist, profile)
@@ -216,12 +223,14 @@ class ReActAgent:
         History: {history[-10:]}
         
         Available Tools:
-        - swap_track(old_id, new_id, reasoning): Replace a track. Provide "reasoning" for why the NEW track fits the vibe/journey.
+        - swap_track(old_id, new_id, reasoning): Replace a track. Provide "reasoning" for why the NEW track fits.
         - remove_track(track_id): Remove a track.
-        - add_track(track_ids, reasonings): Add one or more tracks. Provide a dictionary "reasonings" mapping track_id to a short "Why it fits" string.
-        - consult_user(question): Ask the user for input.
-        - search_library(query, limit=5): Search for tracks.
-        - finalize(): If valid and you've provided reasoning for all tracks.
+        - add_track(track_ids, reasonings): Add one or more tracks with reasoning dict.
+        - reorder_segment(segment_id, new_order_ids): Reorder tracks within a segment.
+        - consult_user(question): Ask the user for clarification.
+        - search_library(query, limit=5): Search for tracks by artist/genre/descriptor.
+        - finalize_playlist(rationale): Provide final rationale and accept the playlist.
+          (Required: rationale must be a non-empty string. Backend validates constraints.)
         
         Respond JSON: {{ "reasoning": "thought process", "action": "...", "params": {{...}} }}
         """
@@ -261,6 +270,69 @@ class ReActAgent:
     def _tool_consult_user(self, params: Dict) -> str:
         question = params.get("question", "Verification needed?")
         return self.user_callback(question)
+
+    def _tool_reorder_segment(self, playlist: Playlist, params: Dict) -> None:
+        """
+        §8 — reorder_segment(segment_id, new_order_ids)
+        Reorder tracks within a named segment while preserving the rest of the
+        global order. If segment_id is unknown (e.g. legacy playlist), treats
+        new_order_ids as a subset of the global order and moves them together.
+        Backend validates after the call.
+        """
+        segment_id  = params.get("segment_id")
+        new_order   = params.get("new_order_ids", [])
+
+        if not new_order:
+            logger.warning("reorder_segment called with empty new_order_ids; no-op.")
+            return
+
+        # If the playlist has explicit segment tracking, respect segment boundaries.
+        if segment_id and hasattr(playlist, "segments_used") and segment_id in playlist.segments_used:
+            # Find current positions of these track IDs
+            current_ids = list(playlist.track_ids)
+            seg_positions = [i for i, tid in enumerate(current_ids) if tid in new_order]
+            if not seg_positions:
+                return
+            # Replace that slice with the requested order
+            reordered = [tid for tid in new_order if tid in set(current_ids)]
+            for pos, new_tid in zip(seg_positions, reordered):
+                current_ids[pos] = new_tid
+            playlist.track_ids = current_ids
+        else:
+            # Fallback: move the listed tracks into the given order, leaving others
+            current_set = set(playlist.track_ids)
+            valid_new = [tid for tid in new_order if tid in current_set]
+            remaining  = [tid for tid in playlist.track_ids if tid not in set(valid_new)]
+            playlist.track_ids = remaining + valid_new
+
+        # Re-score after reorder
+        tracks = [library.get_track(tid) for tid in playlist.track_ids if library.get_track(tid)]
+        profile = getattr(self, "_last_profile", None)
+        if tracks and profile is not None:
+            playlist.scores = scorer.score_playlist(tracks, profile)
+
+    def _tool_finalize_playlist(self, playlist: Playlist, params: Dict) -> str:
+        """
+        §8 / §3E — finalize_playlist(rationale)
+        Writes the LLM's rationale to the playlist and validates constraints.
+        Returns 'accepted' if valid, or an error string if not.
+        """
+        rationale = params.get("rationale", "").strip()
+        if not rationale:
+            msg = "REJECTED: finalize_playlist requires a non-empty rationale string."
+            logger.warning(msg)
+            return msg
+
+        playlist.rationale = rationale
+        violations = self._validate_constraints(playlist, self._last_profile)  # type: ignore[attr-defined]
+        if violations:
+            msg = f"REJECTED: {len(violations)} constraint violation(s) remain: {violations[:3]}"
+            logger.warning("finalize_playlist rejected: %s", msg)
+            playlist.rationale = None   # clear until fixed
+            return msg
+
+        logger.info("Playlist finalized with rationale (len=%d).", len(rationale))
+        return "accepted"
 
     def _tool_search_library(self, params: Dict, profile: UserProfile) -> str:
         query = params.get("query", "")

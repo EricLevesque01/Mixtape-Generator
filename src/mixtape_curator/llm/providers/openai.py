@@ -33,7 +33,7 @@ class OpenAIProvider(LLMProvider):
                 response_format={"type": "json_object"},
                 temperature=temperature,
                 seed=seed,
-                max_tokens=800  # Cost guardrail
+                max_tokens=2000  # Enough for full JSON extraction
             )
             content = response.choices[0].message.content
             if not content:

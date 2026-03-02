@@ -1,7 +1,10 @@
 import cmd
 from .generator import generator
 from .agent import ReActAgent
-from .ab_test import ab_tester
+from .blueprint import build_blueprint_generator
+from .trellis import build_trellis
+from .arc_optimizer import ArcOptimizer, arc_draft_to_playlist
+from .diagnostics import RelaxationMenu
 from .library import library
 from .exporter import exporter
 from .spotify_export import spotify_exporter
@@ -80,108 +83,213 @@ class MixtapeCLI(cmd.Cmd):
         console.print(table)
 
     def do_start(self, arg):
-        """Start the interview process with the new Agentic Interviewer."""
-        from .interview_agent import InterviewAgent
-        
-        # Transparency callback
-        def show_thought(thought: str):
-            print(f"\n{thought}")
-            
-        agent = InterviewAgent()  # New conversational agent
-        print(f"AI: {agent.start()}\n")
-        
+        """Start the persona-based interview to build a mixtape from Eric's library."""
+        from .interview import PersonaInterviewer
+
+        agent = PersonaInterviewer()
+        print()
+        typewriter_print(agent.start())
+
         while not agent.completed:
             try:
                 user_input = input("> ")
-                response, done = agent.process_input(user_input, user_callback=show_thought)
-                print()  # Space after user input
+                if not user_input.strip():
+                    continue
+                response, done = agent.process_input(user_input)
+                print()
                 typewriter_print(response)
                 if done:
                     break
             except EOFError:
                 return True
-            
+
         if agent.completed:
             self._run_generation(agent)
 
 
     def _run_generation(self, interviewer):
+        """V5 pipeline: Interview → Blueprint → Trellis → ArcOptimizer → Refinement."""
         profile = interviewer.profile
-        retry_count: int = 0
+        # Convert PersonaProfile -> UserProfile if needed
+        if hasattr(profile, 'to_user_profile'):
+            persona = profile
+            profile = profile.to_user_profile()
+        else:
+            persona = None
+
+        retry_count = 0
         max_retries = 3
 
         while retry_count < max_retries:
-            print(f"\n--- Round {retry_count + 1} / {max_retries + 1} ---")
-            print("Seeding playlist with must-haves...")
-            # 1. Draft (Seed Phase)
-            # Use segmented generation if eclectic + multi-genre (disable incremental)
-            use_incremental = True
-            if profile.targets.uniformity < 0.6 and len(profile.target_genres) > 1:
-                 use_incremental = False
-                 print(f"Triggering Eco-Modular Generation for {len(profile.target_genres)} segments...")
-            
-            draft = generator.create_draft(profile, incremental=use_incremental)
-            print(f"Seed Created: {len(draft.track_ids)} tracks.")
-            
-            # 2. Sequence (Initial)
-            print("Optimizing Initial Flow...")
-            sequenced = generator.optimize_flow(draft, profile)
-            
-            # 3. Agent Repair
-            print("Agent Reviewing Constraints...")
-            
-            # Callback for agent to ask user
-            def ask_user(question):
-                print(f"\n[Agent Question]: {question}")
-                return input("> ")
-    
-            # Use real LLM provider if key is available
-            llm_provider = MockLLM()
-            if hasattr(config, "openai_api_key") and config.openai_api_key:
-                from .llm.providers.openai import OpenAIProvider
-                llm_provider = OpenAIProvider()
-            
-            agent = ReActAgent(llm=llm_provider, user_callback=ask_user)
-            playlist_a = agent.repair_playlist(sequenced, profile)
-            
-            print(f"Playlist A Finalized: {len(playlist_a.track_ids)} tracks.")
-            
-            # 4. A/B Generation
-            print("Generating B-Side Variation...")
-            playlist_b = ab_tester.generate_b_side(playlist_a, profile)
-            
-            console.print("\n[bold green]=== GENERATION COMPLETE ===[/bold green]")
-            
-            self._display_playlist(playlist_a, "A")
-            self._display_playlist(playlist_b, "B")
+            print(f"\n--- Round {retry_count + 1} / {max_retries} ---")
 
-            
-            # 5. Selection Loop
-            print("\n(Export features coming in next phase)")
-            choice = input("\nWhich mix do you prefer? [A / B / Neither]: ").strip().upper()
-            
+            # ----------------------------------------------------------------
+            # PHASE B — Blueprint (LLM Creative Director)
+            # ----------------------------------------------------------------
+            print("▶ Generating narrative blueprint...")
+            llm_provider = self._get_llm_provider()
+            bp_gen = build_blueprint_generator(llm_provider)
+            persona_obj = persona or profile   # fallback if already a UserProfile
+            blueprint = bp_gen.generate(
+                persona     = persona_obj if hasattr(persona_obj, 'confidence') else _FakePersona(profile),
+                duration_target_s = profile.duration_target_s or config.duration_target_s,
+            )
+            console.print(
+                f"  [dim]Blueprint:[/dim] [bold]{len(blueprint.segments)} segments[/bold] — "
+                f"[italic]{blueprint.narrative_arc[:80]}...[/italic]"
+            )
+
+            # ----------------------------------------------------------------
+            # PHASE C — Segment Trellis (Deterministic Algorithm)
+            # ----------------------------------------------------------------
+            print("▶ Building segment trellis...")
+            trellis = build_trellis(blueprint, profile)
+            if trellis.undersized_segments:
+                console.print(
+                    f"  [yellow]Warning:[/yellow] {len(trellis.undersized_segments)} segment(s) "
+                    f"have fewer than 20 candidates: {trellis.undersized_segments}"
+                )
+
+            # ----------------------------------------------------------------
+            # PHASE D — Arc Optimization (A/B Dual Draft)
+            # ----------------------------------------------------------------
+            print("▶ Optimising arc (A/B)...")
+            optimizer = ArcOptimizer(profile=profile)
+            draft_a, draft_b = optimizer.optimize(
+                trellis            = trellis,
+                blueprint_segments = blueprint.segments,
+                duration_target_s  = profile.duration_target_s or config.duration_target_s,
+            )
+
+            # Handle failure modes (§10)
+            if not draft_a.global_order:
+                codes = draft_a.diagnostic_codes + draft_b.diagnostic_codes
+                menu  = RelaxationMenu.from_codes([str(c) for c in codes])
+                print(menu.to_consult_question())
+                user_choice = input("> ").strip().lower()
+                if user_choice in ('no', 'skip', ''):
+                    print("Maximum relaxation reached. Exiting.")
+                    return
+                retry_count += 1
+                continue
+
+            # Convert to Playlist for ReActAgent refinement
+            playlist_a = arc_draft_to_playlist(draft_a)
+            playlist_b = arc_draft_to_playlist(draft_b)
+
+            # ----------------------------------------------------------------
+            # PHASE E — Refinement (LLM, bounded tools)
+            # ----------------------------------------------------------------
+            print("▶ Agent refining playlist A...")
+            def ask_user(question):
+                print(f"\n[Agent]: {question}")
+                return input("> ")
+
+            react_agent = ReActAgent(llm=llm_provider, user_callback=ask_user)
+            playlist_a  = react_agent.repair_playlist(playlist_a, profile)
+
+            # ----------------------------------------------------------------
+            # Display
+            # ----------------------------------------------------------------
+            console.print("\n[bold green]=== GENERATION COMPLETE ===[/bold green]")
+            self._display_arc_draft(playlist_a, draft_a, blueprint, "A")
+            self._display_arc_draft(playlist_b, draft_b, blueprint, "B")
+
+            # Show rationale if available
+            if playlist_a.rationale:
+                console.print(f"\n[bold cyan]Curator Rationale:[/bold cyan] {playlist_a.rationale}")
+
+            # ----------------------------------------------------------------
+            # Selection loop
+            # ----------------------------------------------------------------
+            choice = input("\nWhich mix? [A / B / Neither]: ").strip().upper()
             if choice == 'A':
-                print("\nSelected Playlist A!")
                 self._export(playlist_a, profile, "A")
                 return
             elif choice == 'B':
-                print("\nSelected Playlist B!")
                 self._export(playlist_b, profile, "B")
                 return
             elif choice == 'NEITHER':
                 retry_count += 1
                 if retry_count < max_retries:
-                   feedback = input("What would you like to change? (e.g., 'too slow', 'too eclectic', 'exclude Taylor Swift'): ")
-                   interviewer.refine_profile(feedback)
-                   # Loop continues with updated profile
+                    feedback = input("What should change? (e.g. 'more energy', 'no rap'): ")
+                    if interviewer and hasattr(interviewer, 'refine_profile'):
+                        interviewer.refine_profile(feedback)
+                        if hasattr(interviewer, 'to_user_profile'):
+                            profile = interviewer.to_user_profile()
+                        elif hasattr(interviewer, 'profile'):
+                            profile = interviewer.profile
                 else:
                     print("Max retries reached. Exporting A by default.")
                     self._export(playlist_a, profile, "Final")
                     return
             else:
-                 print("Invalid choice. defaulting to A.")
-                 self._export(playlist_a, profile, "A")
-                 return
+                print("Invalid choice. Defaulting to A.")
+                self._export(playlist_a, profile, "A")
+                return
+
+    def _get_llm_provider(self):
+        """Return real LLM if key available, else MockLLM."""
+        if hasattr(config, 'openai_api_key') and config.openai_api_key:
+            from .llm.providers.openai import OpenAIProvider
+            return OpenAIProvider()
+        return MockLLM()
+
+    def _display_arc_draft(self, playlist, draft, blueprint, label: str):
+        """Display a playlist with segment structure using Rich."""
+        score  = playlist.scores.total
+        if score >= 0.80:
+            score_style = "bold green"
+        elif score >= 0.60:
+            score_style = "bold yellow"
+        else:
+            score_style = "bold red"
+
+        # Build segment lookup: track_id -> segment theme
+        seg_by_track = {}
+        seg_map = {s.segment_id: s for s in blueprint.segments}
+        for sid, tids in (draft.tracks_per_segment.items() if draft else {}).items():
+            seg = seg_map.get(sid)
+            theme = seg.theme[:30] if seg else sid
+            for tid in tids:
+                seg_by_track[tid] = theme
+
+        table = Table(
+            title       = f"Playlist {label}",
+            title_style = "bold cyan",
+            caption     = (
+                f"Score: [{score_style}]{score:.2f}[/{score_style}] | "
+                f"{len(playlist.track_ids)} tracks | "
+                f"{playlist.total_duration_s // 60}m {playlist.total_duration_s % 60}s | "
+                f"Boundary flow: {draft.boundary_flow_score:.2f}"
+            ) if draft else f"Playlist {label}",
+            show_lines  = False,
+            pad_edge    = True,
+        )
+        table.add_column("#",  style="dim", width=3, justify="right")
+        table.add_column("Artist",  style="cyan",   max_width=22)
+        table.add_column("Title",   max_width=28)
+        table.add_column("Dur",     style="dim",    width=5, justify="right")
+        table.add_column("Segment", style="magenta", max_width=22)
+        table.add_column("Why it fits", style="italic", max_width=40)
+
+        for i, tid in enumerate(playlist.track_ids):
+            t = library.get_track(tid)
+            if t:
+                dur_str  = f"{t.duration_s // 60}:{t.duration_s % 60:02d}"
+                note     = playlist.track_notes.get(tid, "Fits the journey.")
+                segment  = seg_by_track.get(tid, "")
+                table.add_row(
+                    str(i + 1),
+                    t.artist[:22],
+                    t.title[:28],
+                    dur_str,
+                    segment[:22],
+                    note[:40],
+                )
+
+        console.print()
+        console.print(table)
 
     def _export(self, playlist, profile, suffix):
         print("\n=== WRITING FILES ===")
@@ -209,6 +317,23 @@ class MixtapeCLI(cmd.Cmd):
         print()
         return True
 
+
+class _FakePersona:
+    """
+    Adapter: wraps a UserProfile as a minimal PersonaProfile duck-type
+    so BlueprintGenerator can accept it without a full interview.
+    Used when a UserProfile is passed directly to _run_generation.
+    """
+    def __init__(self, profile):
+        self.occasion           = profile.context_notes or "personal listening"
+        self.personality_words  = profile.target_descriptors[:3]
+        self.mood_today         = ""
+        self.aesthetic_choice   = ""
+        self.era_preference     = ""
+        self.wildcard           = ""
+        self.confidence         = {}   # §3A — no per-axis confidence for fake persona
+
+
 if __name__ == '__main__':
     # Load data first
     try:
@@ -216,3 +341,4 @@ if __name__ == '__main__':
         MixtapeCLI().cmdloop()
     except Exception as e:
         print(f"Startup Error: {e}")
+

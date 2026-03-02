@@ -150,16 +150,53 @@ class Scorer:
         # Genre Variety score = proximity to ideal
         genre_variety = 1.0 - abs(measured_diversity - ideal_diversity)
         
-        # Artist Variety (Penalty for duplicates)
+        # Artist Variety
+        # Count how many artists appear more than once and apply a strong penalty.
         artists = [t.artist for t in tracks]
         unique_artists = len(set(artists))
         total_tracks = len(tracks)
+
+        # Base ratio (0-1)
         artist_variety = unique_artists / total_tracks if total_tracks > 0 else 1.0
-        
+
+        # Per-duplicate penalty: each artist that appears twice costs 0.15.
+        # This strongly steers selection toward 1-per-artist while keeping cap=2.
+        from collections import Counter
+        artist_counts = Counter(artists)
+        duplicate_penalty = sum(
+            0.15 * (count - 1)
+            for count in artist_counts.values()
+            if count > 1
+        )
+        artist_variety = max(0.0, artist_variety - duplicate_penalty)
+
         # Final Variety = 70% Genre + 30% Artist
         variety_score = (0.7 * genre_variety) + (0.3 * artist_variety)
-        
+
         return float(variety_score)
+
+    def compute_segment_boundary_flow(self, seg_a_tracks: List[Track], seg_b_tracks: List[Track]) -> float:
+        """
+        §6 — Segment-Boundary Flow Score.
+        Scores the best achievable transition between the final track(s) of segment A
+        and the first track(s) of segment B.
+
+        Implementation: sonic distance between last track of A and first track of B.
+        Returns a score in [0, 1] where 1.0 = perfect transition (identical sonic profile).
+        """
+        if not seg_a_tracks or not seg_b_tracks:
+            return 1.0
+
+        last  = seg_a_tracks[-1]
+        first = seg_b_tracks[0]
+
+        d2 = (
+            (last.energy    - first.energy)    ** 2 +
+            (last.valence   - first.valence)   ** 2 +
+            (last.intensity - first.intensity) ** 2
+        )
+        # sqrt(3) ≈ 1.732 is the maximum possible distance in this space
+        return round(max(0.0, 1.0 - math.sqrt(d2 / 3.0)), 4)
 
     def score_playlist(self, tracks: List[Track], profile: UserProfile) -> PlaylistScores:
         fit = self.compute_fit_score(tracks, profile)
@@ -171,15 +208,20 @@ class Scorer:
         measured_access = np.mean([t.accessibility for t in tracks])
         access = 1.0 - abs(measured_access - profile.targets.accessibility)
         
-        # Quality Score 
-        # Weighted blend of rym_rating (normalized) and recommendability
-        # RYM Rating is 0-5.0, recommendability is 0-1.0
+        # Quality Score — empirically validated against in-mix vs out-of-mix separation
+        # Best grid search config: sep=+0.2593 (vs +0.2478 without spotify boost)
+        # rating=0.30, liked=0.30, mix=0.25, spotify=0.15 (sum=1.00)
         quality_scores = []
         for t in tracks:
-             # Normalize rating to 0-1
-             norm_rating = t.rating / 5.0 if t.rating else 0.5  # Default to average if missing
-             q = (norm_rating * 0.5) + (t.recommendability * 0.5)
-             quality_scores.append(q)
+            rating_val   = t.rating if t.rating else 0.5
+            liked_bonus  = 1.0 if (t.liked or t.album_loved) else 0.0
+            q = (
+                rating_val              * 0.30 +
+                liked_bonus             * 0.30 +
+                t.mix_prominence        * 0.25 +
+                t.spotify_affinity      * 0.15
+            )
+            quality_scores.append(q)
         quality = float(np.mean(quality_scores))
         
         total = (
