@@ -1,21 +1,19 @@
 """
-Persona-based interview module.
+Persona-based interview module — two-tier LLM architecture.
 
-Uses evidence-based music psychology frameworks to learn about the user,
-then maps their answers to a PersonaProfile → UserProfile for generation.
-
-Framework sources:
-  Q1 — Russell's Circumplex (1980): arousal axis → energy signal
-  Q2 — PANAS (Watson et al., 1988): positive/negative affect → valence + energy
-  Q3 — MUSIC Model (Rentfrow et al., 2011): 5 music preference dimensions
-       (Mellow, Unpretentious, Sophisticated, Intense, Contemporary)
-  Q4 — ISMUS (Schäfer et al., 2013): listening motivation → intensity + uniformity
-  Q5 — Big Five × Music (Rentfrow & Gosling, 2003): openness → familiarity/discovery
-  Q6 — Wildcard: freeform cultural cue → extra descriptors
+Design:
+  - 5 open-ended questions inspired by evidence-based frameworks
+    (Russell's Circumplex, PANAS, MUSIC Model, ISMUS, Big Five × Music)
+  - Each answer gets a brief conversational acknowledgment from cheap model
+    (gpt-4o-mini, ~5 tokens input / ~20 tokens output per turn)
+  - After all answers: one call to the main model (gpt-4o) interprets
+    the full conversation as structured PersonaProfile JSON
+  - Falls back to keyword matching if no LLM is available (MockLLM)
 """
+import json
 import logging
 import re
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional, Any
 from enum import Enum, auto
 from .models import PersonaProfile, UserProfile
 from .config import config
@@ -23,100 +21,84 @@ from .config import config
 logger = logging.getLogger("mixtape_curator")
 
 
+# ── Models ──────────────────────────────────────────────────────────────────
+CHEAP_MODEL = "gpt-4o-mini"   # per-turn acknowledgments
+MAIN_MODEL  = "gpt-4o"        # final interpretation
+
+
 class PersonaState(Enum):
-    AROUSAL       = auto()  # Q1: Russell's Circumplex — current arousal level
-    VALENCE       = auto()  # Q2: PANAS — positive/negative affect
-    MUSIC_PREF    = auto()  # Q3: MUSIC Model — dimension preference
-    MOTIVATION    = auto()  # Q4: ISMUS — why are you listening?
-    OPENNESS      = auto()  # Q5: Big Five Openness — familiarity vs discovery
-    WILDCARD      = auto()  # Q6: freeform cultural cue
-    CONFIRMATION  = auto()
-    COMPLETED     = auto()
+    Q1_MOOD      = auto()   # energy + emotional state (Russell + PANAS)
+    Q2_SOUND     = auto()   # sonic preference (MUSIC Model)
+    Q3_LISTENING = auto()   # listening motivation (ISMUS)
+    Q4_FAMILIAR  = auto()   # familiarity preference (Big Five × Music)
+    Q5_WILDCARD  = auto()   # freeform cultural cue
+    CONFIRMATION = auto()
+    COMPLETED    = auto()
 
 
-_VAGUE_KEYWORDS = {"idk", "unsure", "whatever", "doesn't matter", "not sure", "dunno", "hmm", "ok"}
+_VAGUE_KEYWORDS = {"idk", "unsure", "whatever", "doesn't matter", "not sure", "dunno", "n/a", "nothing"}
 
-# ── Q1: Arousal options → occasion field ────────────────────────────────────
-_Q1 = (
-    "First, where are you right now energy-wise?\n"
-    "  A) Energized and alert\n"
-    "  B) Calm and at ease\n"
-    "  C) Drained or low\n"
-    "  D) Restless or tense"
-)
-_Q1_MAP = {
-    "a": "workout",        # high energy + high accessibility
-    "b": "chill",          # low energy, peaceful
-    "c": "late night",     # very low energy, introspective
-    "d": "commute",        # mid-high energy, tense
+# ── Question prompts ─────────────────────────────────────────────────────────
+_QUESTIONS = {
+    PersonaState.Q1_MOOD:      "How are you feeling right now — energy and mood?",
+    PersonaState.Q2_SOUND:     "What kind of music sounds right for that?",
+    PersonaState.Q3_LISTENING: "Are you planning to really sit with the music, or more as background while you do something else?",
+    PersonaState.Q4_FAMILIAR:  "Are you in the mood for songs that already feel familiar, or open to discovering something you haven't heard?",
+    PersonaState.Q5_WILDCARD:  "Anything you've been into lately — a show, album, place, feeling — that might color this? (Or just skip it.)",
 }
 
-# ── Q2: Valence options → mood_today field ───────────────────────────────────
-_Q2 = (
-    "How's your emotional state right now?\n"
-    "  A) Positive — feeling good, upbeat\n"
-    "  B) Negative — heavy, frustrated, or sad\n"
-    "  C) Neutral — nothing in particular\n"
-    "  D) Mixed — hard to say"
-)
-_Q2_MAP = {
-    "a": "happy",
-    "b": "frustrated",
-    "c": "calm",
-    "d": "reflective",
-}
+_QUESTION_ORDER = [
+    PersonaState.Q1_MOOD,
+    PersonaState.Q2_SOUND,
+    PersonaState.Q3_LISTENING,
+    PersonaState.Q4_FAMILIAR,
+    PersonaState.Q5_WILDCARD,
+]
 
-# ── Q3: MUSIC Model → personality_words field ────────────────────────────────
-_Q3 = (
-    "What sounds good to you right now?\n"
-    "  A) Something soft, emotional, easy to sink into  [Mellow]\n"
-    "  B) Something with depth and complexity  [Sophisticated]\n"
-    "  C) Something intense, loud, high-energy  [Intense]\n"
-    "  D) Something upbeat and feel-good  [Contemporary]"
+# ── System prompt for cheap model (per-turn ack) ─────────────────────────────
+_ACK_SYSTEM = (
+    "You are helping build a mixtape for someone. They are answering short questions. "
+    "Your job: give a ONE sentence acknowledgment of their answer (max 12 words). "
+    "No questions. Just a natural, warm, brief confirmation that you heard them."
 )
-_Q3_MAP = {
-    "a": ["introspective", "calm", "chill"],          # Mellow dimension
-    "b": ["curious", "creative", "introspective"],    # Sophisticated dimension
-    "c": ["intense", "energetic", "adventurous"],     # Intense dimension
-    "d": ["happy", "energetic", "adventurous"],       # Contemporary/Unpretentious
-}
 
-# ── Q4: ISMUS listening motivation → aesthetic_choice field ─────────────────
-_Q4 = (
-    "Why are you listening right now?\n"
-    "  A) To match the mood I'm already in\n"
-    "  B) To shift my mood — get somewhere different\n"
-    "  C) As background while I do something else\n"
-    "  D) To sit with it and really pay attention"
-)
-_Q4_MAP = {
-    "a": "rooftop at sunset",          # mirror → moderate uniformity
-    "b": "sweaty basement show",       # regulation → push energy/valence
-    "c": "commute",                    # background → low uniformity
-    "d": "dark room with headphones",  # attentive → high uniformity, introspective
-}
-
-# ── Q5: Openness → era_preference field ─────────────────────────────────────
-_Q5 = (
-    "Are you more in the mood for something familiar — songs that already "
-    "feel like home — or open to discovering something you've never heard?"
+# ── System prompt for main model (final interpretation) ─────────────────────
+_INTERPRET_SYSTEM = (
+    "You are a music curation assistant. Based on a short interview, extract the user's "
+    "musical preferences and current state as a JSON object with exactly these fields:\n\n"
+    "{\n"
+    "  \"occasion\": <str: one of: workout, party, drive, study, late night, chill, dinner, pregame>,\n"
+    "  \"mood_today\": <str: one of: happy, joyful, excited, calm, relaxed, focused, nostalgic, "
+    "reflective, introspective, anxious, frustrated, angry, sad, melancholic, bored, restless, numb>,\n"
+    "  \"personality_words\": <list of 2-3 str from: adventurous, curious, creative, nostalgic, "
+    "passionate, introspective, calm, chill, intense, energetic, focused, adventurous, open, balanced>,\n"
+    "  \"aesthetic_choice\": <str: one of: dark room with headphones, rooftop at sunset, "
+    "sweaty basement show, commute>,\n"
+    "  \"era_preference\": <str: one of: nostalgia, new, both>,\n"
+    "  \"wildcard\": <str: brief description of their cultural cue, or empty string>\n"
+    "}\n\n"
+    "Return ONLY the JSON object. No explanation."
 )
 
 
 class PersonaInterviewer:
     """
-    Conversational interview agent grounded in music psychology research.
-    Builds a PersonaProfile from 6 short questions, then maps it to a
-    UserProfile for the mixtape generator.
+    Two-tier LLM interview agent.
+    - cheap_llm: used for per-turn conversational acknowledgments
+    - main_llm: used once at the end to interpret all answers as PersonaProfile JSON
+    Both default to None (keyword fallback mode).
     """
 
-    def __init__(self):
+    def __init__(self, cheap_llm=None, main_llm=None):
+        self.cheap_llm = cheap_llm
+        self.main_llm  = main_llm
         self.history: List[Dict[str, str]] = []
         self.persona = PersonaProfile()
         self.completed = False
-        self.state = PersonaState.AROUSAL
+        self.state = PersonaState.Q1_MOOD
         self._off_topic_count = 0
         self._off_topic_max = config.get("off_topic_max", 3)
+        self.raw_answers: Dict[str, str] = {}   # state_name → user answer
 
         self.confidence = {
             "constraints": 1.0,
@@ -135,11 +117,12 @@ class PersonaInterviewer:
 
     def start(self) -> str:
         self.history = []
-        self.state = PersonaState.AROUSAL
+        self.state = PersonaState.Q1_MOOD
+        self.raw_answers = {}
         opening = (
-            "Hey — I'll ask you 6 quick questions to get a read on you, "
+            "Hey — I'll ask you 5 quick questions to get a read on you, "
             "then build a mixtape from Eric's library that fits.\n\n"
-            + _Q1
+            + _QUESTIONS[PersonaState.Q1_MOOD]
         )
         self._log_reply(opening)
         return opening
@@ -158,12 +141,12 @@ class PersonaInterviewer:
         if any(w in fb for w in ["slow", "boring", "low energy", "faster", "more energy"]):
             self.persona.occasion = "workout " + self.persona.occasion
             self.persona.personality_words.append("energetic")
-        if any(w in fb for w in ["too intense", "too loud", "chill", "softer"]):
+        if any(w in fb for w in ["too intense", "chill", "softer"]):
             self.persona.occasion = "chill " + self.persona.occasion
             self.persona.personality_words.append("chill")
-        if any(w in fb for w in ["samey", "repetitive", "boring", "more variety"]):
+        if any(w in fb for w in ["samey", "repetitive", "more variety"]):
             self.persona.personality_words.append("adventurous")
-        if any(w in fb for w in ["all over", "too eclectic", "more cohesive", "focus"]):
+        if any(w in fb for w in ["all over", "too eclectic", "more cohesive"]):
             self.persona.personality_words.append("focused")
 
     # ------------------------------------------------------------------
@@ -171,153 +154,96 @@ class PersonaInterviewer:
     # ------------------------------------------------------------------
 
     def _dispatch(self, user_input: str) -> Tuple[str, bool]:
-        if self._is_vague(user_input) and self.state not in (
-            PersonaState.CONFIRMATION, PersonaState.COMPLETED
-        ):
+        if self.state in (PersonaState.CONFIRMATION, PersonaState.COMPLETED):
+            return self._handle_confirmation(user_input)
+
+        if self._is_vague(user_input) and self.state != PersonaState.Q5_WILDCARD:
             self._off_topic_count += 1
             if self._off_topic_count >= self._off_topic_max:
-                return self._advance_with_default()
-            return self._rephrase_current(), False
+                return self._skip_current(), False
+            return "Can you say a bit more? Even a few words is fine.", False
 
         self._off_topic_count = 0
 
-        handlers = {
-            PersonaState.AROUSAL:    self._handle_arousal,
-            PersonaState.VALENCE:    self._handle_valence,
-            PersonaState.MUSIC_PREF: self._handle_music_pref,
-            PersonaState.MOTIVATION: self._handle_motivation,
-            PersonaState.OPENNESS:   self._handle_openness,
-            PersonaState.WILDCARD:   self._handle_wildcard,
-            PersonaState.CONFIRMATION: self._handle_confirmation,
-        }
-        handler = handlers.get(self.state)
-        if handler:
-            return handler(user_input)
-        return "Something went sideways. Type 'start' to restart.", True
+        # Store answer
+        self.raw_answers[self.state.name] = user_input
+
+        # Generate acknowledgment
+        ack = self._acknowledge(user_input)
+
+        # Advance state
+        next_q = self._advance_state()
+
+        if next_q is None:
+            # All questions answered — run interpretation
+            return self._run_interpretation(ack)
+
+        return f"{ack}\n\n{next_q}", False
 
     # ------------------------------------------------------------------
-    # Q1 — Arousal (Russell's Circumplex)
+    # State advancement
     # ------------------------------------------------------------------
 
-    def _handle_arousal(self, text: str) -> Tuple[str, bool]:
-        tl = text.lower().strip()
-        letter = tl[0] if tl and tl[0] in _Q1_MAP else None
-
-        if letter:
-            self.persona.occasion = _Q1_MAP[letter]
+    def _advance_state(self) -> Optional[str]:
+        """Move to next state. Return next question text, or None if done."""
+        idx = _QUESTION_ORDER.index(self.state)
+        if idx + 1 < len(_QUESTION_ORDER):
+            self.state = _QUESTION_ORDER[idx + 1]
+            return _QUESTIONS[self.state]
         else:
-            # Free-text fallback
-            if any(w in tl for w in ["energy", "alert", "active", "hyped", "charged"]):
-                self.persona.occasion = "workout"
-            elif any(w in tl for w in ["calm", "ease", "peaceful", "relaxed"]):
-                self.persona.occasion = "chill"
-            elif any(w in tl for w in ["drain", "low", "tired", "exhausted"]):
-                self.persona.occasion = "late night"
-            else:
-                self.persona.occasion = "commute"
-
-        self.confidence["intent"] = 0.5
-        self.state = PersonaState.VALENCE
-        return _Q2, False
+            self.state = PersonaState.CONFIRMATION
+            return None
 
     # ------------------------------------------------------------------
-    # Q2 — Valence (PANAS)
+    # LLM calls
     # ------------------------------------------------------------------
 
-    def _handle_valence(self, text: str) -> Tuple[str, bool]:
-        tl = text.lower().strip()
-        letter = tl[0] if tl and tl[0] in _Q2_MAP else None
+    def _acknowledge(self, answer: str) -> str:
+        """Cheap model: one-sentence acknowledgment of the user's answer."""
+        if self.cheap_llm is None or isinstance(self.cheap_llm, _MockLLMCheck):
+            return _keyword_ack(answer)
 
-        if letter:
-            self.persona.mood_today = _Q2_MAP[letter]
+        try:
+            msgs = [
+                {"role": "system", "content": _ACK_SYSTEM},
+                {"role": "user", "content": answer},
+            ]
+            return self.cheap_llm.generate(msgs, model=CHEAP_MODEL, temperature=0.7).strip()
+        except Exception as e:
+            logger.warning("Cheap model ack failed: %s", e)
+            return _keyword_ack(answer)
+
+    def _run_interpretation(self, ack: str) -> Tuple[str, bool]:
+        """Main model: interpret all raw answers into PersonaProfile JSON."""
+        conversation_text = "\n".join(
+            f"Q: {_QUESTIONS[PersonaState[k]]}\nA: {v}"
+            for k, v in self.raw_answers.items()
+            if k in {s.name for s in _QUESTION_ORDER}
+        )
+
+        persona_data = None
+        if self.main_llm is not None and not isinstance(self.main_llm, _MockLLMCheck):
+            try:
+                msgs = [
+                    {"role": "system", "content": _INTERPRET_SYSTEM},
+                    {"role": "user", "content": conversation_text},
+                ]
+                persona_data = self.main_llm.json(msgs, model=MAIN_MODEL, temperature=0.1)
+            except Exception as e:
+                logger.warning("Main model interpretation failed: %s", e)
+
+        if persona_data:
+            self.persona = _json_to_persona(persona_data, self.raw_answers.get("Q5_WILDCARD", ""))
         else:
-            # Free-text fallback — store raw (mood-energy map in models.py handles it)
-            if any(w in tl for w in ["good", "great", "happy", "positive", "upbeat"]):
-                self.persona.mood_today = "happy"
-            elif any(w in tl for w in ["bad", "heavy", "sad", "frustrated", "negative"]):
-                self.persona.mood_today = "frustrated"
-            elif any(w in tl for w in ["mixed", "complicated", "hard to say"]):
-                self.persona.mood_today = "reflective"
-            else:
-                self.persona.mood_today = text
-
-        self.confidence["energy_mood"] = 1.0
-        self.state = PersonaState.MUSIC_PREF
-        return _Q3, False
-
-    # ------------------------------------------------------------------
-    # Q3 — Music Preference (MUSIC Model)
-    # ------------------------------------------------------------------
-
-    def _handle_music_pref(self, text: str) -> Tuple[str, bool]:
-        tl = text.lower().strip()
-        letter = tl[0] if tl and tl[0] in _Q3_MAP else None
-
-        if letter:
-            self.persona.personality_words = _Q3_MAP[letter]
-        else:
-            # Free-text fallback
-            if any(w in tl for w in ["soft", "mellow", "emotional", "easy"]):
-                self.persona.personality_words = _Q3_MAP["a"]
-            elif any(w in tl for w in ["complex", "depth", "jazz", "sophisticated"]):
-                self.persona.personality_words = _Q3_MAP["b"]
-            elif any(w in tl for w in ["intense", "loud", "heavy", "energy"]):
-                self.persona.personality_words = _Q3_MAP["c"]
-            else:
-                self.persona.personality_words = _Q3_MAP["d"]
+            # Keyword fallback
+            self.persona = _keyword_interpret(self.raw_answers)
 
         self.confidence["intent"] = 1.0
-        self.state = PersonaState.MOTIVATION
-        return _Q4, False
-
-    # ------------------------------------------------------------------
-    # Q4 — Listening Motivation (ISMUS)
-    # ------------------------------------------------------------------
-
-    def _handle_motivation(self, text: str) -> Tuple[str, bool]:
-        tl = text.lower().strip()
-        letter = tl[0] if tl and tl[0] in _Q4_MAP else None
-
-        if letter:
-            self.persona.aesthetic_choice = _Q4_MAP[letter]
-        else:
-            if any(w in tl for w in ["match", "same", "already"]):
-                self.persona.aesthetic_choice = _Q4_MAP["a"]
-            elif any(w in tl for w in ["shift", "change", "different", "out of"]):
-                self.persona.aesthetic_choice = _Q4_MAP["b"]
-            elif any(w in tl for w in ["background", "while", "doing"]):
-                self.persona.aesthetic_choice = _Q4_MAP["c"]
-            else:
-                self.persona.aesthetic_choice = _Q4_MAP["d"]
-
+        self.confidence["energy_mood"] = 1.0
         self.confidence["cohesion"] = 1.0
-        self.state = PersonaState.OPENNESS
-        return _Q5, False
 
-    # ------------------------------------------------------------------
-    # Q5 — Openness / Familiarity (Big Five × Music)
-    # ------------------------------------------------------------------
-
-    def _handle_openness(self, text: str) -> Tuple[str, bool]:
-        tl = text.lower()
-        if any(w in tl for w in ["familiar", "know", "home", "love", "already", "nostalgia"]):
-            self.persona.era_preference = "nostalgia"
-        elif any(w in tl for w in ["new", "discover", "never", "fresh", "open", "different"]):
-            self.persona.era_preference = "new"
-        else:
-            self.persona.era_preference = "both"
-
-        self.state = PersonaState.WILDCARD
-        return "Anything you've been into lately — a show, album, place, feeling — that might color this?", False
-
-    # ------------------------------------------------------------------
-    # Q6 — Wildcard
-    # ------------------------------------------------------------------
-
-    def _handle_wildcard(self, text: str) -> Tuple[str, bool]:
-        self.persona.wildcard = text if text.lower() not in {"nothing", "nope", "no", "n/a", "-"} else ""
-        self.state = PersonaState.CONFIRMATION
-        return f"{self._generate_summary()}\n\nSound right? [yes / no]", False
+        summary = self._generate_summary()
+        return f"{ack}\n\n{summary}\n\nSound right? [yes / no]", False
 
     # ------------------------------------------------------------------
     # Confirmation
@@ -330,8 +256,9 @@ class PersonaInterviewer:
             self.state = PersonaState.COMPLETED
             return "Let's go. Pulling tracks now...", True
         elif "no" in tl:
-            self.state = PersonaState.AROUSAL
-            return f"No problem — let's try again.\n\n{_Q1}", False
+            self.state = PersonaState.Q1_MOOD
+            self.raw_answers = {}
+            return f"No problem — let's try again.\n\n{_QUESTIONS[PersonaState.Q1_MOOD]}", False
         else:
             return "Type 'yes' to build the tape, or 'no' to start over.", False
 
@@ -356,79 +283,118 @@ class PersonaInterviewer:
             else "new discoveries" if up.targets.familiarity <= 0.35
             else "mix of familiar and new"
         )
-        mood = self.persona.mood_today or "neutral"
-        motivation = self.persona.aesthetic_choice or "—"
-
         return (
-            f"  Mood: {mood}\n"
-            f"  Listening mode: {motivation}\n"
+            f"  Mood: {self.persona.mood_today or 'neutral'}\n"
+            f"  Listening mode: {self.persona.aesthetic_choice or '—'}\n"
             f"  Era: {era_label}\n"
             f"  Energy: {e_label}, {v_label}"
         )
 
     def _is_vague(self, text: str) -> bool:
         stripped = text.strip().lower()
-        # Single letter A-D is always a valid answer
-        if stripped in ("a", "b", "c", "d"):
-            return False
-        return any(k in stripped for k in _VAGUE_KEYWORDS) or len(stripped) < 2
+        return any(k in stripped for k in _VAGUE_KEYWORDS) or len(stripped) < 3
 
-    def _rephrase_current(self) -> str:
-        rephrases = {
-            PersonaState.AROUSAL:    f"Just pick whichever is closest:\n{_Q1}",
-            PersonaState.VALENCE:    f"Even roughly:\n{_Q2}",
-            PersonaState.MUSIC_PREF: f"Go with your gut:\n{_Q3}",
-            PersonaState.MOTIVATION: f"Pick the closest:\n{_Q4}",
-            PersonaState.OPENNESS:   "Familiar songs you know, or open to something new?",
-            PersonaState.WILDCARD:   "Anything — a show, a trip, something you heard recently. (Or just skip it.)",
-        }
-        return rephrases.get(self.state, "Can you say a bit more?")
-
-    def _advance_with_default(self) -> Tuple[str, bool]:
+    def _skip_current(self) -> str:
+        """Skip current question with a default and advance."""
         defaults = {
-            PersonaState.AROUSAL:    ("commute",                   PersonaState.VALENCE),
-            PersonaState.VALENCE:    ("calm",                      PersonaState.MUSIC_PREF),
-            PersonaState.MUSIC_PREF: (["open", "balanced"],        PersonaState.MOTIVATION),
-            PersonaState.MOTIVATION: ("rooftop at sunset",         PersonaState.OPENNESS),
-            PersonaState.OPENNESS:   ("both",                      PersonaState.WILDCARD),
-            PersonaState.WILDCARD:   ("",                          PersonaState.CONFIRMATION),
+            PersonaState.Q1_MOOD:      {"mood_today": "calm", "occasion": "chill"},
+            PersonaState.Q2_SOUND:     {"personality_words": ["open", "balanced"]},
+            PersonaState.Q3_LISTENING: {"aesthetic_choice": "rooftop at sunset"},
+            PersonaState.Q4_FAMILIAR:  {"era_preference": "both"},
         }
-        if self.state not in defaults:
-            return f"{self._generate_summary()}\n\nSound right? [yes / no]", False
-
-        default_val, next_state = defaults[self.state]
-
-        if self.state == PersonaState.AROUSAL:
-            self.persona.occasion = default_val
-        elif self.state == PersonaState.VALENCE:
-            self.persona.mood_today = default_val
-        elif self.state == PersonaState.MUSIC_PREF:
-            self.persona.personality_words = default_val
-        elif self.state == PersonaState.MOTIVATION:
-            self.persona.aesthetic_choice = default_val
-        elif self.state == PersonaState.OPENNESS:
-            self.persona.era_preference = default_val
-        elif self.state == PersonaState.WILDCARD:
-            self.persona.wildcard = default_val
-
-        self.state = next_state
+        d = defaults.get(self.state, {})
+        for k, v in d.items():
+            setattr(self.persona, k, v)
         self._off_topic_count = 0
-
-        next_questions = {
-            PersonaState.VALENCE:    _Q2,
-            PersonaState.MUSIC_PREF: _Q3,
-            PersonaState.MOTIVATION: _Q4,
-            PersonaState.OPENNESS:   _Q5,
-            PersonaState.WILDCARD:   "Anything you've been into lately?",
-            PersonaState.CONFIRMATION: self._generate_summary() + "\n\nSound right? [yes / no]",
-        }
-        return next_questions.get(next_state, "Sound right? [yes / no]"), False
+        next_q = self._advance_state()
+        return next_q or "Alright, I think I have enough. Ready? [yes / no]"
 
     def _log_reply(self, text: str):
         self.history.append({"role": "assistant", "content": text})
 
 
-# ── Legacy shims ────────────────────────────────────────────────────────────
+# ── Helpers outside the class ─────────────────────────────────────────────────
+
+class _MockLLMCheck:
+    """Sentinel for isinstance checks — not an actual class used at runtime."""
+    pass
+
+
+def _keyword_ack(answer: str) -> str:
+    """Simple keyword-based acknowledgment when no LLM is available."""
+    a = answer.lower()
+    if any(w in a for w in ["tired", "drained", "exhausted", "low"]):
+        return "Noted — sounds like you need something that meets you where you're at."
+    if any(w in a for w in ["frustrated", "angry", "stressed", "anxious"]):
+        return "Got it — something with some edge to it."
+    if any(w in a for w in ["happy", "great", "good", "excited", "upbeat"]):
+        return "Good to hear — we'll keep that energy going."
+    if any(w in a for w in ["calm", "chill", "relaxed", "peaceful"]):
+        return "Nice. We'll keep things easy."
+    if any(w in a for w in ["sad", "down", "melancholic", "low"]):
+        return "Understood — something to sit with."
+    return "Got it."
+
+
+def _keyword_interpret(raw: Dict[str, str]) -> PersonaProfile:
+    """Fallback: keyword-based mapping of raw answers → PersonaProfile."""
+    p = PersonaProfile()
+
+    q1 = raw.get("Q1_MOOD", "").lower()
+    if any(w in q1 for w in ["tired", "drained", "low", "exhausted"]):
+        p.occasion, p.mood_today = "late night", "melancholic"
+    elif any(w in q1 for w in ["frustrated", "angry", "tense"]):
+        p.occasion, p.mood_today = "commute", "frustrated"
+    elif any(w in q1 for w in ["happy", "great", "excited", "upbeat"]):
+        p.occasion, p.mood_today = "party", "happy"
+    elif any(w in q1 for w in ["calm", "chill", "relaxed"]):
+        p.occasion, p.mood_today = "chill", "calm"
+    else:
+        p.occasion, p.mood_today = "commute", "calm"
+
+    q2 = raw.get("Q2_SOUND", "").lower()
+    if any(w in q2 for w in ["soft", "mellow", "quiet", "slow"]):
+        p.personality_words = ["introspective", "calm"]
+    elif any(w in q2 for w in ["complex", "jazz", "classical", "depth"]):
+        p.personality_words = ["curious", "creative"]
+    elif any(w in q2 for w in ["intense", "loud", "heavy", "hard"]):
+        p.personality_words = ["intense", "energetic"]
+    else:
+        p.personality_words = ["open", "balanced"]
+
+    q3 = raw.get("Q3_LISTENING", "").lower()
+    if any(w in q3 for w in ["really", "sit", "focus", "attention", "headphone"]):
+        p.aesthetic_choice = "dark room with headphones"
+    elif any(w in q3 for w in ["background", "while", "doing", "work"]):
+        p.aesthetic_choice = "rooftop at sunset"
+    else:
+        p.aesthetic_choice = "rooftop at sunset"
+
+    q4 = raw.get("Q4_FAMILIAR", "").lower()
+    if any(w in q4 for w in ["familiar", "know", "love", "already", "nostalgia"]):
+        p.era_preference = "nostalgia"
+    elif any(w in q4 for w in ["new", "discover", "never", "fresh", "open"]):
+        p.era_preference = "new"
+    else:
+        p.era_preference = "both"
+
+    p.wildcard = raw.get("Q5_WILDCARD", "")
+    return p
+
+
+def _json_to_persona(data: Dict[str, Any], wildcard_raw: str) -> PersonaProfile:
+    """Convert LLM JSON output to PersonaProfile, with safe fallbacks."""
+    return PersonaProfile(
+        occasion         = data.get("occasion", "chill"),
+        mood_today       = data.get("mood_today", "calm"),
+        personality_words= data.get("personality_words", ["open", "balanced"]),
+        aesthetic_choice = data.get("aesthetic_choice", "rooftop at sunset"),
+        era_preference   = data.get("era_preference", "both"),
+        wildcard         = data.get("wildcard", wildcard_raw),
+    )
+
+
+# ── Legacy shims ──────────────────────────────────────────────────────────────
 
 class Interviewer(PersonaInterviewer):
     """Backward-compatible alias."""

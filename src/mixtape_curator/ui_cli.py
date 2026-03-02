@@ -86,7 +86,10 @@ class MixtapeCLI(cmd.Cmd):
         """Start the persona-based interview to build a mixtape from Eric's library."""
         from .interview import PersonaInterviewer
 
-        agent = PersonaInterviewer()
+        llm_provider = self._get_llm_provider()
+        cheap_llm    = self._get_cheap_llm_provider()
+
+        agent = PersonaInterviewer(cheap_llm=cheap_llm, main_llm=llm_provider)
         print()
         typewriter_print(agent.start())
 
@@ -105,6 +108,7 @@ class MixtapeCLI(cmd.Cmd):
 
         if agent.completed:
             self._run_generation(agent)
+
 
 
     def _run_generation(self, interviewer):
@@ -229,11 +233,20 @@ class MixtapeCLI(cmd.Cmd):
                 return
 
     def _get_llm_provider(self):
-        """Return real LLM if key available, else MockLLM."""
+        """Return main LLM (gpt-4o) if key available, else MockLLM."""
         if hasattr(config, 'openai_api_key') and config.openai_api_key:
             from .llm.providers.openai import OpenAIProvider
             return OpenAIProvider()
         return MockLLM()
+
+    def _get_cheap_llm_provider(self):
+        """Return cheap LLM (gpt-4o-mini) if key available, else MockLLM.
+        Uses the same OpenAIProvider — the model string is passed at call time."""
+        if hasattr(config, 'openai_api_key') and config.openai_api_key:
+            from .llm.providers.openai import OpenAIProvider
+            return OpenAIProvider()
+        return MockLLM()
+
 
     def _display_arc_draft(self, playlist, draft, blueprint, label: str):
         """Display a playlist with segment structure using Rich."""
