@@ -1,125 +1,166 @@
-# 🎵 ReAct Mixtape Curator
+# Mixtape Generator
 
-A conversational AI agent that curates personalized mixtapes from your music library using a **ReAct (Reasoning + Acting)** loop with semantic genre matching, flow optimization, and iterative refinement.
+A CLI tool that builds personalized mixtapes from a local music library. It uses a short conversational interview to understand your mood and the moment, then runs a multi-stage pipeline to curate two playlist variants (A and B) for you to choose from.
 
-## Features
+---
 
-- **Curator Persona** — Acts as a professional A&R / Creative Director with deep musical awareness
-- **Conversational Interview** — Dynamically gathers preferences through natural conversation
-- **ReAct Agent Loop** — Validates constraints, searches the library, and intelligently adds/swaps tracks with reasoning
-- **Flow Optimization** — Greedy multi-start algorithm for smooth sonic transitions
-- **A/B Generation** — Produces two playlist variants for comparison
-- **"Neither" Feedback Loop** — Reject both and provide specific refinement feedback
-- **Multi-Format Export** — Local `.m3u8`, `.txt` (with reasoning), and optional Spotify sync
-- **Genre/Descriptor Index** — O(1) inverted index for fast tag-based track discovery
+## How it works
 
-## Architecture
+1. **Interview** — 7 open-ended questions capture your current state (tone of day, energy, attention, space, flow, direction, atmosphere)
+2. **Blueprint** — An LLM acts as creative director and designs a narrative arc (segments with themes and energy targets)
+3. **Trellis** — Tracks from the library are matched to each segment using genre, descriptor, and audio feature similarity
+4. **Arc Optimization** — A deterministic algorithm selects and sequences the best tracks, producing two distinct mixes
+5. **Refinement** — A second LLM pass fine-tunes the final playlist
+6. **Output** — Two clean tracklists displayed in the terminal; choose A, B, or Neither to iterate
 
-```
-Interview → Profile Extraction → Seed → Growth → Refinement → A/B → Export
-     ↑                                                              |
-     └──────────────── "Neither" Feedback Loop ←────────────────────┘
-```
+---
 
-### Scoring (§3)
+## Prerequisites
 
-| Weight | Dimension | Method |
-|--------|-----------|--------|
-| 0.35 | **Fit** | Sonic distance (energy/valence/intensity) + genre/descriptor overlap |
-| 0.25 | **Flow** | Adjacent-track transition smoothness |
-| 0.15 | **Variety** | Per-track normalized genre distribution uniformity |
-| 0.15 | **Accessibility** | Average track accessibility score |
-| 0.10 | **Quality** | Average rating × recommendability |
+- Python 3.10+
+- An OpenAI API key (for the full experience — runs without one using a built-in fallback)
+- Optional: Spotify credentials (for exporting directly to a Spotify playlist)
 
-## Setup
+---
+
+## Quick Start
 
 ```bash
-# Clone and install
-git clone https://github.com/yourusername/Mixtape-Generator.git
+# 1. Clone
+git clone https://github.com/EricLevesque01/Mixtape-Generator.git
 cd Mixtape-Generator
+
+# 2. Install
 pip install -e .
+
+# 3. Set up your environment file
+cp .env.example .env
+# Then open .env and fill in your API key(s)
+
+# 4. Run
+python run.py
 ```
 
-### Environment Variables
+At the `(mixtape) >` prompt, type `start` to begin the interview.
 
-Create a `.env` file:
+---
 
-```env
-# Required for Spotify export
-SPOTIFY_CLIENT_ID=your_id
-SPOTIFY_CLIENT_SECRET=your_secret
-SPOTIFY_REDIRECT_URI=http://localhost:8888/callback
+## Environment Variables
 
-# Optional: Use real LLM instead of MockLLM
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-## Usage
-
-### Interactive CLI
+Copy `.env.example` to `.env` and fill in the values you need:
 
 ```bash
-python -m mixtape_curator.ui_cli
+cp .env.example .env
 ```
 
-Follow the prompts to describe the vibe, anchor artists, and duration. The curator generates two playlists (A/B) and you can choose, reject, or refine.
+| Variable | Required? | Description |
+|---|---|---|
+| `OPENAI_API_KEY` | Recommended | Powers interview acknowledgments (`gpt-4o-mini`) and final interpretation + blueprint generation (`gpt-4o`). Without it, the app falls back to keyword matching — functional but less nuanced. |
+| `SPOTIFY_CLIENT_ID` | Optional | Enables direct export to a Spotify playlist. |
+| `SPOTIFY_CLIENT_SECRET` | Optional | See above. |
+| `SPOTIFY_REDIRECT_URI` | Optional | Default: `http://localhost:8888/callback` |
 
-### Eval Harness
+### Getting an OpenAI API key
 
-```bash
-python -m mixtape_curator.eval_harness
-```
+1. Go to [platform.openai.com](https://platform.openai.com)
+2. Sign in → **API Keys** → **Create new secret key**
+3. Paste it into your `.env` file:
+   ```
+   OPENAI_API_KEY=sk-...
+   ```
 
-Runs automated test cases from `data/eval_cases.jsonl` and outputs metrics to `eval_results.jsonl`.
+### Getting Spotify credentials (optional)
 
-### Data Enrichment
+1. Go to [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
+2. Create an app → copy the **Client ID** and **Client Secret**
+3. In the app settings, add `http://localhost:8888/callback` as a Redirect URI
+4. Fill the three `SPOTIFY_*` values in your `.env`
 
-```bash
-# Enrich subgenres & descriptors (requires OPENAI_API_KEY)
-python scripts/enrich_rym_taxonomy.py
+---
 
-# Enrich Spotify URIs (requires Spotify credentials)
-python scripts/enrich_spotify_uris.py
-```
+## Running without an API key
 
-## Testing
+The app works fully without any API key — it uses keyword-based fallbacks:
 
-```bash
-python -m pytest tests/ -v --tb=short
-```
+- Interview acknowledgments are brief fixed phrases ("Got it.", "Nice.", etc.)
+- The persona interpretation uses keyword matching instead of GPT-4o
+- Blueprint generation uses a heuristic arc instead of the LLM
+
+The tracklist quality will be slightly less personalized but the pipeline runs end-to-end.
+
+---
+
+## CLI Commands
+
+| Command | Description |
+|---|---|
+| `start` | Begin the interview and generate a mixtape |
+| `help` | Show available commands |
+| `quit` | Exit |
+
+---
+
+## Configuration (`config.yaml`)
+
+Key parameters you might want to adjust:
+
+| Setting | Default | Description |
+|---|---|---|
+| `duration_target_s` | `4620` | Target length (~77 min) |
+| `duration_cap_s` | `4800` | Hard max (1h20m) — tracks trimmed from end if exceeded |
+| `target_track_count` | `16` | Approximate track count target |
+| `max_tracks_per_artist` | `2` | Artist diversity cap |
+| `rng_seed` | `42` | Seed for reproducible results |
+
+---
 
 ## Project Structure
 
 ```
 Mixtape-Generator/
-├── config.yaml              # All tunable parameters
+├── run.py                      # Entry point
+├── config.yaml                 # All tunable parameters
+├── .env.example                # Template for API keys
 ├── data/
-│   ├── library.json          # Music library (5,965 tracks)
-│   ├── eval_cases.jsonl      # Evaluation scenarios
-│   └── feedback.jsonl        # User feedback log
-├── scripts/
-│   ├── enrich_rym_taxonomy.py
-│   └── enrich_spotify_uris.py
+│   ├── library.json            # The music library (tracks, scores, metadata)
+│   └── similarity_graph.json   # Pre-computed track similarity graph
+├── scripts/                    # Data enrichment + library scanning scripts
 ├── src/mixtape_curator/
-│   ├── models.py             # Track, Playlist, UserProfile
-│   ├── library.py            # Library loader + inverted index
-│   ├── interview.py          # Interview agent
-│   ├── scoring.py            # 5-dimension scoring engine
-│   ├── generator.py          # Draft + flow optimization
-│   ├── agent.py              # ReAct repair loop
-│   ├── ab_test.py            # A/B variant generation
-│   ├── export.py             # TXT/M3U8 export
-│   ├── spotify_export.py     # Spotify playlist sync
-│   ├── ui_cli.py             # Rich CLI interface
+│   ├── interview.py            # 7-question conversational interview
+│   ├── blueprint.py            # LLM creative director (arc design)
+│   ├── trellis.py              # Track-to-segment matching
+│   ├── arc_optimizer.py        # Deterministic A/B playlist builder
+│   ├── agent.py                # ReAct refinement loop
+│   ├── scoring.py              # 5-dimension scoring engine
+│   ├── models.py               # Data models (Track, UserProfile, etc.)
+│   ├── library.py              # Library loader + search index
+│   ├── exporter.py             # .m3u8 / .txt export
+│   ├── spotify_export.py       # Spotify playlist sync
+│   ├── ui_cli.py               # Terminal interface (Rich)
 │   └── llm/
-│       ├── interface.py      # LLMProvider protocol
+│       ├── interface.py        # LLMProvider protocol
 │       └── providers/
-│           ├── local.py      # MockLLM (testing)
-│           ├── openai.py     # GPT-4
-│           └── anthropic.py  # Claude
-└── tests/                    # 23 test suite
+│           ├── openai.py       # GPT-4o / GPT-4o-mini
+│           ├── local.py        # MockLLM (keyword fallback)
+│           └── anthropic.py    # Claude (optional)
+└── tests/                      # 46+ tests
 ```
+
+---
+
+## Running the tests
+
+```bash
+python -m pytest tests/ -q
+```
+
+---
+
+## About the library
+
+The included `data/library.json` is Eric's personal music library — ~5,900 tracks with enriched metadata (genres, descriptors, audio features, RYM ratings). If you want to use your own library, see the scripts in `scripts/` for how to scan and enrich a library from Spotify or a local collection.
+
+---
 
 ## License
 
