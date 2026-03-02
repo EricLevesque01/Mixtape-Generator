@@ -198,33 +198,93 @@ def _fill_segment_tracks(
 # Sequence Optimiser (within a segment)
 # ---------------------------------------------------------------------------
 
-def _greedy_sequence(tracks: List[Track]) -> List[Track]:
+def _greedy_sequence(
+    tracks: List[Track],
+    segment: Optional["Segment"] = None,
+) -> List[Track]:
     """
-    Simple greedy nearest-neighbour flow sequence within a segment.
-    Identical logic to Generator._optimize_sequence_greedy but operates
-    on Track objects directly and is deterministic (no RNG, single start).
+    Greedy nearest-neighbour sequence within a segment, enhanced with:
+
+    1. Energy arc shaping — reads segment.audio_targets["energy"] to determine
+       whether the sequence should sweep up (high-energy segment), sweep down
+       (low-energy segment), or stay neutral (mid-energy or unspecified).
+
+       energy_target >= 0.65 → prefer tracks whose energy is closer to the
+                                 *end* of an ascending arc (add bonus for
+                                 candidates with higher energy than current)
+       energy_target <= 0.40 → prefer tracks with lower energy (descending)
+       otherwise             → neutral (original nearest-neighbour only)
+
+    2. Album track-order bonus — when a candidate is from the same album as
+       the previous track and its track_number is higher, a small bonus is
+       added. This keeps same-album runs sounding album-sequential rather than
+       jumping from track 7 back to track 2.
     """
     if len(tracks) <= 2:
         return tracks
 
+    # Determine energy direction from segment target
+    energy_target: Optional[float] = None
+    if segment and segment.audio_targets:
+        energy_target = segment.audio_targets.get("energy")
+
+    if energy_target is not None and energy_target >= 0.65:
+        arc_direction = "up"
+    elif energy_target is not None and energy_target <= 0.40:
+        arc_direction = "down"
+    else:
+        arc_direction = "neutral"
+
     remaining = list(tracks)
-    # Seed: prefer track_number == 1 or earliest in album
-    remaining.sort(key=lambda t: (t.track_number or 99))
+    # Seed selection: for ascending arcs start with the lowest-energy track
+    # (so there's room to build); for descending, start with highest energy;
+    # for neutral, prefer album opener (lowest track number) as before.
+    if arc_direction == "up":
+        remaining.sort(key=lambda t: t.energy)
+    elif arc_direction == "down":
+        remaining.sort(key=lambda t: -t.energy)
+    else:
+        remaining.sort(key=lambda t: (t.track_number or 99))
+
     seq = [remaining.pop(0)]
 
     while remaining:
         last = seq[-1]
         best_idx, best_score = 0, -float("inf")
+
         for i, candidate in enumerate(remaining):
+            # ── Base flow score (sonic distance) ───────────────────────────
             d2 = (
                 (last.energy    - candidate.energy)    ** 2 +
                 (last.valence   - candidate.valence)   ** 2 +
                 (last.intensity - candidate.intensity) ** 2
             )
-            score = 1.0 - math.sqrt(d2 / 3.0)
+            flow_score = 1.0 - math.sqrt(d2 / 3.0)
+
+            # ── Energy arc bonus (±0–0.15) ─────────────────────────────────
+            # Rewards movement in the right direction for the segment arc.
+            arc_bonus = 0.0
+            if arc_direction == "up" and candidate.energy > last.energy:
+                arc_bonus = min(0.15, (candidate.energy - last.energy) * 0.5)
+            elif arc_direction == "down" and candidate.energy < last.energy:
+                arc_bonus = min(0.15, (last.energy - candidate.energy) * 0.5)
+
+            # ── Album track-order bonus (0 or 0.10) ────────────────────────
+            # When the candidate is from the same album and comes later in
+            # track order, reward that (keeps album runs sounding sequential).
+            album_bonus = 0.0
+            if (
+                candidate.album and last.album
+                and candidate.album == last.album
+                and (candidate.track_number or 0) > (last.track_number or 0)
+            ):
+                album_bonus = 0.10
+
+            score = flow_score * 0.75 + arc_bonus + album_bonus
             if score > best_score:
                 best_score = score
                 best_idx   = i
+
         seq.append(remaining.pop(best_idx))
 
     return seq
@@ -413,8 +473,8 @@ class ArcOptimizer:
                 profile        = self.profile,
                 duration_budget_s = per_seg_budget,
             )
-            # Sequence within segment
-            seg_tracks = _greedy_sequence(seg_tracks)
+            # Sequence within segment — pass segment for energy arc shaping
+            seg_tracks = _greedy_sequence(seg_tracks, segment=seg)
             tracks_per_seg_obj[sid] = seg_tracks
             draft.tracks_per_segment[sid] = [t.id for t in seg_tracks]
 
