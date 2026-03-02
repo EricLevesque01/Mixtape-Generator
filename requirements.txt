@@ -1,0 +1,11 @@
+# Auto-generated from pyproject.toml — install with:
+#   pip install -r requirements.txt
+# Or install the package itself (recommended):
+#   pip install -e .
+pandas
+numpy
+pydantic
+pyyaml
+python-dotenv
+rich
+openai

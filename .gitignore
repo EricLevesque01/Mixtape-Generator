@@ -38,10 +38,8 @@ Thumbs.db
 htmlcov/
 
 # ============================================================
-# Data files  (generated locally — built by scripts/, not versioned)
-# These files are large and machine-specific. Regenerate with:
-#   scripts/scan_library.py         → data/library.json
-#   scripts/build_similarity_graph.py → data/similarity_graph.json
+# Data files  (machine-specific, not versioned)
+# Regenerate with the scripts/ tools if you have your own library.
 # ============================================================
 data/library.json
 data/library.json.bak*
@@ -49,14 +47,13 @@ data/similarity_graph.json
 
 # ============================================================
 # Generated eval / feedback data
-# These are runtime-generated, not source-controlled.
 # ============================================================
 data/eval_cases.jsonl
 data/feedback.jsonl
 eval_results*.jsonl
 
 # ============================================================
-# Exports (runtime output — not source)
+# Exports (runtime output)
 # ============================================================
 exports/
 
@@ -67,32 +64,25 @@ exports/
 logs/
 
 # ============================================================
-# Node / Frontend (if ever added)
+# Enrichment / data pipeline scripts (personal tooling, not app code)
 # ============================================================
-web/node_modules/
-web/dist/
+scripts/
 
 # ============================================================
-# Root-level scratch/debug helpers (created during dev, not app code)
+# Test fixtures / input files (not needed to run tests)
+# ============================================================
+tests/*.txt
+
+# ============================================================
+# Root-level scratch / debug helpers
 # ============================================================
 _check_imports.py
 _test_results.txt
 _gitfiles.txt
+run_interactive.ps1
 
 # ============================================================
-# Debug/one-off investigation scripts in tests/
-# Real tests live directly in tests/. Put throwaway scripts here.
-# ============================================================
-tests/debug/
-tests/analyze_*.py
-tests/check_*.py
-tests/debug_*.py
-tests/run_neither_test.py
-tests/spec_gap_analysis.py
-
-# ============================================================
-# Old specification drafts (non-canonical)
-# The canonical spec is SPECIFICATION.md
+# Old specification drafts
 # ============================================================
 SPECIFICATION_V*.md
 REACT_MIXTAPE_CURATOR_V5_ARCH_CONTRACT.md

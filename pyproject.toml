@@ -13,7 +13,6 @@ dependencies = [
     "pyyaml",
     "python-dotenv",
     "rich",
-    "spotipy",
     "openai",
 ]
 
