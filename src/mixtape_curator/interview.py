@@ -31,11 +31,11 @@ _VAGUE_KEYWORDS = {"idk", "unsure", "whatever", "doesn't matter", "not sure", "d
 
 # Aesthetic option hints shown to the user
 _AESTHETIC_QUESTION = (
-    "Close your eyes for a sec. Which scene fits you tonight?\n"
-    "  A) Dark room with headphones — just you and the sound\n"
-    "  B) Rooftop at sunset — golden hour vibes\n"
-    "  C) Sweaty basement show — packed, loud, alive\n"
-    "(Type A, B, or C — or describe your own)"
+    "What kind of environment fits where you're at right now?\n"
+    "  A) Headphones on, lights low — just you and the music\n"
+    "  B) Outside somewhere, golden hour kind of feeling\n"
+    "  C) Loud, packed room, everyone's feeling it\n"
+    "(A, B, C, or just describe it)"
 )
 
 _AESTHETIC_CHOICE_MAP: Dict[str, str] = {
@@ -80,10 +80,7 @@ class PersonaInterviewer:
         self.history = []
         self.state = PersonaState.OCCASION
         opening = (
-            "Hey — I'm building a mixtape for you, Eric-style.\n"
-            "No genre talk, no deep music knowledge needed. "
-            "Just tell me a bit about yourself and I'll handle the rest.\n\n"
-            "First up: What's the occasion? What are you doing while you listen?"
+            "What's the occasion? What are you doing while you listen?"
         )
         self._log_reply(opening)
         return opening
@@ -168,12 +165,8 @@ class PersonaInterviewer:
         self.confidence["intent"] += 0.25
         self.state = PersonaState.PERSONALITY
         reply = (
-            "Nice. Now — picture where you'd be in your element. "
-            "Which fits you more?\n"
-            "  1) You're the one introducing people to artists they've never heard of\n"
-            "  2) You know every word to every song in the room\n"
-            "  3) You like both — depends on the night\n"
-            "(Or just describe yourself in a few words — whatever feels right.)"
+            "Got it. Are you usually the person in the room playing stuff no one's heard, "
+            "or do you know every word to everything? Or somewhere in between?"
         )
         return reply, False
 
@@ -185,7 +178,7 @@ class PersonaInterviewer:
             self.persona.personality_words = ["adventurous", "curious", "creative"]
         elif text_lower.strip() in ("2", "2)") or "every word" in text_lower or "know every" in text_lower:
             self.persona.personality_words = ["nostalgic", "passionate", "loyal"]
-        elif text_lower.strip() in ("3", "3)") or "both" in text_lower or "depends" in text_lower:
+        elif text_lower.strip() in ("3", "3)") or "both" in text_lower or "depends" in text_lower or "between" in text_lower:
             self.persona.personality_words = ["open", "balanced", "social"]
         else:
             # Free-text: split on commas / 'and' / spaces — grab up to 5 words/phrases
@@ -193,7 +186,7 @@ class PersonaInterviewer:
             self.persona.personality_words = [w.strip() for w in words if len(w.strip()) > 1][:5]
         self.confidence["intent"] += 0.25
         self.state = PersonaState.MOOD_TODAY
-        reply = "Good. What's your mood or headspace RIGHT NOW — today, in this moment?"
+        reply = "How are you feeling right now?"
         return reply, False
 
     def _handle_mood(self, text: str) -> Tuple[str, bool]:
@@ -213,30 +206,22 @@ class PersonaInterviewer:
         self.confidence["cohesion"] = 1.0
         self.state = PersonaState.ERA_TASTE
         reply = (
-            "Last deep cut question: are you more drawn to nostalgia — things that feel "
-            "familiar and timeless — or are you chasing something you've never heard before?\n"
-            "(Or somewhere in between — that's valid too.)"
+            "Are you feeling more like familiar stuff right now — things you know — "
+            "or do you want to hear something new?"
         )
         return reply, False
 
     def _handle_era(self, text: str) -> Tuple[str, bool]:
         self.persona.era_preference = text
         self.state = PersonaState.WILDCARD
-        reply = (
-            "One more: what's the last thing you watched, read, or experienced that "
-            "genuinely stuck with you? (Movie, show, book, place — anything.)"
-        )
+        reply = "What's something you've been into lately — a show, album, place, anything?"
         return reply, False
 
     def _handle_wildcard(self, text: str) -> Tuple[str, bool]:
         self.persona.wildcard = text
         self.state = PersonaState.CONFIRMATION
         summary = self._generate_summary()
-        reply = (
-            f"Alright, I've got a pretty clear picture of you. Here's what I'm working with:\n\n"
-            f"{summary}\n\n"
-            "Ready for me to build your tape? [yes / no]"
-        )
+        reply = f"{summary}\n\nSound right? [yes / no]"
         return reply, False
 
     def _handle_confirmation(self, text: str) -> Tuple[str, bool]:
@@ -262,38 +247,30 @@ class PersonaInterviewer:
     def _generate_summary(self) -> str:
         up = self.persona.to_user_profile()
         e_label = (
-            "High energy" if up.targets.energy >= 0.70
-            else "Low / relaxed" if up.targets.energy <= 0.35
-            else "Moderate energy"
+            "high energy" if up.targets.energy >= 0.70
+            else "pretty relaxed" if up.targets.energy <= 0.35
+            else "somewhere in the middle"
         )
         v_label = (
-            "warm and bright" if up.targets.valence >= 0.60
-            else "dark and heavy" if up.targets.valence <= 0.30
-            else "balanced"
-        )
-        u_label = (
-            "cohesive and focused" if up.targets.uniformity >= 0.60
-            else "adventurous and eclectic" if up.targets.uniformity <= 0.25
-            else "mixed"
+            "upbeat and bright" if up.targets.valence >= 0.60
+            else "darker, heavier" if up.targets.valence <= 0.30
+            else "pretty balanced"
         )
         era_label = (
-            "leaning classic / familiar" if up.targets.familiarity >= 0.65
-            else "leaning new discoveries" if up.targets.familiarity <= 0.35
-            else "a mix of old and new"
+            "familiar stuff, things you know" if up.targets.familiarity >= 0.65
+            else "new discoveries" if up.targets.familiarity <= 0.35
+            else "mix of old and new"
         )
-        desc_str = ", ".join(up.target_descriptors[:6]) if up.target_descriptors else "none yet"
+        occasion = self.persona.occasion or "just listening"
+        mood = self.persona.mood_today or "neutral"
+        aesthetic = self.persona.aesthetic_choice or "—"
 
         return (
-            f"  Occasion:    {self.persona.occasion or '—'}\n"
-            f"  Vibe words:  {', '.join(self.persona.personality_words) or '—'}\n"
-            f"  Mood:        {self.persona.mood_today or '—'}\n"
-            f"  Aesthetic:   {self.persona.aesthetic_choice or '—'}\n"
-            f"  Era lean:    {era_label}\n"
-            f"  ─────────────────────────────\n"
-            f"  Energy:      {e_label}  ({up.targets.energy:.0%})\n"
-            f"  Tone:        {v_label}\n"
-            f"  Flow style:  {u_label}\n"
-            f"  Textures:    {desc_str}"
+            f"  Occasion: {occasion}\n"
+            f"  Mood: {mood}\n"
+            f"  Setting: {aesthetic}\n"
+            f"  Era: {era_label}\n"
+            f"  Energy: {e_label}, {v_label}"
         )
 
     def _is_vague(self, text: str) -> bool:
@@ -307,12 +284,12 @@ class PersonaInterviewer:
 
     def _rephrase_current(self) -> str:
         rephrases = {
-            PersonaState.OCCASION:    "No worries — even something like 'just chilling at home' or 'late-night drive' works. What are you up to?",
-            PersonaState.PERSONALITY: "Think of it this way: pick one word you'd use to describe your music taste, and two more about your vibe in general.",
-            PersonaState.MOOD_TODAY:  "Even 'tired but wired' counts. How are you feeling today?",
-            PersonaState.AESTHETIC:   "Just go with A, B, or C — or say whatever feels right.",
-            PersonaState.ERA_TASTE:   "Do you prefer hearing songs you know and love, or finding something totally new?",
-            PersonaState.WILDCARD:    "Anything at all — a film, a trip, a song you heard recently. What's on your mind?",
+            PersonaState.OCCASION:    "Even something like 'driving around' or 'just hanging at home' works.",
+            PersonaState.PERSONALITY: "Think about it like this — do you usually put people on to new music, or are you the one who knows every word?",
+            PersonaState.MOOD_TODAY:  "Even vague is fine. Tired? Restless? Good? Something in between?",
+            PersonaState.AESTHETIC:   "Just go with A, B, or C if that's easier.",
+            PersonaState.ERA_TASTE:   "Are you more in the mood for songs you already know, or something you've never heard?",
+            PersonaState.WILDCARD:    "Anything — a show you're watching, somewhere you went, something you heard recently.",
         }
         return rephrases.get(self.state, "Can you say a bit more?")
 
