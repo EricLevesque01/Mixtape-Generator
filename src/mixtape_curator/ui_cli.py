@@ -121,48 +121,41 @@ class MixtapeCLI(cmd.Cmd):
         else:
             persona = None
 
+        # Cap duration at 1h20m (4800s)
+        MAX_DURATION_S = 4800
+        duration_s = min(profile.duration_target_s or config.duration_target_s, MAX_DURATION_S)
+
         retry_count = 0
         max_retries = 3
 
         while retry_count < max_retries:
-            print(f"\n--- Round {retry_count + 1} / {max_retries} ---")
+            console.print()
+            console.print("[dim]Building your mixtape...[/dim]")
 
             # ----------------------------------------------------------------
             # PHASE B — Blueprint (LLM Creative Director)
             # ----------------------------------------------------------------
-            print("▶ Generating narrative blueprint...")
             llm_provider = self._get_llm_provider()
             bp_gen = build_blueprint_generator(llm_provider)
-            persona_obj = persona or profile   # fallback if already a UserProfile
+            persona_obj = persona or profile
             blueprint = bp_gen.generate(
-                persona     = persona_obj if hasattr(persona_obj, 'confidence') else _FakePersona(profile),
-                duration_target_s = profile.duration_target_s or config.duration_target_s,
-            )
-            console.print(
-                f"  [dim]Blueprint:[/dim] [bold]{len(blueprint.segments)} segments[/bold] — "
-                f"[italic]{blueprint.narrative_arc[:80]}...[/italic]"
+                persona           = persona_obj if hasattr(persona_obj, 'confidence') else _FakePersona(profile),
+                duration_target_s = duration_s,
             )
 
             # ----------------------------------------------------------------
             # PHASE C — Segment Trellis (Deterministic Algorithm)
             # ----------------------------------------------------------------
-            print("▶ Building segment trellis...")
             trellis = build_trellis(blueprint, profile)
-            if trellis.undersized_segments:
-                console.print(
-                    f"  [yellow]Warning:[/yellow] {len(trellis.undersized_segments)} segment(s) "
-                    f"have fewer than 20 candidates: {trellis.undersized_segments}"
-                )
 
             # ----------------------------------------------------------------
             # PHASE D — Arc Optimization (A/B Dual Draft)
             # ----------------------------------------------------------------
-            print("▶ Optimising arc (A/B)...")
             optimizer = ArcOptimizer(profile=profile)
             draft_a, draft_b = optimizer.optimize(
                 trellis            = trellis,
                 blueprint_segments = blueprint.segments,
-                duration_target_s  = profile.duration_target_s or config.duration_target_s,
+                duration_target_s  = duration_s,
             )
 
             # Handle failure modes (§10)
@@ -184,9 +177,8 @@ class MixtapeCLI(cmd.Cmd):
             # ----------------------------------------------------------------
             # PHASE E — Refinement (LLM, bounded tools)
             # ----------------------------------------------------------------
-            print("▶ Agent refining playlist A...")
             def ask_user(question):
-                print(f"\n[Agent]: {question}")
+                print(f"\n{question}")
                 return input("> ")
 
             react_agent = ReActAgent(llm=llm_provider, user_callback=ask_user)
@@ -195,13 +187,11 @@ class MixtapeCLI(cmd.Cmd):
             # ----------------------------------------------------------------
             # Display
             # ----------------------------------------------------------------
-            console.print("\n[bold green]=== GENERATION COMPLETE ===[/bold green]")
             self._display_arc_draft(playlist_a, draft_a, blueprint, "A")
             self._display_arc_draft(playlist_b, draft_b, blueprint, "B")
 
-            # Show rationale if available
             if playlist_a.rationale:
-                console.print(f"\n[bold cyan]Curator Rationale:[/bold cyan] {playlist_a.rationale}")
+                console.print(f"\n[italic dim]{playlist_a.rationale}[/italic dim]")
 
             # ----------------------------------------------------------------
             # Selection loop
@@ -249,56 +239,33 @@ class MixtapeCLI(cmd.Cmd):
 
 
     def _display_arc_draft(self, playlist, draft, blueprint, label: str):
-        """Display a playlist with segment structure using Rich."""
-        score  = playlist.scores.total
-        if score >= 0.80:
-            score_style = "bold green"
-        elif score >= 0.60:
-            score_style = "bold yellow"
-        else:
-            score_style = "bold red"
-
-        # Build segment lookup: track_id -> segment theme
-        seg_by_track = {}
-        seg_map = {s.segment_id: s for s in blueprint.segments}
-        for sid, tids in (draft.tracks_per_segment if draft else {}).items():
-            seg = seg_map.get(sid)
-            theme = seg.theme[:30] if seg else sid
-            for tid in tids:
-                seg_by_track[tid] = theme
+        """Display a playlist as a clean tracklist."""
+        total_s = playlist.total_duration_s
+        hrs  = total_s // 3600
+        mins = (total_s % 3600) // 60
+        dur_str = f"{hrs}h {mins}m" if hrs > 0 else f"{mins}m"
 
         table = Table(
-            title       = f"Playlist {label}",
+            title       = f"Mix {label}",
             title_style = "bold cyan",
-            caption     = (
-                f"Score: [{score_style}]{score:.2f}[/{score_style}] | "
-                f"{len(playlist.track_ids)} tracks | "
-                f"{playlist.total_duration_s // 60}m {playlist.total_duration_s % 60}s | "
-                f"Boundary flow: {draft.boundary_flow_score:.2f}"
-            ) if draft else f"Playlist {label}",
+            caption     = f"{len(playlist.track_ids)} tracks  ·  {dur_str}",
             show_lines  = False,
             pad_edge    = True,
         )
-        table.add_column("#",  style="dim", width=3, justify="right")
-        table.add_column("Artist",  style="cyan",   max_width=22)
-        table.add_column("Title",   max_width=28)
-        table.add_column("Dur",     style="dim",    width=5, justify="right")
-        table.add_column("Segment", style="magenta", max_width=22)
-        table.add_column("Why it fits", style="italic", max_width=40)
+        table.add_column("#",       style="dim",  width=3, justify="right")
+        table.add_column("Artist",  style="cyan", max_width=24)
+        table.add_column("Title",   max_width=34)
+        table.add_column("Dur",     style="dim",  width=5, justify="right")
 
         for i, tid in enumerate(playlist.track_ids):
             t = library.get_track(tid)
             if t:
-                dur_str  = f"{t.duration_s // 60}:{t.duration_s % 60:02d}"
-                note     = playlist.track_notes.get(tid, "Fits the journey.")
-                segment  = seg_by_track.get(tid, "")
+                d = t.duration_s
                 table.add_row(
                     str(i + 1),
-                    t.artist[:22],
-                    t.title[:28],
-                    dur_str,
-                    segment[:22],
-                    note[:40],
+                    t.artist[:24],
+                    t.title[:34],
+                    f"{d // 60}:{d % 60:02d}",
                 )
 
         console.print()

@@ -41,7 +41,7 @@ class PersonaState(Enum):
 _VAGUE_KEYWORDS = {"idk", "unsure", "whatever", "doesn't matter", "not sure", "dunno", "n/a"}
 
 _INTRO = (
-    "Before I build your mixtape, I want a sense of the moment. "
+    "Hello — before I build your mixtape, I want a sense of the moment. "
     "A few quick questions will help me map where you are so the final mix "
     "feels cohesive, intentional, and specific to today."
 )

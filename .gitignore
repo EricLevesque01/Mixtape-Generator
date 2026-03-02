@@ -1,51 +1,80 @@
+# ============================================================
 # Python
+# ============================================================
 __pycache__/
 *.py[cod]
 *.egg-info/
 *.egg
 build/
 .eggs/
-
-# Environment
-.env
-!.env.example
 .venv/
 venv/
 env/
 
-# IDE
+# ============================================================
+# Environment & secrets
+# ============================================================
+.env
+!.env.example
+.spotify_token_cache
+
+# ============================================================
+# IDE & OS
+# ============================================================
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# Generated / ephemeral
-eval_results*.jsonl
-exports/
-*.bak
-*.log
-logs/
-
-# Node / Frontend
-web/node_modules/
-web/dist/
-
-# Caches
-.ruff_cache/
-.mypy_cache/
-.pytest_cache/
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Large data files (generated locally, not versioned)
+# ============================================================
+# Caches & test artifacts
+# ============================================================
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ============================================================
+# Data files  (generated locally — built by scripts/, not versioned)
+# These files are large and machine-specific. Regenerate with:
+#   scripts/scan_library.py         → data/library.json
+#   scripts/build_similarity_graph.py → data/similarity_graph.json
+# ============================================================
 data/library.json
+data/library.json.bak*
 data/similarity_graph.json
 
-# Spotify OAuth token cache
-.spotify_token_cache
+# ============================================================
+# Generated eval / feedback data
+# These are runtime-generated, not source-controlled.
+# ============================================================
+data/eval_cases.jsonl
+data/feedback.jsonl
+eval_results*.jsonl
 
-# Temp / debug scripts
+# ============================================================
+# Exports (runtime output — not source)
+# ============================================================
+exports/
+
+# ============================================================
+# Logs
+# ============================================================
+*.log
+logs/
+
+# ============================================================
+# Node / Frontend (if ever added)
+# ============================================================
+web/node_modules/
+web/dist/
+
+# ============================================================
+# Root-level scratch/debug helpers (created during dev, not app code)
+# ============================================================
 _check_imports.py
 _test_results.txt
+_gitfiles.txt
