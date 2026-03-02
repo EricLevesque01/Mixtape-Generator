@@ -7,7 +7,6 @@ from .arc_optimizer import ArcOptimizer, arc_draft_to_playlist
 from .diagnostics import RelaxationMenu
 from .library import library
 from .exporter import exporter
-from .spotify_export import spotify_exporter
 from .config import config
 from .llm.providers.local import MockLLM
 import time
@@ -18,7 +17,7 @@ console = Console()
 
 def typewriter_print(text: str, delay: float = 0.01):
     """Prints text one character at a time for better UX."""
-    print("AI: ", end="", flush=True)
+    print("Curator: ", end="", flush=True)
     # Split by lines to preserve structure nicely
     lines = text.split('\n')
     for i, line in enumerate(lines):
@@ -276,19 +275,7 @@ class MixtapeCLI(cmd.Cmd):
     def _export(self, playlist, profile, suffix):
         print("\n=== WRITING FILES ===")
         base = f"mixtape_for_{profile.recipient.replace(' ', '_')}_{suffix}"
-        
-        # 1. Local Export
         print(exporter.export_playlist(playlist, base))
-        
-        # 2. Spotify Export (Optional)
-        if config.spotify_client_id and config.spotify_client_secret:
-            choice = input("Export to Spotify? (y/N): ").strip().lower()
-            if choice == 'y':
-                print("Connecting to Spotify...")
-                result = spotify_exporter.export_playlist(playlist, base.replace('_', ' '))
-                print(result)
-        else:
-            print("(Spotify export skipped: credentials not set)")
 
     def do_quit(self, arg):
         """Exit the program."""

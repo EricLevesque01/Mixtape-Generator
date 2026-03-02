@@ -321,8 +321,9 @@ class ArcOptimizer:
             if a_set == b_set:
                 continue
             jaccard = len(a_set & b_set) / max(len(a_set | b_set), 1)
-            if jaccard <= 0.8:
-                return self._build_draft("B", combo_ids, seg_map, trellis, target, cap)
+            if jaccard <= 0.50:   # §7: tightened from 0.80 → genuinely different mixes
+                return self._build_draft("B", combo_ids, seg_map, trellis, target, cap,
+                                         avoid_track_ids=set(draft_a.global_order))
 
         # Fallback: force at least one segment swap
         logger.warning(
@@ -355,7 +356,8 @@ class ArcOptimizer:
         swap_in  = outside_a[0]
         new_ids  = a_ids[:-1] + [swap_in]
 
-        draft_b = self._build_draft("B", new_ids, seg_map, trellis, target, cap)
+        draft_b = self._build_draft("B", new_ids, seg_map, trellis, target, cap,
+                                     avoid_track_ids=set(draft_a.global_order) if hasattr(draft_a, 'global_order') else set())
         a_set = set(a_ids)
         b_set = set(new_ids)
         jaccard = len(a_set & b_set) / max(len(a_set | b_set), 1)
@@ -374,6 +376,7 @@ class ArcOptimizer:
         trellis: SegmentTrellis,
         target: int,
         cap: int,
+        avoid_track_ids: Optional[Set[str]] = None,
     ) -> ArcDraft:
         """
         Assemble a complete ArcDraft: fill tracks per segment, sequence them,
@@ -396,6 +399,13 @@ class ArcOptimizer:
             if seg is None:
                 continue
             pool = trellis.segment_pools.get(sid, [])
+            # §7 B-distinctness: push tracks already used in Draft A to the back
+            # so Draft B gets first pick of everything A didn't select.
+            if avoid_track_ids:
+                pool = (
+                    [tid for tid in pool if tid not in avoid_track_ids] +
+                    [tid for tid in pool if tid in avoid_track_ids]
+                )
             seg_tracks = _fill_segment_tracks(
                 segment        = seg,
                 candidate_ids  = pool,

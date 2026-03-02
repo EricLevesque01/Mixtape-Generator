@@ -263,7 +263,7 @@ class PersonaInterviewer:
         self.confidence["cohesion"] = 1.0
 
         summary = self._generate_summary()
-        return f"{ack}\n\n{summary}\n\nSound right? [yes / no]", False
+        return f"{ack}\n\n{summary}\n\nDoes that feel right? [yes / no]", False
 
     # ------------------------------------------------------------------
     # Confirmation
@@ -288,26 +288,39 @@ class PersonaInterviewer:
 
     def _generate_summary(self) -> str:
         up = self.persona.to_user_profile()
-        e_label = (
-            "high energy" if up.targets.energy >= 0.70
-            else "pretty relaxed" if up.targets.energy <= 0.35
-            else "somewhere in the middle"
+        p  = self.persona
+
+        # Energy read
+        energy_read = (
+            "something that moves" if up.targets.energy >= 0.70
+            else "something slow and low-lit" if up.targets.energy <= 0.35
+            else "a middle-ground pace"
         )
-        v_label = (
-            "upbeat and bright" if up.targets.valence >= 0.60
-            else "darker, more introspective" if up.targets.valence <= 0.30
-            else "pretty balanced"
+
+        # Tone / valence slant
+        tone_slant = (
+            "leaning bright" if up.targets.valence >= 0.60
+            else "leaning darker" if up.targets.valence <= 0.30
+            else "tonally in-between"
         )
-        era_label = (
-            "familiar songs you already know" if up.targets.familiarity >= 0.65
-            else "new discoveries" if up.targets.familiarity <= 0.35
-            else "mix of familiar and new"
+
+        # Era slant
+        era_line = (
+            "weighted toward stuff you already know" if up.targets.familiarity >= 0.65
+            else "mostly new territory" if up.targets.familiarity <= 0.35
+            else "a balance of familiar and unfamiliar"
         )
+
+        # Aesthetic / space
+        space = p.aesthetic_choice or "wherever you are"
+
+        # Wildcard texture
+        texture_line = f" The texture you're after: {p.wildcard}." if p.wildcard else ""
+
         return (
-            f"  Mood: {self.persona.mood_today or 'neutral'}\n"
-            f"  Listening mode: {self.persona.aesthetic_choice or '—'}\n"
-            f"  Era: {era_label}\n"
-            f"  Energy: {e_label}, {v_label}"
+            f"So — {energy_read}, {tone_slant}, {era_line}. "
+            f"Feels like a {space} kind of listen."
+            f"{texture_line}"
         )
 
     def _is_vague(self, text: str) -> bool:

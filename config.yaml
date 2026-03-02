@@ -8,7 +8,7 @@ track_max_duration_s: 600     # Skip tracks longer than 10 minutes
 
 music_library_path: "C:\\Users\\ericl\\Music\\tPod V3\\iTunes Media\\Music"
 
-max_tracks_per_artist: 2
+max_tracks_per_artist: 1
 
 # Interview
 max_questions: 10
@@ -33,10 +33,10 @@ max_ab_rounds: 3
 
 # Scoring weights (v2.1.1) — RYM ratings heavily weighted
 w_fit: 0.30
-w_flow: 0.20
+w_flow: 0.15
 w_variety: 0.10
 w_access: 0.15
-w_quality: 0.25
+w_quality: 0.30
 
 # Base-and-Branch behavior
 branch_swap_min: 2

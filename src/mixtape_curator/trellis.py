@@ -166,7 +166,16 @@ def _score_candidate(track: Track, segment: Segment, profile: UserProfile) -> fl
         + track.spotify_affinity * 0.15
     )
 
-    return 0.70 * segment_fit + 0.30 * quality
+    base_score = 0.70 * segment_fit + 0.30 * quality
+
+    # Soft penalty: tracks with a known RYM rating below 3/5 (< 0.60)
+    # are penalised by 40%, pushing them to the back of the pool without
+    # hard-excluding them. Unrated tracks (0.0) are not penalised.
+    LOW_RATING_THRESHOLD = 0.60
+    if track.rating and track.rating < LOW_RATING_THRESHOLD:
+        base_score *= 0.60
+
+    return base_score
 
 
 
