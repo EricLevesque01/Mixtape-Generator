@@ -248,7 +248,7 @@ class MixtapeCLI(cmd.Cmd):
         # Build segment lookup: track_id -> segment theme
         seg_by_track = {}
         seg_map = {s.segment_id: s for s in blueprint.segments}
-        for sid, tids in (draft.tracks_per_segment.items() if draft else {}).items():
+        for sid, tids in (draft.tracks_per_segment if draft else {}).items():
             seg = seg_map.get(sid)
             theme = seg.theme[:30] if seg else sid
             for tid in tids:
