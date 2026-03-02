@@ -1,3 +1,0 @@
-{"session_id": "demo-1", "round": 1, "choice": "neither", "feedback": "Too much pop, I wanted more indie rock", "profile_before": {"target_genres": ["Pop"], "targets": {"energy": 0.7}}, "profile_after": {"target_genres": ["Indie Rock"], "exclude_genres": ["Pop"], "targets": {"energy": 0.7}}}
-{"session_id": "demo-1", "round": 2, "choice": "A", "feedback": "This is exactly what I wanted", "profile_before": {"target_genres": ["Indie Rock"], "targets": {"energy": 0.7}}, "score_a": 0.85, "score_b": 0.72}
-{"session_id": "demo-2", "round": 1, "choice": "B", "feedback": "B had better flow, A was too jumpy", "profile_before": {"target_genres": ["Jazz", "Soul"], "targets": {"energy": 0.4}}, "score_a": 0.78, "score_b": 0.82}

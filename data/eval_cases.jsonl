@@ -1,8 +1,0 @@
-{"id": "case_01", "description": "80s Pop Workout", "recipient": "Gym Buddy", "genres": ["Pop", "New Wave"], "targets": {"energy": 0.8, "valence": 0.7, "uniformity": 0.7}}
-{"id": "case_02", "description": "Chill Sunday", "recipient": "Partner", "genres": ["Ambient", "Jazz"], "targets": {"energy": 0.2, "valence": 0.4, "uniformity": 0.3}}
-{"id": "case_03", "description": "Party Mix", "recipient": "Party Crowd", "genres": ["Dance-Pop", "House"], "targets": {"energy": 0.9, "valence": 0.9, "uniformity": 0.5}}
-{"id": "case_04", "description": "Study Focus", "recipient": "Self", "genres": ["Classical", "Lofi"], "targets": {"energy": 0.3, "valence": 0.5, "intensity": 0.2, "uniformity": 0.8}}
-{"id": "case_05", "description": "Short Mix", "recipient": "Self", "genres": ["Indie Rock"], "targets": {"energy": 0.5, "valence": 0.5, "uniformity": 0.7}, "duration_target_s": 1800}
-{"id": "case_06", "description": "Eclectic Journey", "recipient": "Road Trip Crew", "genres": ["Rock", "Jazz", "Electronic", "Folk"], "targets": {"energy": 0.6, "valence": 0.5, "uniformity": 0.2}}
-{"id": "case_07", "description": "Exclusion Heavy", "recipient": "Picky Friend", "genres": ["Pop"], "targets": {"energy": 0.6, "valence": 0.6, "uniformity": 0.6}, "exclude_artists": ["Ed Sheeran", "Taylor Swift"], "exclude_genres": ["Country"]}
-{"id": "case_08", "description": "Anchor Artists", "recipient": "Best Friend", "genres": ["Indie Folk", "Singer-Songwriter"], "targets": {"energy": 0.4, "valence": 0.5, "uniformity": 0.6}, "must_include_artists": ["Bon Iver", "Phoebe Bridgers"]}

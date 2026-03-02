@@ -78,3 +78,21 @@ web/dist/
 _check_imports.py
 _test_results.txt
 _gitfiles.txt
+
+# ============================================================
+# Debug/one-off investigation scripts in tests/
+# Real tests live directly in tests/. Put throwaway scripts here.
+# ============================================================
+tests/debug/
+tests/analyze_*.py
+tests/check_*.py
+tests/debug_*.py
+tests/run_neither_test.py
+tests/spec_gap_analysis.py
+
+# ============================================================
+# Old specification drafts (non-canonical)
+# The canonical spec is SPECIFICATION.md
+# ============================================================
+SPECIFICATION_V*.md
+REACT_MIXTAPE_CURATOR_V5_ARCH_CONTRACT.md
