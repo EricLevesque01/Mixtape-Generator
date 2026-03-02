@@ -71,17 +71,29 @@ class _SimilarityGraph:
         try:
             with open(path, "r", encoding="utf-8") as f:
                 raw = json.load(f)
-            # Support two formats:
-            #  {track_id: {neighbour_id: weight}}  (preferred)
-            #  {track_id: [neighbour_id, ...]}       (legacy list)
-            for tid, neighbours in raw.items():
-                if isinstance(neighbours, dict):
+
+            # Actual file format produced by build_similarity_graph.py:
+            # { "_meta": {...}, "tracks": { track_id: { "neighbors": [{id, score, ...}] } } }
+            tracks_data = raw.get("tracks", raw)   # fall back to root if no "tracks" key
+
+            for tid, entry in tracks_data.items():
+                if tid == "_meta":
+                    continue
+                neighbours = entry.get("neighbors", entry) if isinstance(entry, dict) else entry
+                if isinstance(neighbours, list):
+                    # Each neighbour is a dict with at least "id" and "score"
+                    self._edges[tid] = {
+                        n["id"]: n.get("score", 1.0)
+                        for n in neighbours
+                        if isinstance(n, dict) and "id" in n
+                    }
+                elif isinstance(neighbours, dict):
                     self._edges[tid] = neighbours
-                elif isinstance(neighbours, list):
-                    self._edges[tid] = {n: 1.0 for n in neighbours}
+
             logger.info("Similarity graph loaded: %d nodes.", len(self._edges))
         except Exception as exc:
             logger.warning("Failed to load similarity_graph.json: %s", exc)
+
 
     def get_neighbours(self, track_id: str, top_k: int = 10) -> List[Tuple[str, float]]:
         """Return up to top_k neighbours sorted by descending edge weight."""
@@ -104,38 +116,58 @@ similarity_graph = _SimilarityGraph  # accessed via .instance()
 
 def _score_candidate(track: Track, segment: Segment, profile: UserProfile) -> float:
     """
-    Relevance score for a candidate track against a segment's targets.
-    Higher = better fit. Used to rank the candidate pool.
+    FP-4 — Relevance score for ranking a candidate within a segment pool.
+
+    segment_candidate_score = 0.70 * segment_fit + 0.30 * quality(track)
+
+    segment_fit: audio target alignment + semantic (genre/descriptor) alignment
+    quality:     rating, mix_prominence, liked status (mirrors §5 quality score)
     """
-    score = 0.0
-
-    # 1. Audio target alignment (if specified)
+    # --- Segment fit (audio) ---
+    audio_fit = 0.0
     at = segment.audio_targets or {}
-    for feat, target_val in at.items():
-        actual = getattr(track, feat, None)
-        if actual is not None:
-            delta = abs(actual - target_val)
-            score += 1.0 - delta   # max contribution 1.0 per feature
+    if at:
+        feature_scores = []
+        for feat, target_val in at.items():
+            actual = getattr(track, feat, None)
+            if actual is not None:
+                feature_scores.append(1.0 - abs(actual - target_val))
+        if feature_scores:
+            audio_fit = sum(feature_scores) / len(feature_scores)
+    else:
+        audio_fit = 1.0   # no audio constraint → full credit
 
-    # 2. Semantic target alignment
+    # --- Segment fit (semantic: genres + descriptors, capped per FP-6) ---
+    semantic_fit = 0.0
     st = segment.semantic_targets or {}
-    track_genres = set(track.rym_data.primary_genres + track.rym_data.subgenres)
-    track_descs  = set(track.rym_data.descriptors)
+    track_genres = {g.lower() for g in (track.rym_data.primary_genres + track.rym_data.subgenres)}
+    track_descs  = {d.lower() for d in track.rym_data.descriptors[:5]}  # FP-6: top-5 only
 
-    for g in st.get("genres", []):
-        if g.lower() in {x.lower() for x in track_genres}:
-            score += 1.5
-    for d in st.get("descriptors", []):
-        if d.lower() in {x.lower() for x in track_descs}:
-            score += 0.75
+    target_genres = {g.lower() for g in st.get("genres", [])}
+    target_descs  = {d.lower() for d in st.get("descriptors", [])}
 
-    # 3. RYM rating (quality signal)
-    score += track.rating * 1.5
+    if target_genres:
+        semantic_fit += 1.0 if not target_genres.isdisjoint(track_genres) else 0.0
+    else:
+        semantic_fit += 1.0
 
-    # 4. Mix prominence signal (social proof from existing mixes)
-    score += track.mix_prominence * 0.5
+    if target_descs:
+        desc_matches = len(track_descs & target_descs)
+        semantic_fit += min(0.15, desc_matches * 0.05)   # FP-6 cap
 
-    return score
+    segment_fit = (audio_fit + semantic_fit) / 2.0
+
+    # --- Track quality (§5) ---
+    liked = 1.0 if (track.liked or track.album_loved) else 0.0
+    quality = (
+        track.rating          * 0.30
+        + liked               * 0.30
+        + track.mix_prominence * 0.25
+        + track.spotify_affinity * 0.15
+    )
+
+    return 0.70 * segment_fit + 0.30 * quality
+
 
 
 # ---------------------------------------------------------------------------
