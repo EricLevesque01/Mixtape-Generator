@@ -27,32 +27,56 @@ MAIN_MODEL  = "gpt-4o"        # final interpretation
 
 
 class PersonaState(Enum):
-    Q1_MOOD      = auto()   # energy + emotional state (Russell + PANAS)
-    Q2_SOUND     = auto()   # sonic preference (MUSIC Model)
-    Q3_LISTENING = auto()   # listening motivation (ISMUS)
-    Q4_FAMILIAR  = auto()   # familiarity preference (Big Five × Music)
-    Q5_WILDCARD  = auto()   # freeform cultural cue
+    Q1_TONE      = auto()   # overall day tone
+    Q2_ENERGY    = auto()   # energy level right now
+    Q3_ATTENTION = auto()   # what attention is anchored to
+    Q4_SPACE     = auto()   # alone or shared
+    Q5_FLOW      = auto()   # focused/cohesive vs eclectic
+    Q6_DIRECTION = auto()   # stay in feeling, lean in, or shift
+    Q7_TEXTURE   = auto()   # atmospheric texture
     CONFIRMATION = auto()
     COMPLETED    = auto()
 
 
-_VAGUE_KEYWORDS = {"idk", "unsure", "whatever", "doesn't matter", "not sure", "dunno", "n/a", "nothing"}
+_VAGUE_KEYWORDS = {"idk", "unsure", "whatever", "doesn't matter", "not sure", "dunno", "n/a"}
+
+_INTRO = (
+    "Before I build your mixtape, I want a sense of the moment. "
+    "A few quick questions will help me map where you are so the final mix "
+    "feels cohesive, intentional, and specific to today."
+)
 
 # ── Question prompts ─────────────────────────────────────────────────────────
 _QUESTIONS = {
-    PersonaState.Q1_MOOD:      "How are you feeling right now — energy and mood?",
-    PersonaState.Q2_SOUND:     "What kind of music sounds right for that?",
-    PersonaState.Q3_LISTENING: "Are you planning to really sit with the music, or more as background while you do something else?",
-    PersonaState.Q4_FAMILIAR:  "Are you in the mood for songs that already feel familiar, or open to discovering something you haven't heard?",
-    PersonaState.Q5_WILDCARD:  "Anything you've been into lately — a show, album, place, feeling — that might color this? (Or just skip it.)",
+    PersonaState.Q1_TONE: (
+        "How would you describe the overall tone of your day so far?\n"
+        "(ex. light, heavy, steady, tense, smooth, chaotic — or however you'd put it.)"
+    ),
+    PersonaState.Q2_ENERGY: (
+        "How does your energy feel right now — settled, restless, steady, something else?\n"
+        "(ex. calm, buzzing, drained, focused, wired, slow.)"
+    ),
+    PersonaState.Q3_ATTENTION: (
+        "What's your attention anchored to at the moment?\n"
+        "(ex. deep focus, background tasks, problem-solving, unwinding, nothing in particular.)"
+    ),
+    PersonaState.Q4_SPACE: "Is this space just yours right now, or shared with others?",
+    PersonaState.Q5_FLOW: "Are you in the mood for something focused and cohesive, or something more eclectic and wide-ranging?",
+    PersonaState.Q6_DIRECTION: "Do you want to stay in this feeling, lean into it, or head somewhere different?",
+    PersonaState.Q7_TEXTURE: (
+        "If this moment had a texture or atmosphere, what would it be like?\n"
+        "(ex. soft, sharp, warm, cool, pressurized, open, overcast, bright, still, electric — or something else entirely.)"
+    ),
 }
 
 _QUESTION_ORDER = [
-    PersonaState.Q1_MOOD,
-    PersonaState.Q2_SOUND,
-    PersonaState.Q3_LISTENING,
-    PersonaState.Q4_FAMILIAR,
-    PersonaState.Q5_WILDCARD,
+    PersonaState.Q1_TONE,
+    PersonaState.Q2_ENERGY,
+    PersonaState.Q3_ATTENTION,
+    PersonaState.Q4_SPACE,
+    PersonaState.Q5_FLOW,
+    PersonaState.Q6_DIRECTION,
+    PersonaState.Q7_TEXTURE,
 ]
 
 # ── System prompt for cheap model (per-turn ack) ─────────────────────────────
@@ -95,7 +119,7 @@ class PersonaInterviewer:
         self.history: List[Dict[str, str]] = []
         self.persona = PersonaProfile()
         self.completed = False
-        self.state = PersonaState.Q1_MOOD
+        self.state = PersonaState.Q1_TONE
         self._off_topic_count = 0
         self._off_topic_max = config.get("off_topic_max", 3)
         self.raw_answers: Dict[str, str] = {}   # state_name → user answer
@@ -117,13 +141,9 @@ class PersonaInterviewer:
 
     def start(self) -> str:
         self.history = []
-        self.state = PersonaState.Q1_MOOD
+        self.state = PersonaState.Q1_TONE
         self.raw_answers = {}
-        opening = (
-            "Hey — I'll ask you 5 quick questions to get a read on you, "
-            "then build a mixtape from Eric's library that fits.\n\n"
-            + _QUESTIONS[PersonaState.Q1_MOOD]
-        )
+        opening = _INTRO + "\n\n" + _QUESTIONS[PersonaState.Q1_TONE]
         self._log_reply(opening)
         return opening
 
@@ -157,7 +177,7 @@ class PersonaInterviewer:
         if self.state in (PersonaState.CONFIRMATION, PersonaState.COMPLETED):
             return self._handle_confirmation(user_input)
 
-        if self._is_vague(user_input) and self.state != PersonaState.Q5_WILDCARD:
+        if self._is_vague(user_input) and self.state != PersonaState.Q7_TEXTURE:
             self._off_topic_count += 1
             if self._off_topic_count >= self._off_topic_max:
                 return self._skip_current(), False
@@ -233,7 +253,7 @@ class PersonaInterviewer:
                 logger.warning("Main model interpretation failed: %s", e)
 
         if persona_data:
-            self.persona = _json_to_persona(persona_data, self.raw_answers.get("Q5_WILDCARD", ""))
+            self.persona = _json_to_persona(persona_data, self.raw_answers.get("Q7_TEXTURE", ""))
         else:
             # Keyword fallback
             self.persona = _keyword_interpret(self.raw_answers)
@@ -256,9 +276,9 @@ class PersonaInterviewer:
             self.state = PersonaState.COMPLETED
             return "Let's go. Pulling tracks now...", True
         elif "no" in tl:
-            self.state = PersonaState.Q1_MOOD
+            self.state = PersonaState.Q1_TONE
             self.raw_answers = {}
-            return f"No problem — let's try again.\n\n{_QUESTIONS[PersonaState.Q1_MOOD]}", False
+            return f"No problem — let's try again.\n\n{_QUESTIONS[PersonaState.Q1_TONE]}", False
         else:
             return "Type 'yes' to build the tape, or 'no' to start over.", False
 
@@ -296,15 +316,7 @@ class PersonaInterviewer:
 
     def _skip_current(self) -> str:
         """Skip current question with a default and advance."""
-        defaults = {
-            PersonaState.Q1_MOOD:      {"mood_today": "calm", "occasion": "chill"},
-            PersonaState.Q2_SOUND:     {"personality_words": ["open", "balanced"]},
-            PersonaState.Q3_LISTENING: {"aesthetic_choice": "rooftop at sunset"},
-            PersonaState.Q4_FAMILIAR:  {"era_preference": "both"},
-        }
-        d = defaults.get(self.state, {})
-        for k, v in d.items():
-            setattr(self.persona, k, v)
+        self.raw_answers.setdefault(self.state.name, "")
         self._off_topic_count = 0
         next_q = self._advance_state()
         return next_q or "Alright, I think I have enough. Ready? [yes / no]"
@@ -323,16 +335,16 @@ class _MockLLMCheck:
 def _keyword_ack(answer: str) -> str:
     """Simple keyword-based acknowledgment when no LLM is available."""
     a = answer.lower()
-    if any(w in a for w in ["tired", "drained", "exhausted", "low"]):
-        return "Noted — sounds like you need something that meets you where you're at."
-    if any(w in a for w in ["frustrated", "angry", "stressed", "anxious"]):
-        return "Got it — something with some edge to it."
-    if any(w in a for w in ["happy", "great", "good", "excited", "upbeat"]):
-        return "Good to hear — we'll keep that energy going."
-    if any(w in a for w in ["calm", "chill", "relaxed", "peaceful"]):
-        return "Nice. We'll keep things easy."
-    if any(w in a for w in ["sad", "down", "melancholic", "low"]):
-        return "Understood — something to sit with."
+    if any(w in a for w in ["tired", "drained", "exhausted", "low", "slow", "heavy", "overcast"]):
+        return "Noted."
+    if any(w in a for w in ["frustrated", "angry", "tense", "stressed", "pressurized", "sharp"]):
+        return "Got it."
+    if any(w in a for w in ["happy", "great", "good", "excited", "upbeat", "bright", "electric"]):
+        return "Good to hear."
+    if any(w in a for w in ["calm", "chill", "relaxed", "peaceful", "soft", "still", "warm", "settled"]):
+        return "Nice."
+    if any(w in a for w in ["sad", "down", "melancholic", "cool", "quiet"]):
+        return "Understood."
     return "Got it."
 
 
@@ -340,46 +352,63 @@ def _keyword_interpret(raw: Dict[str, str]) -> PersonaProfile:
     """Fallback: keyword-based mapping of raw answers → PersonaProfile."""
     p = PersonaProfile()
 
-    q1 = raw.get("Q1_MOOD", "").lower()
-    if any(w in q1 for w in ["tired", "drained", "low", "exhausted"]):
-        p.occasion, p.mood_today = "late night", "melancholic"
-    elif any(w in q1 for w in ["frustrated", "angry", "tense"]):
+    # Q1: tone of day → occasion + mood
+    q1 = raw.get("Q1_TONE", "").lower()
+    if any(w in q1 for w in ["heavy", "tense", "chaotic", "pressurized", "rough"]):
         p.occasion, p.mood_today = "commute", "frustrated"
-    elif any(w in q1 for w in ["happy", "great", "excited", "upbeat"]):
+    elif any(w in q1 for w in ["light", "smooth", "easy", "good", "bright"]):
         p.occasion, p.mood_today = "party", "happy"
-    elif any(w in q1 for w in ["calm", "chill", "relaxed"]):
-        p.occasion, p.mood_today = "chill", "calm"
-    else:
+    elif any(w in q1 for w in ["steady", "neutral", "normal", "fine"]):
         p.occasion, p.mood_today = "commute", "calm"
-
-    q2 = raw.get("Q2_SOUND", "").lower()
-    if any(w in q2 for w in ["soft", "mellow", "quiet", "slow"]):
-        p.personality_words = ["introspective", "calm"]
-    elif any(w in q2 for w in ["complex", "jazz", "classical", "depth"]):
-        p.personality_words = ["curious", "creative"]
-    elif any(w in q2 for w in ["intense", "loud", "heavy", "hard"]):
-        p.personality_words = ["intense", "energetic"]
     else:
-        p.personality_words = ["open", "balanced"]
+        p.occasion, p.mood_today = "chill", "reflective"
 
-    q3 = raw.get("Q3_LISTENING", "").lower()
-    if any(w in q3 for w in ["really", "sit", "focus", "attention", "headphone"]):
+    # Q2: energy → refine mood
+    q2 = raw.get("Q2_ENERGY", "").lower()
+    if any(w in q2 for w in ["drained", "slow", "low", "tired", "exhausted"]):
+        p.occasion = "late night"
+        p.mood_today = "melancholic"
+    elif any(w in q2 for w in ["buzzing", "wired", "restless", "hyped"]):
+        p.mood_today = "restless"
+    elif any(w in q2 for w in ["calm", "settled", "peaceful", "steady"]):
+        p.mood_today = p.mood_today or "calm"
+
+    # Q3: attention → aesthetic_choice
+    q3 = raw.get("Q3_ATTENTION", "").lower()
+    if any(w in q3 for w in ["deep focus", "problem", "work", "focused"]):
         p.aesthetic_choice = "dark room with headphones"
-    elif any(w in q3 for w in ["background", "while", "doing", "work"]):
+    elif any(w in q3 for w in ["background", "unwinding", "nothing", "tasks"]):
         p.aesthetic_choice = "rooftop at sunset"
     else:
         p.aesthetic_choice = "rooftop at sunset"
 
-    q4 = raw.get("Q4_FAMILIAR", "").lower()
-    if any(w in q4 for w in ["familiar", "know", "love", "already", "nostalgia"]):
+    # Q4: space → personality
+    q4 = raw.get("Q4_SPACE", "").lower()
+    if any(w in q4 for w in ["just me", "mine", "alone", "solo", "my own"]):
+        p.personality_words = ["introspective", "calm"]
+    else:
+        p.personality_words = ["open", "balanced", "social"]
+
+    # Q5: flow → uniformity via personality
+    q5 = raw.get("Q5_FLOW", "").lower()
+    if any(w in q5 for w in ["focused", "cohesive", "tight", "consistent"]):
+        p.personality_words = list(dict.fromkeys(p.personality_words + ["focused"]))
+    elif any(w in q5 for w in ["eclectic", "wide", "variety", "ranging"]):
+        p.personality_words = list(dict.fromkeys(p.personality_words + ["adventurous"]))
+
+    # Q6: direction → era_preference
+    q6 = raw.get("Q6_DIRECTION", "").lower()
+    if any(w in q6 for w in ["stay", "lean into", "same", "this feeling"]):
         p.era_preference = "nostalgia"
-    elif any(w in q4 for w in ["new", "discover", "never", "fresh", "open"]):
+    elif any(w in q6 for w in ["different", "somewhere else", "shift", "change"]):
         p.era_preference = "new"
     else:
         p.era_preference = "both"
 
-    p.wildcard = raw.get("Q5_WILDCARD", "")
+    # Q7: texture → wildcard (descriptors for LLM blueprint)
+    p.wildcard = raw.get("Q7_TEXTURE", "")
     return p
+
 
 
 def _json_to_persona(data: Dict[str, Any], wildcard_raw: str) -> PersonaProfile:
