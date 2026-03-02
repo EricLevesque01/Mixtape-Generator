@@ -1,6 +1,6 @@
 # duration behavior
 duration_target_s: 4620       # Target ≈ 77 minutes (CD-length mixtape)
-duration_cap_s: 7200          # Absolute max ≈ 120 minutes
+duration_cap_s: 4800          # Absolute max = 1h20m
 target_track_count: 16        # Target length (approx 16 tracks)
 track_min_duration_s: 60      # Skip tracks shorter than 1 minute
 track_max_duration_s: 600     # Skip tracks longer than 10 minutes
