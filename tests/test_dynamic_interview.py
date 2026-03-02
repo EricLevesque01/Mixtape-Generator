@@ -83,7 +83,7 @@ class TestPersonaInterviewFlow(unittest.TestCase):
         resp, done = agent.process_input("overcast, cool, still")
         self.assertFalse(done)
         self.assertEqual(agent.state, PersonaState.CONFIRMATION)
-        self.assertIn("Sound right?", resp)
+        self.assertIn("Does that feel right?", resp)
 
         # Confirm
         resp, done = agent.process_input("yes")
