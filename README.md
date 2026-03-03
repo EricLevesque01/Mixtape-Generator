@@ -1,6 +1,6 @@
 # Mixtape Generator
 
-A command-line tool that builds personalized mixtapes from a local music library. A short conversational interview captures your current mood and moment, then a multi-stage pipeline curates two distinct playlist variants (Mix A and Mix B) for you to choose from.
+A command-line tool that curates personalized mixtapes from Eric's music library. A short conversational interview captures your current mood and moment, then a multi-stage pipeline builds two distinct playlist variants (Mix A and Mix B) for you to choose from.
 
 ---
 
